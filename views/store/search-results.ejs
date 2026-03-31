@@ -1,0 +1,101 @@
+<%- include('../partials/head') %>
+  </head>
+  <body>
+    <%- include('../partials/nav') %>
+    <main class="container mx-auto mt-8 p-8">
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Search Results</h1>
+        <p class="text-gray-600 mt-2">
+          <% if (searchQuery) { %>
+            Search results for "<%= searchQuery %>"
+          <% } else { %>
+            Start searching for products
+          <% } %>
+        </p>
+      </div>
+
+      <% if (message) { %>
+        <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg mb-6">
+          <%= message %>
+        </div>
+      <% } %>
+
+      <% if (searchResults.length > 0) { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <% searchResults.forEach(product => { %>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
+              <% if (product.photo) { %>
+                <img
+                  src="/<%= product.photo %>"
+                  alt="<%= product.productName %>"
+                  class="w-full h-48 object-cover"
+                />
+              <% } else { %>
+                <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                  <span class="text-gray-400">No Image</span>
+                </div>
+              <% } %>
+              <div class="p-4">
+                <h3 class="text-lg font-bold text-gray-800 truncate"><%= product.productName %></h3>
+                <p class="text-sm text-gray-600 mb-2">
+                  <span class="inline-block bg-red-100 text-red-700 px-2 py-1 rounded">
+                    <%= product.key %>
+                  </span>
+                </p>
+                <p class="text-gray-700 line-clamp-2 mb-3"><%= product.description %></p>
+                <div class="flex justify-between items-center mb-3">
+                  <span class="text-2xl font-bold text-red-500">₹<%= product.price %></span>
+                  <% if (product.rating) { %>
+                    <div class="flex items-center gap-1">
+                      <span class="text-yellow-400">★</span>
+                      <span class="text-sm font-semibold"><%= product.rating.stars.toFixed(1) %></span>
+                      <span class="text-xs text-gray-500">(<%= product.rating.count %>)</span>
+                    </div>
+                  <% } %>
+                </div>
+                <div class="flex gap-2">
+                  <a
+                    href="/products/<%= product._id %>"
+                    class="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition text-center font-medium text-sm"
+                  >
+                    View Details
+                  </a>
+                  <% if (isLoggedIn && user && user.userType === 'guest') { %>
+                    <form action="/cart" method="POST" class="flex-1">
+                      <input type="hidden" name="id" value="<%= product._id %>" />
+                      <button
+                        type="submit"
+                        class="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition font-medium text-sm"
+                      >
+                        Add to Cart
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      <% } else if (searchQuery) { %>
+        <div class="text-center py-12">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="w-16 h-16 mx-auto text-gray-300 mb-4"
+          >
+            <path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clip-rule="evenodd" />
+          </svg>
+          <h2 class="text-2xl font-semibold text-gray-700 mb-2">No Products Found</h2>
+          <p class="text-gray-500 mb-6">Try searching with different keywords</p>
+          <a
+            href="/products"
+            class="inline-block bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition font-medium"
+          >
+            Browse All Products
+          </a>
+        </div>
+      <% } %>
+    </main>
+  </body>
+</html>

@@ -66,7 +66,7 @@ exports.postSignup = [
   check("userType")
   .notEmpty()
   .withMessage("Please select a user type")
-  .isIn(['guest', 'host'])
+  .isIn(['guest', 'host', 'deliveryboy'])
   .withMessage("Invalid user type"),
 
   check("terms")

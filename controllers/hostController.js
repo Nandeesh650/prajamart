@@ -46,8 +46,10 @@ exports.getHostProducts = (req, res, next) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
-  const { houseName, price, location, rating, description } = req.body;
-  console.log(houseName, price, location, rating, description);
+  const { productName, key, price, rating_stars, rating_count, description } = req.body;
+  const stars = Number(rating_stars) || 0;
+  const count = Number(rating_count) || 0;
+  console.log(productName, key, price, rating_stars, rating_count, description);
   console.log(req.file);
 
   if (!req.file) {
@@ -57,10 +59,13 @@ exports.postAddProduct = (req, res, next) => {
   const photo = req.file.path;
 
   const product = new Product({
-    houseName,
+    productName,
+    key,
     price,
-    location,
-    rating,
+    rating: {
+      stars,
+      count,
+    },
     photo,
     description,
   });
@@ -72,14 +77,21 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.postEditProduct = (req, res, next) => {
-  const { id, houseName, price, location, rating, description } =
-    req.body;;
+  const { id, productName, key, price, rating_stars, rating_count, description } =
+    req.body;
+  const stars = Number(rating_stars) || 0;
+  const count = Number(rating_count) || 0;
   Product.findById(id)
     .then((product) => {
-      product.houseName = houseName;
+      product.productName = productName;
+      product.key = key;
       product.price = price;
-      product.location = location;
-      product.rating = rating;
+      if (product.rating && typeof product.rating === 'object') {
+        product.rating.stars = stars;
+        product.rating.count = count;
+      } else {
+        product.rating = { stars, count };
+      }
       product.description = description;
 
       if (req.file) {

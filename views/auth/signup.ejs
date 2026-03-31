@@ -101,12 +101,16 @@
           <p class="text-sm font-medium text-gray-700 mb-2">I want to register as:</p>
           <div class="flex space-x-6">
             <label class="inline-flex items-center cursor-pointer">
-              <input type="radio" name="userType" value="guest" id="guest" class="form-radio text-red-500 focus:ring-red-500" checked="<% oldInput.userType === "guest"%>" />
+              <input type="radio" name="userType" value="guest" id="guest" class="form-radio text-red-500 focus:ring-red-500" <%= oldInput.userType === 'guest' || !oldInput.userType ? 'checked' : '' %> />
               <span class="ml-2">Guest</span>
             </label>
             <label class="inline-flex items-center cursor-pointer">
-              <input type="radio" name="userType" value="host" id="host" class="form-radio text-red-500 focus:ring-red-500" checked="<% oldInput.userType === "host"%>"/>
+              <input type="radio" name="userType" value="host" id="host" class="form-radio text-red-500 focus:ring-red-500" <%= oldInput.userType === 'host' ? 'checked' : '' %> />
               <span class="ml-2">Host</span>
+            </label>
+            <label class="inline-flex items-center cursor-pointer">
+              <input type="radio" name="userType" value="deliveryboy" id="deliveryboy" class="form-radio text-red-500 focus:ring-red-500" <%= oldInput.userType === 'deliveryboy' ? 'checked' : '' %> />
+              <span class="ml-2">Delivery Boy</span>
             </label>
           </div>
         </div>

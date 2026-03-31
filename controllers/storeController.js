@@ -35,38 +35,38 @@ exports.getBookings = (req, res, next) => {
   });
 };
 
-exports.getFavouriteList = async (req, res, next) => {
+exports.getCartList = async (req, res, next) => {
   const userId = req.session.user._id;
-  const user = await User.findById(userId).populate('favourites');
-  res.render("store/favourite-list", {
-    favouriteProducts: user.favourites,
-    pageTitle: "My Favourites",
-    currentPage: "favourites",
+  const user = await User.findById(userId).populate('cart');
+  res.render("store/cart-list", {
+    cartProducts: user.cart,
+    pageTitle: "My Cart",
+    currentPage: "cart",
     isLoggedIn: req.isLoggedIn, 
     user: req.session.user,
   });
 };
 
-exports.postAddToFavourite = async (req, res, next) => {
+exports.postAddToCart = async (req, res, next) => {
   const productId = req.body.id;
   const userId = req.session.user._id;
   const user = await User.findById(userId);
-  if (!user.favourites.includes(productId)) {
-    user.favourites.push(productId);
+  if (!user.cart.includes(productId)) {
+    user.cart.push(productId);
     await user.save();
   }
-  res.redirect("/favourites");
+  res.redirect("/cart");
 };
 
-exports.postRemoveFromFavourite = async (req, res, next) => {
+exports.postRemoveFromCart = async (req, res, next) => {
   const productId = req.params.productId;
   const userId = req.session.user._id;
   const user = await User.findById(userId);
-  if (user.favourites.includes(productId)) {
-    user.favourites = user.favourites.filter(fav => fav != productId);
+  if (user.cart.includes(productId)) {
+    user.cart = user.cart.filter(item => item != productId);
     await user.save();
   }
-  res.redirect("/favourites");
+  res.redirect("/cart");
 };
 
 exports.getProductDetails = (req, res, next) => {
@@ -85,4 +85,50 @@ exports.getProductDetails = (req, res, next) => {
       });
     }
   });
+};
+
+exports.getSearch = async (req, res, next) => {
+  const query = req.query.query || "";
+  
+  if (!query.trim()) {
+    return res.render("store/search-results", {
+      searchResults: [],
+      searchQuery: "",
+      pageTitle: "Search Results",
+      currentPage: "search",
+      isLoggedIn: req.isLoggedIn,
+      user: req.session.user,
+      message: "Please enter a search term"
+    });
+  }
+
+  try {
+    const searchResults = await Product.find({
+      $or: [
+        { productName: { $regex: query, $options: "i" } },
+        { key: { $regex: query, $options: "i" } }
+      ]
+    });
+
+    res.render("store/search-results", {
+      searchResults: searchResults,
+      searchQuery: query,
+      pageTitle: "Search Results",
+      currentPage: "search",
+      isLoggedIn: req.isLoggedIn,
+      user: req.session.user,
+      message: searchResults.length === 0 ? "No products found matching your search." : ""
+    });
+  } catch (error) {
+    console.log("Search error:", error);
+    res.render("store/search-results", {
+      searchResults: [],
+      searchQuery: query,
+      pageTitle: "Search Results",
+      currentPage: "search",
+      isLoggedIn: req.isLoggedIn,
+      user: req.session.user,
+      message: "Error performing search"
+    });
+  }
 };

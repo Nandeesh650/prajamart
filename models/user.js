@@ -17,10 +17,10 @@ const userSchema = mongoose.Schema({
   },
   userType: {
     type: String,
-    enum: ['guest', 'host'],
+    enum: ['guest', 'host', 'deliveryboy'],
     default: 'guest'
   },
-  favourites: [{
+  cart: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Product'
   }]

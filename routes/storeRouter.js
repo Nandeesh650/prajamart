@@ -8,10 +8,11 @@ const storeController = require("../controllers/storeController");
 storeRouter.get("/", storeController.getIndex);
 storeRouter.get("/products", storeController.getProducts);
 storeRouter.get("/bookings", storeController.getBookings);
-storeRouter.get("/favourites", storeController.getFavouriteList);
+storeRouter.get("/cart", storeController.getCartList);
+storeRouter.get("/search", storeController.getSearch);
 
 storeRouter.get("/products/:productId", storeController.getProductDetails);
-storeRouter.post("/favourites", storeController.postAddToFavourite);
-storeRouter.post("/favourites/delete/:productId", storeController.postRemoveFromFavourite);
+storeRouter.post("/cart", storeController.postAddToCart);
+storeRouter.post("/cart/delete/:productId", storeController.postRemoveFromCart);
 
 module.exports = storeRouter;

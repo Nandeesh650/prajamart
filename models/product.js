@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const productSchema = mongoose.Schema({
-  houseName: {
+  productName: {
     type: String,
     required: true,
   },
@@ -9,13 +9,19 @@ const productSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  location: {
+  key: {
     type: String,
     required: true,
   },
   rating: {
-    type: Number,
-    required: true,
+    stars: {
+      type: Number,
+      default: 0,
+    },
+    count: {
+      type: Number,
+      default: 0,
+    },
   },
   photo: String,
   description: String,
