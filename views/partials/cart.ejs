@@ -1,6 +1,13 @@
-<form action="/cart" method="POST">
-  <button type="submit" class="bg-green-300 p-2 hover:bg-green-500">
+<form action="/cart" method="POST" class="w-full">
+  <input type="hidden" name="id" value="<%= product._id %>" />
+
+  <button 
+    type="submit"
+    class="w-full bg-gradient-to-r from-orange-500 to-red-500
+           text-white py-2.5 rounded-xl font-semibold
+           shadow-md hover:shadow-xl hover:scale-105
+           transition duration-300">
     Add to Cart
   </button>
-  <input type="hidden" name="id" value="<%= product._id %>" />
 </form>
+

@@ -1,32 +1,101 @@
 <%- include('../partials/head') %>
-  </head>
-  <body>
-    <%- include('../partials/nav') %>
-    <main class="container mx-auto bg-white shadow-lg rounded-lg p-8 mt-10 max-w-6xl">
-      <h2 class="text-3xl text-red-500 font-bold text-center mb-6">
-        Here are our registered products:
-      </h2>
-      <div class="flex flex-wrap justify-center gap-6">
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Navbar -->
+  <%- include('../partials/nav') %>
+
+  <main class="px-6 py-10 bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen">
+
+    <!-- Heading -->
+    <h1 class="text-4xl font-extrabold text-center mb-10 text-gray-800">
+      🛍️ Welcome to Prajamart
+    </h1>
+
+    <!-- Product Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+
+      <% if (registeredProducts && registeredProducts.length > 0) { %>
+
         <% registeredProducts.forEach(product => { %>
-          <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 w-full max-w-sm">
-            <img src="<%= product.photo %>" alt="<%= product.productName %>" class="w-full h-48 object-cover">
-            <div class="p-4">
-              <h3 class="text-xl font-semibold text-gray-800 mb-2"><%= product.productName %>
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-lg font-bold text-red-500">Rs<%= product.price %> / night</span>
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-yellow-400 mr-1">
-                    <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="text-gray-700"><%= product.rating && product.rating.stars !== undefined ? product.rating.stars : product.rating %></span>
-                </div>
-              </div>
-              <a class="bg-blue-300 p-2" href="/products/<%= product._id %>">Details</a>
-              <%- include('../partials/cart', {product: product}) %>
+
+          <!-- Premium Product Card -->
+          <div class="bg-white rounded-3xl shadow-md hover:shadow-2xl 
+                      transition-all duration-300 hover:-translate-y-3 
+                      group overflow-hidden">
+
+            <!-- Product Image -->
+            <div class="h-60 bg-white flex items-center justify-center p-6">
+              <img 
+                src="<%= product.photo %>"
+                alt="<%= product.productName %>"
+                class="h-full object-contain group-hover:scale-110 transition duration-500"
+              >
             </div>
+
+            <!-- Content -->
+            <div class="p-5 text-center">
+
+              <!-- Product Name -->
+              <h2 class="text-lg font-semibold text-gray-800 tracking-wide truncate">
+                <%= product.productName %>
+              </h2>
+
+              <!-- Price -->
+              <p class="text-orange-500 text-2xl font-bold mt-2">
+                ₹ <%= Number(product.price).toFixed(2) %>
+              </p>
+
+              <!-- Stars -->
+              <div class="flex justify-center mt-2 text-yellow-400 text-lg">
+                <% let stars = product.rating?.stars || product.rating || 0; %>
+                <% for (let i = 1; i <= 5; i++) { %>
+                  <span><%= i <= stars ? '★' : '☆' %></span>
+                <% } %>
+              </div>
+
+              <!-- Reviews -->
+              <p class="text-gray-400 text-sm mt-1">
+                (<%= product.rating?.count || 0 %> reviews)
+              </p>
+
+              <!-- Buttons -->
+              <div class="flex gap-3 mt-5">
+
+                <!-- Add to Cart -->
+                <div class="w-full">
+                  <%- include('../partials/cart', { product: product }) %>
+                </div>
+
+                <!-- View -->
+                <a href="/products/<%= product._id %>"
+                   class="w-full text-center py-2.5 rounded-xl 
+                          bg-gray-100 font-medium text-gray-700
+                          hover:bg-gray-200 hover:shadow-md
+                          transition duration-300">
+                  View
+                </a>
+
+              </div>
+
+            </div>
+
           </div>
+
         <% }) %>
-      </div>
-    </main>
-  </body>
+
+      <% } else { %>
+
+        <p class="col-span-4 text-center text-gray-500 text-lg">
+          No products available 😔
+        </p>
+
+      <% } %>
+
+    </div>
+
+  </main>
+
+</body>
 </html>

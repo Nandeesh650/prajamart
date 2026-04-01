@@ -1,41 +1,101 @@
 <%- include('../partials/head') %>
-  </head>
-  <body>
-      <%- include('../partials/nav') %>
-      <main class="container mx-auto bg-white shadow-lg rounded-lg p-8 mt-10 max-w-6xl">
-          <h2 class="text-3xl text-red-500 font-bold text-center mb-6">
-              Product details: <%= product.productName %>
-          </h2>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div class="rounded-lg overflow-hidden">
-                  <img src="<%= product.photo %>" alt="<%= product.productName %>" class="w-full h-96 object-cover">
-              </div>
-              
-              <div class="space-y-6">
-                  <div class="border-b pb-4">
-                      <h3 class="text-2xl font-semibold mb-2">Description</h3>
-                      <p class="text-gray-600"><%= product.description %></p>
-                  </div>
-                  </div>
-                  <div class="border-b pb-4">
-                      <h3 class="text-2xl font-semibold mb-2">Price</h3>
-                      <p class="text-green-600 text-xl font-bold">$<%= product.price %> / night</p>
-                  </div>
-                  
-                  <div class="border-b pb-4">
-                      <h3 class="text-2xl font-semibold mb-2">Rating</h3>
-                      <div class="flex items-center">
-                          <span class="text-yellow-400 text-xl">★</span>
-                          <span class="ml-2 text-lg"><%= product.rating && product.rating.stars !== undefined ? product.rating.stars : product.rating %> / 5</span>
-                      </div>
-                      <p class="text-gray-500 text-sm">(<%= product.rating && product.rating.count !== undefined ? product.rating.count : 0 %> reviews)</p>
-                  </div>
-                  <div class="mt-2">
-                    <%- include('../partials/cart', {product: product}) %>
-                  </div>
-              </div>
-          </div>
-      </main>
-  </body>
+</head>
+
+<body class="bg-white min-h-screen">
+
+<%- include('../partials/nav') %>
+
+<main class="max-w-7xl mx-auto px-8 py-10">
+
+  <!-- MAIN CARD -->
+  <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+
+    <!-- IMAGE TOP -->
+    <div class="bg-white flex justify-center items-center h-[560px] p-10 border-b border-gray-100">
+      <img src="/<%= product.photo %>"
+           alt="<%= product.productName %>"
+           class="max-h-[470px] object-contain hover:scale-105 transition duration-500">
+    </div>
+
+    <!-- DETAILS -->
+    <div class="p-10">
+
+      <!-- PRODUCT NAME -->
+      <h1 class="text-4xl font-semibold text-gray-900 tracking-wide">
+        <%= product.productName %>
+      </h1>
+
+      <!-- RATING -->
+      <div class="flex items-center gap-3 mt-5">
+        <span class="bg-green-600 text-white px-4 py-1 rounded-md text-sm font-semibold shadow-sm">
+          <%= product.rating?.stars || product.rating %> ★
+        </span>
+
+        <span class="text-gray-500 text-lg">
+          <%= product.rating?.count || 0 %> Ratings & Reviews
+        </span>
+      </div>
+
+      <!-- PRICE -->
+      <div class="mt-6">
+        <span class="text-5xl font-bold text-black">
+          ₹<%= product.price %>
+        </span>
+
+        <span class="ml-4 text-gray-400 line-through text-2xl">
+          ₹<%= product.price + 700 %>
+        </span>
+
+        <span class="ml-4 text-green-600 font-semibold text-xl">
+          25% off
+        </span>
+      </div>
+
+      <!-- DELIVERY -->
+      <div class="mt-6 bg-gray-50 p-5 rounded-xl border border-gray-100">
+        <p class="text-gray-700 font-medium text-lg">
+          🚚 Free delivery by Tomorrow
+        </p>
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div class="mt-8">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-900">
+          Product Details
+        </h2>
+
+        <p class="text-gray-600 leading-8 text-lg">
+          <%= product.description %>
+        </p>
+      </div>
+
+      <!-- PREMIUM ACTION BUTTONS -->
+      <div class="flex justify-center items-center gap-5 mt-10">
+
+        <form action="/cart" method="POST">
+            <input type="hidden" name="productId" value="<%= product._id %>">
+            <button class="px-10 py-3 rounded-full bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
+            🛒 Add to Cart
+            </button>
+
+        </form>
+
+        <form action="/buy-now" method="POST">
+            <input type="hidden" name="productId" value="<%= product._id %>">
+            <button class="px-10 py-3 rounded-full bg-black text-white font-semibold shadow-md hover:shadow-xl hover:bg-gray-900 hover:-translate-y-0.5 transition-all duration-300">
+            Buy Now
+            </button>
+        </form>
+
+        </div>
+
+
+    </div>
+
+  </div>
+
+</main>
+
+</body>
 </html>
+

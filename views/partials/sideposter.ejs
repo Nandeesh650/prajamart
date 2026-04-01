@@ -1,0 +1,76 @@
+
+<!-- SLIDER SECTION -->
+
+<section class="mt-6 px-6">
+
+<div class="relative w-full h-[450px] bg-gray-200 overflow-hidden rounded-xl shadow-xl">
+
+<!-- SLIDES -->
+
+<div id="slides" class="flex h-full transition-transform duration-700">
+
+<div class="min-w-full flex items-center justify-center">
+<img src="/images/products/coffeemaker-with-glass-carafe-black.jpg"
+class="max-h-full object-contain">
+</div>
+
+<div class="min-w-full flex items-center justify-center">
+<img src="/images/products/knit-athletic-sneakers-pink.webp"
+class="max-h-full object-contain">
+</div>
+
+<div class="min-w-full flex items-center justify-center">
+<img src="/images/products/cotton-bath-towels-teal.webp"
+class="max-h-full object-contain">
+</div>
+
+</div>
+
+<!-- LEFT BUTTON -->
+
+<button id="prev"
+class="absolute left-5 top-1/2 -translate-y-1/2 bg-black/60 text-white px-4 py-2 rounded-full hover:bg-black">
+❮
+</button>
+
+<!-- RIGHT BUTTON -->
+
+<button id="next"
+class="absolute right-5 top-1/2 -translate-y-1/2 bg-black/60 text-white px-4 py-2 rounded-full hover:bg-black">
+❯
+</button>
+
+<!-- INDICATORS -->
+
+<div class="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-3">
+
+<span class="line w-10 h-1 bg-white opacity-50 rounded cursor-pointer"></span>
+<span class="line w-10 h-1 bg-white opacity-50 rounded cursor-pointer"></span>
+<span class="line w-10 h-1 bg-white opacity-50 rounded cursor-pointer"></span>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- SLIDER SCRIPT -->
+
+<script>
+
+const slides = document.getElementById("slides");
+const totalSlides = slides.children.length;
+
+let index = 0;
+
+document.getElementById("next").onclick = () => {
+index = (index + 1) % totalSlides;
+slides.style.transform = `translateX(-${index * 100}%)`;
+};
+
+document.getElementById("prev").onclick = () => {
+index = (index - 1 + totalSlides) % totalSlides;
+slides.style.transform = `translateX(-${index * 100}%)`;
+};
+
+</script>

@@ -1,31 +1,79 @@
 <%- include('../partials/head') %>
-  </head>
-  <body>
-    <%- include('../partials/nav') %>
-    <main class="container mx-auto bg-white shadow-lg rounded-lg p-8 mt-10 max-w-6xl">
-      <h2 class="text-3xl text-red-500 font-bold text-center mb-6">
-        Welcome to prajamart index page:
-      </h2>
-      <div class="flex flex-wrap justify-center gap-6">
+</head>
+<body>
+  <%- include('../partials/nav') %>
+  <%- include('../partials/sideposter') %>
+
+  <main class="px-6 py-10 bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen">
+
+    <!-- HEADING -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-gray-800 tracking-wide">
+        Welcome to Prajamart
+      </h1>
+      <p class="text-gray-500 mt-2 text-lg">
+        Explore our premium collection
+      </p>
+    </div>
+
+    <!-- PRODUCT GRID -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+
+      <% if (registeredProducts && registeredProducts.length > 0) { %>
+
         <% registeredProducts.forEach(product => { %>
-          <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 w-full max-w-sm">
-            <img src="<%= product.photo %>" alt="<%= product.productName %>" class="w-full h-48 object-cover">
-            <div class="p-4">
-              <h3 class="text-xl font-semibold text-gray-800 mb-2"><%= product.productName %>
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-lg font-bold text-red-500">Rs<%= product.price %> </span>
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 text-yellow-400 mr-1">
-                    <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
-                  </svg>
-                  <span class="text-gray-700"><%= product.rating && product.rating.stars !== undefined ? product.rating.stars : product.rating %></span>
-                </div>
+          <a href="/products/<%= product._id %>" class="group block">
+
+            <!-- PREMIUM CARD -->
+            <div class="bg-white rounded-3xl shadow-md
+                        hover:shadow-2xl hover:-translate-y-3
+                        transition-all duration-300 overflow-hidden border border-gray-100">
+
+              <!-- IMAGE -->
+              <div class="relative overflow-hidden bg-white h-64">
+                <img src="<%= product.photo %>"
+                     alt="<%= product.productName %>"
+                     class="w-full h-full object-contain
+                            transition-transform duration-500
+                            group-hover:scale-110">
+
+                <!-- PREMIUM BADGE -->
+                <span class="absolute top-3 left-3 bg-black text-white text-xs px-3 py-1 rounded-full shadow-md">
+                  PREMIUM
+                </span>
+
+                <!-- DISCOUNT BADGE -->
+                <span class="absolute top-3 right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow-md">
+                  25% OFF
+                </span>
               </div>
-              <button class="bg-green-300 p-2">Book</button>
+
+              <!-- PRODUCT NAME -->
+              <div class="p-5 text-center">
+                <h2 class="font-semibold text-lg text-gray-800 tracking-wide
+                           group-hover:text-black transition">
+                  <%= product.productName %>
+                </h2>
+              </div>
+
             </div>
-          </div>
+          </a>
         <% }) %>
-      </div>
-    </main>
-  </body>
+
+      <% } else { %>
+
+        <div class="col-span-4 text-center py-20">
+          <p class="text-gray-500 text-xl">
+            No products available 😔
+          </p>
+        </div>
+
+      <% } %>
+
+    </div>
+
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
 </html>

@@ -1,101 +1,168 @@
 <%- include('../partials/head') %>
-  </head>
-  <body>
-    <%- include('../partials/nav') %>
-    <main class="container mx-auto mt-8 p-8">
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Search Results</h1>
-        <p class="text-gray-600 mt-2">
-          <% if (searchQuery) { %>
-            Search results for "<%= searchQuery %>"
-          <% } else { %>
-            Start searching for products
-          <% } %>
-        </p>
+</head>
+
+<body class="bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen">
+
+  <!-- Navbar -->
+  <%- include('../partials/nav') %>
+
+  <main class="max-w-7xl mx-auto px-6 py-10">
+
+    <!-- PREMIUM HERO HEADER -->
+    <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl 
+                border border-gray-100 p-10 mb-12
+                hover:shadow-2xl transition-all duration-500">
+
+      <h1 class="text-5xl font-extrabold tracking-tight text-gray-800">
+        Search Results
+      </h1>
+
+      <p class="text-gray-500 mt-3 text-lg">
+        <% if (searchQuery) { %>
+          Showing premium matches for
+          <span class="font-semibold bg-gradient-to-r from-orange-500 to-red-500 
+                       bg-clip-text text-transparent">
+            "<%= searchQuery %>"
+          </span>
+        <% } else { %>
+          Discover premium products from Prajamart
+        <% } %>
+      </p>
+    </div>
+
+    <!-- MESSAGE -->
+    <% if (message) { %>
+      <div class="bg-blue-50 border border-blue-200 text-blue-700 
+                  px-5 py-4 rounded-2xl mb-8 shadow-sm">
+        <%= message %>
       </div>
+    <% } %>
 
-      <% if (message) { %>
-        <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg mb-6">
-          <%= message %>
-        </div>
-      <% } %>
+    <!-- RESULTS -->
+    <% if (searchResults && searchResults.length > 0) { %>
 
-      <% if (searchResults.length > 0) { %>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <% searchResults.forEach(product => { %>
-            <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300">
-              <% if (product.photo) { %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+
+        <% searchResults.forEach(product => { %>
+
+          <!-- PREMIUM PRODUCT CARD -->
+          <div class="bg-white/90 backdrop-blur-md rounded-3xl shadow-md
+                      hover:shadow-2xl hover:-translate-y-4 hover:scale-[1.02]
+                      transition-all duration-500 overflow-hidden group">
+
+            <!-- IMAGE -->
+            <% if (product.photo) { %>
+              <div class="h-64 bg-white flex items-center justify-center p-6">
                 <img
                   src="/<%= product.photo %>"
                   alt="<%= product.productName %>"
-                  class="w-full h-48 object-cover"
+                  class="h-full object-contain 
+                         group-hover:scale-110 transition-transform duration-700"
                 />
-              <% } else { %>
-                <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
-                  <span class="text-gray-400">No Image</span>
+              </div>
+            <% } else { %>
+              <div class="h-64 bg-gray-100 flex items-center justify-center">
+                <span class="text-gray-400">No Image</span>
+              </div>
+            <% } %>
+
+            <!-- CONTENT -->
+            <div class="p-5 text-center">
+
+              <h3 class="text-lg font-semibold text-gray-800 truncate">
+                <%= product.productName %>
+              </h3>
+
+              <!-- Tag -->
+              <p class="mt-2">
+                <span class="inline-block bg-orange-50 text-orange-500 
+                             px-3 py-1 rounded-full text-sm font-medium">
+                  <%= product.key %>
+                </span>
+              </p>
+
+              <!-- Price -->
+              <p class="text-2xl font-bold mt-3
+                        bg-gradient-to-r from-orange-500 to-red-500
+                        bg-clip-text text-transparent">
+                ₹ <%= Number(product.price).toFixed(2) %>
+              </p>
+
+              <!-- Rating -->
+              <% if (product.rating) { %>
+                <div class="flex justify-center items-center gap-1 mt-2">
+                  <span class="text-yellow-400 text-lg">★</span>
+                  <span class="font-semibold text-gray-700">
+                    <%= product.rating.stars.toFixed(1) %>
+                  </span>
+                  <span class="text-sm text-gray-400">
+                    (<%= product.rating.count %>)
+                  </span>
                 </div>
               <% } %>
-              <div class="p-4">
-                <h3 class="text-lg font-bold text-gray-800 truncate"><%= product.productName %></h3>
-                <p class="text-sm text-gray-600 mb-2">
-                  <span class="inline-block bg-red-100 text-red-700 px-2 py-1 rounded">
-                    <%= product.key %>
-                  </span>
-                </p>
-                <p class="text-gray-700 line-clamp-2 mb-3"><%= product.description %></p>
-                <div class="flex justify-between items-center mb-3">
-                  <span class="text-2xl font-bold text-red-500">₹<%= product.price %></span>
-                  <% if (product.rating) { %>
-                    <div class="flex items-center gap-1">
-                      <span class="text-yellow-400">★</span>
-                      <span class="text-sm font-semibold"><%= product.rating.stars.toFixed(1) %></span>
-                      <span class="text-xs text-gray-500">(<%= product.rating.count %>)</span>
-                    </div>
-                  <% } %>
-                </div>
-                <div class="flex gap-2">
-                  <a
-                    href="/products/<%= product._id %>"
-                    class="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition text-center font-medium text-sm"
-                  >
-                    View Details
-                  </a>
-                  <% if (isLoggedIn && user && user.userType === 'guest') { %>
-                    <form action="/cart" method="POST" class="flex-1">
-                      <input type="hidden" name="id" value="<%= product._id %>" />
-                      <button
-                        type="submit"
-                        class="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition font-medium text-sm"
-                      >
-                        Add to Cart
-                      </button>
-                    </form>
-                  <% } %>
-                </div>
+
+              <!-- BUTTONS -->
+              <div class="flex gap-3 mt-5">
+
+                <!-- View -->
+                <a
+                  href="/products/<%= product._id %>"
+                  class="w-full py-2.5 rounded-xl bg-gray-100 
+                         text-gray-700 font-medium
+                         hover:bg-gray-200 hover:shadow-md
+                         transition duration-300 text-center">
+                  View
+                </a>
+
+                <!-- Add -->
+                <% if (isLoggedIn && user && user.userType === 'guest') { %>
+                  <form action="/cart" method="POST" class="w-full">
+                    <input type="hidden" name="id" value="<%= product._id %>" />
+
+                    <button
+                      type="submit"
+                      class="w-full py-2.5 rounded-xl font-semibold text-white
+                             bg-gradient-to-r from-orange-500 to-red-500
+                             shadow-md hover:shadow-xl hover:scale-105
+                             transition duration-300">
+                      Add
+                    </button>
+                  </form>
+                <% } %>
+
               </div>
+
             </div>
-          <% }); %>
-        </div>
-      <% } else if (searchQuery) { %>
-        <div class="text-center py-12">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            class="w-16 h-16 mx-auto text-gray-300 mb-4"
-          >
-            <path fill-rule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" clip-rule="evenodd" />
-          </svg>
-          <h2 class="text-2xl font-semibold text-gray-700 mb-2">No Products Found</h2>
-          <p class="text-gray-500 mb-6">Try searching with different keywords</p>
-          <a
-            href="/products"
-            class="inline-block bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition font-medium"
-          >
-            Browse All Products
-          </a>
-        </div>
-      <% } %>
-    </main>
-  </body>
+          </div>
+
+        <% }) %>
+
+      </div>
+
+    <% } else if (searchQuery) { %>
+
+      <!-- PREMIUM EMPTY STATE -->
+      <div class="bg-white rounded-3xl shadow-lg p-16 text-center">
+        <h2 class="text-3xl font-semibold text-gray-700 mb-3">
+          No Products Found
+        </h2>
+
+        <p class="text-gray-500 mb-6 text-lg">
+          Try searching with different keywords
+        </p>
+
+        <a
+          href="/products"
+          class="inline-block bg-gradient-to-r from-orange-500 to-red-500 
+                 text-white px-6 py-3 rounded-xl shadow-md 
+                 hover:scale-105 transition">
+          Browse All Products
+        </a>
+      </div>
+
+    <% } %>
+
+  </main>
+
+</body>
 </html>
