@@ -142,7 +142,9 @@ exports.postLogin = async (req, res, next) => {
   req.session.isLoggedIn = true;
   req.session.user = user;
   await req.session.save();
-
+  if(user.userType === 'host'){
+   return res.redirect("/host/host-product-list");
+  }
   res.redirect("/");
 }
 
