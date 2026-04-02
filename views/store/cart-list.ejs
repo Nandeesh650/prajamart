@@ -232,7 +232,47 @@
             </div>
           </div>
 
-          <form action="/orders/create" method="POST" id="checkoutForm">
+          <form action="/orders/create" method="POST" id="checkoutForm" class="space-y-4">
+
+           <input type="hidden" name="productId" value="<%= cartProducts[0]._id %>">
+           <!-- Rating Text Feedback -->
+              <div id="ratingFeedback" class="text-center text-sm font-semibold text-gray-700 mb-3">Select your rating</div>
+
+              
+            <!-- Product Rating - Modern -->
+            <div class="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 p-6 rounded-2xl border-2 border-amber-200 shadow-md hover:shadow-lg transition-all duration-300">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="text-2xl">⭐</span>
+                <label class="text-lg font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">Rate this Product</label>
+              </div>
+              
+              <!-- Star Rating - Interactive -->
+              <div class="flex gap-3 mb-4 justify-center py-2" id="ratingStarsContainer">
+                <% for (let i = 1; i <= 5; i++) { %>
+                  <label class="cursor-pointer group">
+                    <input type="radio" name="ratingStars" value="<%= i %>" class="hidden peer" data-rating="<%= i %>" />
+                    <span class="text-5xl transition-all duration-200 text-gray-300 group-hover:scale-110 group-hover:text-yellow-400" data-index="<%= i %>">☆</span>
+                  </label>
+                <% } %>
+              </div>
+              <!-- Comment -->
+              <textarea name="ratingComment" placeholder="✍️ Share your experience with this product (optional)" class="w-full px-4 py-3 text-sm border-2 border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white/70 backdrop-blur-sm transition-all duration-200" rows="2"></textarea>
+            </div>
+            <!-- Shipping Address -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">
+                Shipping Address *
+              </label>
+              <textarea
+                name="shippingAddress"
+                required
+                rows="3"
+                placeholder="Enter full address"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+              ></textarea>
+            </div>
+
+
           <button type="submit"
             class="w-full bg-red-700 text-white py-3 rounded-xl font-semibold
                   shadow-md hover:bg-white hover:text-red-700
@@ -319,6 +359,74 @@
     paymentRadios.forEach(radio => {
       radio.addEventListener('change', handlePaymentMethodChange);
     });
+    // Rating feedback messages
+  const ratingMessages = {
+    1: "😞 Poor - Needs improvement",
+    2: "😕 Not Good - Below expectation",
+    3: "😐 Average - It's okay",
+    4: "😊 Good - Pretty satisfied",
+    5: "😍 Excellent - Love it!"
+  };
+
+  // Star Rating Handler
+  const ratingStars = document.querySelectorAll('input[name="ratingStars"]');
+  const ratingFeedback = document.getElementById('ratingFeedback');
+  const starsContainer = document.getElementById('ratingStarsContainer');
+
+  function updateStarDisplay(rating) {
+    const spans = starsContainer.querySelectorAll('span[data-index]');
+    spans.forEach((span, index) => {
+      span.textContent = (index + 1) <= rating ? '★' : '☆';
+    });
+  }
+
+  ratingStars.forEach((star) => {
+    star.addEventListener('change', () => {
+      const value = parseInt(star.value);
+      updateStarDisplay(value);
+      ratingFeedback.textContent = ratingMessages[value];
+      ratingFeedback.classList.add('animate-pulse');
+      setTimeout(() => ratingFeedback.classList.remove('animate-pulse'), 1000);
+    });
+  });
+
+  starsContainer.addEventListener('mouseover', (e) => {
+    const span = e.target.closest('span[data-index]');
+    if (span) {
+      const index = parseInt(span.dataset.index);
+      const spans = starsContainer.querySelectorAll('span[data-index]');
+      spans.forEach((s, i) => {
+        s.textContent = (i + 1) <= index ? '★' : '☆';
+        s.style.color = (i + 1) <= index ? '#FBBF24' : '#D1D5DB';
+      });
+      ratingFeedback.textContent = ratingMessages[index] || 'Select your rating';
+    }
+  });
+
+  starsContainer.addEventListener('mouseleave', () => {
+    const checked = document.querySelector('input[name="ratingStars"]:checked');
+    if (checked) {
+      const value = parseInt(checked.value);
+      updateStarDisplay(value);
+      const spans = starsContainer.querySelectorAll('span[data-index]');
+      spans.forEach((s, i) => {
+        if ((i + 1) <= value) {
+          s.style.color = '#FBBF24';
+        } else {
+          s.style.color = '#D1D5DB';
+        }
+      });
+      ratingFeedback.textContent = ratingMessages[value];
+    } else {
+      const spans = starsContainer.querySelectorAll('span[data-index]');
+      spans.forEach(s => {
+        s.textContent = '☆';
+        s.style.color = '#D1D5DB';
+      });
+      ratingFeedback.textContent = 'Select your rating';
+    }
+  });
+
   </script>
 
 </body>

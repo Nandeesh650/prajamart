@@ -307,10 +307,13 @@ exports.postDeleteOrder = (req, res, next) => {
       return res.redirect("/host/orders");
     }
 
-    // Check if user is the host
+    // Check if user is the use
     if (order.hostId.toString() !== hostId.toString()) {
-      req.session.error = "Unauthorized: You cannot delete this order";
-      return res.redirect("/host/orders");
+      Order.findByIdAndDelete(orderId).then(() => {
+      console.log("Order deleted successfully");
+      req.session.success = "Order deleted successfully";
+    });
+     return res.redirect("/orders");
     }
 
     // Delete the order

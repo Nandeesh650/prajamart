@@ -14,5 +14,4 @@ storeRouter.get("/search", storeController.getSearch);
 storeRouter.get("/products/:productId", storeController.getProductDetails);
 storeRouter.post("/cart", storeController.postAddToCart);
 storeRouter.post("/cart/delete/:productId", storeController.postRemoveFromCart);
-
 module.exports = storeRouter;
