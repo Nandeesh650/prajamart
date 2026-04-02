@@ -46,10 +46,8 @@ exports.getHostProducts = (req, res, next) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
-  const { productName, key, price, rating_stars, rating_count, description } = req.body;
-  const stars = Number(rating_stars) || 0;
-  const count = Number(rating_count) || 0;
-  console.log(productName, key, price, rating_stars, rating_count, description);
+  const { productName, key, price, description } = req.body;
+  console.log(productName, key, price, description);
   console.log(req.file);
 
   if (!req.file) {
@@ -62,9 +60,10 @@ exports.postAddProduct = (req, res, next) => {
     productName,
     key,
     price,
+    hostId: req.session.user._id,
     rating: {
-      stars,
-      count,
+      stars: 0,
+      count: 0,
     },
     photo,
     description,
@@ -77,21 +76,19 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.postEditProduct = (req, res, next) => {
-  const { id, productName, key, price, rating_stars, rating_count, description } =
-    req.body;
-  const stars = Number(rating_stars) || 0;
-  const count = Number(rating_count) || 0;
+  const { id, productName, key, price, description } = req.body;
+  
   Product.findById(id)
     .then((product) => {
       product.productName = productName;
       product.key = key;
       product.price = price;
-      if (product.rating && typeof product.rating === 'object') {
-        product.rating.stars = stars;
-        product.rating.count = count;
-      } else {
-        product.rating = { stars, count };
+      
+      // Ensure hostId is set
+      if (!product.hostId) {
+        product.hostId = req.session.user._id;
       }
+      
       product.description = description;
 
       if (req.file) {

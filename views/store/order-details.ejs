@@ -1,0 +1,207 @@
+<%- include('../partials/head') %>
+</head>
+<body>
+  <%- include('../partials/nav') %>
+
+  <main class="px-6 py-10 bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen">
+    
+    <!-- HEADING -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-gray-800 tracking-wide">
+        Order Details
+      </h1>
+      <p class="text-gray-500 mt-2 text-lg">
+        Order ID: <%= order._id %>
+      </p>
+    </div>
+
+    <!-- ORDER DETAILS -->
+    <div class="max-w-4xl mx-auto">
+      
+      <div class="bg-white rounded-xl shadow-lg p-8">
+        
+        <!-- Status Badge -->
+        <div class="mb-6 text-center">
+          <span class="inline-block px-6 py-2 rounded-full text-lg font-bold
+            <% if (order.status === 'pending') { %>
+              bg-yellow-100 text-yellow-800
+            <% } else if (order.status === 'confirmed') { %>
+              bg-blue-100 text-blue-800
+            <% } else if (order.status === 'shipped') { %>
+              bg-purple-100 text-purple-800
+            <% } else if (order.status === 'delivered') { %>
+              bg-green-100 text-green-800
+            <% } else if (order.status === 'cancelled') { %>
+              bg-red-100 text-red-800
+            <% } %>
+          ">
+            <%= order.status.toUpperCase() %>
+          </span>
+        </div>
+
+        <!-- Product Info -->
+        <div class="mb-8 pb-8 border-b border-gray-200">
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">
+            <%= order.productId.productName %>
+          </h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+            <div>
+              <p class="text-sm text-gray-500 uppercase font-semibold">Unit Price</p>
+              <p class="text-2xl font-bold text-gray-800">₹<%= order.productId.price %></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500 uppercase font-semibold">Quantity</p>
+              <p class="text-2xl font-bold text-gray-800"><%= order.quantity %></p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-500 uppercase font-semibold">Total Price</p>
+              <p class="text-2xl font-bold text-red-600">₹<%= order.totalPrice %></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parties Info -->
+        <div class="mb-8 pb-8 border-b border-gray-200">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">Parties Involved</h3>
+          <div class="grid grid-cols-2 gap-6">
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <p class="text-sm text-gray-500 uppercase font-semibold mb-2">Customer</p>
+              <p class="font-bold text-gray-800"><%= order.userId.firstName %> <%= order.userId.lastName %></p>
+              <p class="text-sm text-gray-600"><%= order.userId.email %></p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+              <p class="text-sm text-gray-500 uppercase font-semibold mb-2">Host/Seller</p>
+              <p class="font-bold text-gray-800"><%= order.hostId.firstName %> <%= order.hostId.lastName %></p>
+              <p class="text-sm text-gray-600"><%= order.hostId.email %></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order Timeline -->
+        <div class="mb-8 pb-8 border-b border-gray-200">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">Order Timeline</h3>
+          <div class="space-y-3">
+            <div class="flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" class="w-5 h-5 text-blue-600 mr-3">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <div>
+                <p class="font-semibold text-gray-800">Order Placed</p>
+                <p class="text-sm text-gray-600"><%= new Date(order.orderDate).toLocaleString() %></p>
+              </div>
+            </div>
+            
+            <% if (order.deliveryDate) { %>
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" class="w-5 h-5 text-green-600 mr-3">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                  <p class="font-semibold text-gray-800">Delivered</p>
+                  <p class="text-sm text-gray-600"><%= new Date(order.deliveryDate).toLocaleString() %></p>
+                </div>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="mb-8 pb-8 border-b border-gray-200">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">Shipping Address</h3>
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-gray-700"><%= order.shippingAddress %></p>
+          </div>
+        </div>
+
+        <!-- Payment Information -->
+        <div class="mb-8 pb-8 border-b border-gray-200">
+          <h3 class="text-xl font-bold text-gray-800 mb-4">💳 Payment Information</h3>
+          <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p class="text-sm text-gray-500 uppercase font-semibold mb-2">Payment Method</p>
+                <% if (order.paymentMethod === 'cod') { %>
+                  <p class="text-lg font-bold text-gray-800">💵 Cash on Delivery (COD)</p>
+                  <p class="text-sm text-gray-600">Pay when you receive your order</p>
+                <% } else if (order.paymentMethod === 'upi') { %>
+                  <p class="text-lg font-bold text-gray-800">📱 UPI</p>
+                  <p class="text-sm text-gray-600">Payment ID: <span class="font-mono font-semibold"><%= order.upiId %></span></p>
+                <% } else if (order.paymentMethod === 'debit_card') { %>
+                  <p class="text-lg font-bold text-gray-800">🏧 Debit Card</p>
+                  <p class="text-sm text-gray-600">Card: <span class="font-mono font-semibold"><%= order.cardDetails.cardNumber %></span></p>
+                <% } %>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500 uppercase font-semibold mb-2">Payment Status</p>
+                <span class="inline-block px-4 py-2 rounded-full text-sm font-bold
+                  <% if (order.paymentStatus === 'completed') { %>
+                    bg-green-200 text-green-800
+                  <% } else if (order.paymentStatus === 'failed') { %>
+                    bg-red-200 text-red-800
+                  <% } else { %>
+                    bg-yellow-200 text-yellow-800
+                  <% } %>
+                ">
+                  <%= order.paymentStatus.toUpperCase() %>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Rating -->
+        <% if (order.userRating && order.userRating.stars > 0) { %>
+          <div class="mb-8 pb-8 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Your Product Rating ⭐</h3>
+            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="text-4xl">
+                  <% for (let i = 0; i < 5; i++) { %>
+                    <% if (i < order.userRating.stars) { %>
+                      ⭐
+                    <% } else { %>
+                      ☆
+                    <% } %>
+                  <% } %>
+                </span>
+                <div>
+                  <p class="font-bold text-gray-800 text-2xl"><%= order.userRating.stars %>/5 Stars</p>
+                  <p class="text-sm text-gray-600">Your rating for this product</p>
+                </div>
+              </div>
+              <% if (order.userRating.comment) { %>
+                <div class="bg-white p-3 rounded mt-3 border border-yellow-100">
+                  <p class="text-gray-700 italic"><strong>Your Review:</strong></p>
+                  <p class="text-gray-700"><%= order.userRating.comment %></p>
+                </div>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Notes -->
+        <% if (order.notes) { %>
+          <div class="mb-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Notes</h3>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-gray-700"><%= order.notes %></p>
+            </div>
+          </div>
+        <% } %>
+
+        <!-- Actions -->
+        <div class="flex gap-3 mt-8">
+          <a href="javascript:history.back()" class="px-6 py-2 rounded-lg bg-gray-300 text-gray-800 hover:bg-gray-400 transition font-medium">
+            Back
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

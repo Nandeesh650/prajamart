@@ -10,7 +10,7 @@
 
     <!-- HEADING -->
     <div class="text-center mb-12">
-      <h2 class="text-4xl font-bold text-gray-800 tracking-wide">
+      <h2 class="text-4xl font-bold text-red-700 tracking-wide">
         🛒 Your Shopping Cart
       </h2>
       <p class="text-gray-500 mt-2 text-lg">
@@ -54,7 +54,7 @@
                 <!-- Price + Qty -->
                 <div class="flex items-center justify-between">
 
-                  <p class="text-orange-500 font-bold text-2xl">
+                  <p class="text-red-700 font-bold text-2xl">
                     ₹ <%= product.price %>
                   </p>
 
@@ -65,7 +65,7 @@
                       min="1"
                       value="1"
                       class="qty w-20 border border-gray-300 rounded-lg px-2 py-2 text-center 
-                             outline-none focus:ring-2 focus:ring-orange-400"
+                             outline-none focus:ring-2 text-red-700"
                       data-price="<%= product.price %>"
                       onchange="updateTotal()"
                     >
@@ -78,7 +78,7 @@
                   <svg xmlns="http://www.w3.org/2000/svg"
                        viewBox="0 0 24 24"
                        fill="currentColor"
-                       class="w-6 h-6 text-yellow-400 mr-1">
+                       class="w-6 h-6text-red-700 mr-1">
                     <path fill-rule="evenodd"
                       d="M10.788 3.21c.448-1.077 1.976-1.077 
                       2.424 0l2.082 5.007 5.404.433c1.164.093 
@@ -148,14 +148,99 @@
             <span id="grandTotal">₹ 0</span>
           </div>
 
-          <form action="/orders/create" method="POST">
-            <button type="submit"
-              class="w-full bg-gradient-to-r from-orange-500 to-red-500 
-                     text-white py-3 rounded-xl font-semibold
-                     shadow-md hover:shadow-xl hover:scale-105 transition">
-              ⚡ Proceed to Checkout
-            </button>
-          </form>
+          <!-- PAYMENT METHOD SECTION -->
+          <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">
+              💳 Payment Method
+            </h4>
+            
+            <!-- Cash on Delivery (Default) -->
+            <label class="flex items-start mb-4 cursor-pointer hover:bg-white p-2 rounded transition">
+              <input 
+                type="radio" 
+                name="paymentMethod" 
+                value="cod"
+                checked
+                class="mt-1 w-4 h-4 text-green-600 cursor-pointer"
+              >
+              <div class="ml-3">
+                <p class="font-semibold text-gray-800">💵 Cash on Delivery (COD)</p>
+                <p class="text-sm text-gray-600">Pay when you receive your order</p>
+              </div>
+            </label>
+
+            <!-- UPI -->
+            <label class="flex items-start mb-4 cursor-pointer hover:bg-white p-2 rounded transition">
+              <input 
+                type="radio" 
+                name="paymentMethod" 
+                value="upi"
+                class="mt-1 w-4 h-4 text-blue-600 cursor-pointer"
+              >
+              <div class="ml-3">
+                <p class="font-semibold text-gray-800">📱 UPI</p>
+                <p class="text-sm text-gray-600">Pay instantly via Google Pay, PhonePe, or Paytm</p>
+              </div>
+            </label>
+
+            <!-- UPI ID Input (Hidden by default) -->
+            <div id="upiContainer" class="mb-4 pl-7 hidden">
+              <input 
+                type="text"
+                name="upiId"
+                placeholder="Enter UPI ID (e.g., name@bank)"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+            </div>
+
+            <!-- Debit Card -->
+            <label class="flex items-start mb-4 cursor-pointer hover:bg-white p-2 rounded transition">
+              <input 
+                type="radio" 
+                name="paymentMethod" 
+                value="debit_card"
+                class="mt-1 w-4 h-4 text-purple-600 cursor-pointer"
+              >
+              <div class="ml-3">
+                <p class="font-semibold text-gray-800">🏧 Debit Card</p>
+                <p class="text-sm text-gray-600">Use your debit card securely</p>
+              </div>
+            </label>
+
+            <!-- Debit Card Details (Hidden by default) -->
+            <div id="cardContainer" class="mb-4 pl-7 hidden space-y-3">
+              <input 
+                type="text"
+                name="cardNumber"
+                placeholder="Card Number (16 digits)"
+                maxlength="16"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+              <input 
+                type="text"
+                name="cardHolder"
+                placeholder="Cardholder Name"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+              <input 
+                type="text"
+                name="expiryDate"
+                placeholder="MM/YY"
+                maxlength="5"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+            </div>
+          </div>
+
+          <form action="/orders/create" method="POST" id="checkoutForm">
+          <button type="submit"
+            class="w-full bg-red-700 text-white py-3 rounded-xl font-semibold
+                  shadow-md hover:bg-white hover:text-red-700
+                  hover:shadow-xl hover:scale-105 transition duration-300">
+             Proceed to Checkout
+          </button>
+        </form>
+
 
         </div>
 
@@ -209,6 +294,31 @@
     }
 
     window.onload = updateTotal;
+
+    // Payment Method Selection Handler
+    const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+    const upiContainer = document.getElementById('upiContainer');
+    const cardContainer = document.getElementById('cardContainer');
+
+    function handlePaymentMethodChange() {
+      const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+      
+      // Hide all containers first
+      upiContainer.classList.add('hidden');
+      cardContainer.classList.add('hidden');
+
+      // Show relevant container
+      if (selectedMethod === 'upi') {
+        upiContainer.classList.remove('hidden');
+      } else if (selectedMethod === 'debit_card') {
+        cardContainer.classList.remove('hidden');
+      }
+    }
+
+    // Add event listeners to radio buttons
+    paymentRadios.forEach(radio => {
+      radio.addEventListener('change', handlePaymentMethodChange);
+    });
   </script>
 
 </body>

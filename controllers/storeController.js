@@ -3,27 +3,51 @@ const User = require("../models/user");
 
 exports.getIndex = (req, res, next) => {
   console.log("Session Value: ", req.session);
-  Product.find().then((registeredProducts) => {
-    res.render("store/index", {
-      registeredProducts: registeredProducts,
-      pageTitle: "prajamart Product",
-      currentPage: "index",
-      isLoggedIn: req.isLoggedIn, 
-      user: req.session.user,
+  Product.find()
+    .populate('hostId', 'firstName lastName')
+    .then((registeredProducts) => {
+      res.render("store/index", {
+        registeredProducts: registeredProducts,
+        pageTitle: "prajamart Product",
+        currentPage: "index",
+        isLoggedIn: req.isLoggedIn, 
+        user: req.session.user,
+      });
+    })
+    .catch((err) => {
+      console.log("Error fetching products for index:", err);
+      res.render("store/index", {
+        registeredProducts: [],
+        pageTitle: "prajamart Product",
+        currentPage: "index",
+        isLoggedIn: req.isLoggedIn, 
+        user: req.session.user,
+      });
     });
-  });
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.find().then((registeredProducts) => {
-    res.render("store/product-list", {
-      registeredProducts: registeredProducts,
-      pageTitle: "Products List",
-      currentPage: "Products",
-      isLoggedIn: req.isLoggedIn, 
-      user: req.session.user,
+  Product.find()
+    .populate('hostId', 'firstName lastName')
+    .then((registeredProducts) => {
+      res.render("store/product-list", {
+        registeredProducts: registeredProducts,
+        pageTitle: "Products List",
+        currentPage: "Products",
+        isLoggedIn: req.isLoggedIn, 
+        user: req.session.user,
+      });
+    })
+    .catch((err) => {
+      console.log("Error fetching products:", err);
+      res.render("store/product-list", {
+        registeredProducts: [],
+        pageTitle: "Products List",
+        currentPage: "Products",
+        isLoggedIn: req.isLoggedIn, 
+        user: req.session.user,
+      });
     });
-  });
 };
 
 exports.getBookings = (req, res, next) => {
@@ -48,7 +72,7 @@ exports.getCartList = async (req, res, next) => {
 };
 
 exports.postAddToCart = async (req, res, next) => {
-  const productId = req.body.id;
+  const productId = req.body.productId || req.body.id;
   const userId = req.session.user._id;
   const user = await User.findById(userId);
   if (!user.cart.includes(productId)) {
@@ -71,20 +95,26 @@ exports.postRemoveFromCart = async (req, res, next) => {
 
 exports.getProductDetails = (req, res, next) => {
   const productId = req.params.productId;
-  Product.findById(productId).then((product) => {
-    if (!product) {
-      console.log("Product not found");
+  Product.findById(productId)
+    .populate('hostId', 'firstName lastName email')
+    .then((product) => {
+      if (!product) {
+        console.log("Product not found");
+        res.redirect("/products");
+      } else {
+        res.render("store/product-detail", {
+          product: product,
+          pageTitle: "Product Detail",
+          currentPage: "Products",
+          isLoggedIn: req.isLoggedIn, 
+          user: req.session.user,
+        });
+      }
+    })
+    .catch((err) => {
+      console.log("Error fetching product details: ", err);
       res.redirect("/products");
-    } else {
-      res.render("store/product-detail", {
-        product: product,
-        pageTitle: "Product Detail",
-        currentPage: "Products",
-        isLoggedIn: req.isLoggedIn, 
-        user: req.session.user,
-      });
-    }
-  });
+    });
 };
 
 exports.getSearch = async (req, res, next) => {

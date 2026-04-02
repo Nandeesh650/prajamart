@@ -13,6 +13,10 @@ const productSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  hostId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   rating: {
     stars: {
       type: Number,

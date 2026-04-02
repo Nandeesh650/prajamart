@@ -1,161 +1,119 @@
 <%- include('../partials/head') %>
+  <!-- AOS CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 </head>
 
 <body class="bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen">
 
-  <!-- Navbar -->
   <%- include('../partials/nav') %>
 
-  <main class="max-w-7xl mx-auto px-6 py-10">
+  <main class="max-w-7xl mx-auto px-6 py-32">
 
-    <!-- PREMIUM HERO HEADER -->
-    <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl 
-                border border-gray-100 p-10 mb-12
-                hover:shadow-2xl transition-all duration-500">
-
-      <h1 class="text-5xl font-extrabold tracking-tight text-gray-800">
-        Search Results
+    <!-- Heading -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-extrabold text-gray-800 mb-2">
+         Search Results
       </h1>
-
-      <p class="text-gray-500 mt-3 text-lg">
-        <% if (searchQuery) { %>
-          Showing premium matches for
-          <span class="font-semibold bg-gradient-to-r from-orange-500 to-red-500 
-                       bg-clip-text text-transparent">
-            "<%= searchQuery %>"
-          </span>
-        <% } else { %>
-          Discover premium products from Prajamart
-        <% } %>
-      </p>
+      <% if (searchQuery) { %>
+        <p class="text-gray-500 text-lg">
+          Showing premium matches for "<span class="font-semibold text-gray-700"><%= searchQuery %></span>"
+        </p>
+      <% } else { %>
+        <p class="text-gray-500 text-lg">
+          Start searching for products
+        </p>
+      <% } %>
     </div>
 
-    <!-- MESSAGE -->
-    <% if (message) { %>
-      <div class="bg-blue-50 border border-blue-200 text-blue-700 
-                  px-5 py-4 rounded-2xl mb-8 shadow-sm">
-        <%= message %>
-      </div>
-    <% } %>
-
-    <!-- RESULTS -->
     <% if (searchResults && searchResults.length > 0) { %>
-
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
 
         <% searchResults.forEach(product => { %>
 
-          <!-- PREMIUM PRODUCT CARD -->
-          <div class="bg-white/90 backdrop-blur-md rounded-3xl shadow-md
-                      hover:shadow-2xl hover:-translate-y-4 hover:scale-[1.02]
-                      transition-all duration-500 overflow-hidden group">
+          <div data-aos="fade-up" data-aos-delay="100" 
+               class="group bg-white/50 backdrop-blur-lg border border-white/30 rounded-2xl 
+                      shadow-md hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden">
 
-            <!-- IMAGE -->
-            <% if (product.photo) { %>
-              <div class="h-64 bg-white flex items-center justify-center p-6">
-                <img
-                  src="/<%= product.photo %>"
-                  alt="<%= product.productName %>"
-                  class="h-full object-contain 
-                         group-hover:scale-110 transition-transform duration-700"
-                />
-              </div>
-            <% } else { %>
-              <div class="h-64 bg-gray-100 flex items-center justify-center">
-                <span class="text-gray-400">No Image</span>
-              </div>
-            <% } %>
+            <!-- Product Image -->
+            <div class="h-60 flex items-center justify-center p-4">
+              <% if (product.photo) { %>
+                <img src="/<%= product.photo %>" 
+                     alt="<%= product.productName %>" 
+                     class="h-full object-contain transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-1">
+              <% } else { %>
+                <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <span class="text-gray-400">No Image</span>
+                </div>
+              <% } %>
+            </div>
 
-            <!-- CONTENT -->
+            <!-- Content -->
             <div class="p-5 text-center">
-
-              <h3 class="text-lg font-semibold text-gray-800 truncate">
+              <h2 class="text-lg font-semibold text-gray-800 truncate">
                 <%= product.productName %>
-              </h3>
-
-              <!-- Tag -->
-              <p class="mt-2">
-                <span class="inline-block bg-orange-50 text-orange-500 
-                             px-3 py-1 rounded-full text-sm font-medium">
-                  <%= product.key %>
-                </span>
-              </p>
+              </h2>
 
               <!-- Price -->
-              <p class="text-2xl font-bold mt-3
-                        bg-gradient-to-r from-orange-500 to-red-500
+              <p class="mt-2 text-2xl font-bold bg-gradient-to-r from-orange-400 to-red-500 
                         bg-clip-text text-transparent">
                 ₹ <%= Number(product.price).toFixed(2) %>
               </p>
 
               <!-- Rating -->
-              <% if (product.rating) { %>
-                <div class="flex justify-center items-center gap-1 mt-2">
-                  <span class="text-yellow-400 text-lg">★</span>
-                  <span class="font-semibold text-gray-700">
-                    <%= product.rating.stars.toFixed(1) %>
-                  </span>
-                  <span class="text-sm text-gray-400">
-                    (<%= product.rating.count %>)
-                  </span>
-                </div>
-              <% } %>
+              <% let stars = product.rating?.stars || 0; %>
+              <div class="flex justify-center mt-2 text-yellow-400 text-lg">
+                <% for (let i=1; i<=5; i++) { %>
+                  <span><%= i <= stars ? '★' : '☆' %></span>
+                <% } %>
+              </div>
+              <p class="text-gray-400 text-sm mt-1">
+                (<%= product.rating?.count || 0 %> reviews)
+              </p>
 
-              <!-- BUTTONS -->
+              <!-- Buttons -->
               <div class="flex gap-3 mt-5">
 
-                <!-- View -->
-                <a
-                  href="/products/<%= product._id %>"
-                  class="w-full py-2.5 rounded-xl bg-gray-100 
-                         text-gray-700 font-medium
-                         hover:bg-gray-200 hover:shadow-md
-                         transition duration-300 text-center">
-                  View
-                </a>
-
-                <!-- Add -->
+                <!-- Add to Cart -->
                 <% if (isLoggedIn && user && user.userType === 'guest') { %>
-                  <form action="/cart" method="POST" class="w-full">
-                    <input type="hidden" name="id" value="<%= product._id %>" />
-
-                    <button
-                      type="submit"
-                      class="w-full py-2.5 rounded-xl font-semibold text-white
-                             bg-gradient-to-r from-orange-500 to-red-500
-                             shadow-md hover:shadow-xl hover:scale-105
-                             transition duration-300">
-                      Add
+                  <form action="/cart" method="POST" class="flex-1">
+                    <input type="hidden" name="id" value="<%= product._id %>">
+                    <button type="submit" 
+                      class="w-full bg-gradient-to-r from-orange-400 to-red-500 text-white 
+                             py-2.5 rounded-xl font-semibold shadow-md 
+                             hover:shadow-lg hover:scale-105 transition-all duration-300">
+                      Add to Cart
                     </button>
                   </form>
                 <% } %>
 
-              </div>
+                <!-- View Details -->
+                <a href="/products/<%= product._id %>" 
+                   class="flex-1 text-center py-2.5 rounded-xl bg-gray-100 font-medium 
+                          text-gray-700 hover:bg-gray-200 hover:shadow-md transition-all duration-300">
+                  View
+                </a>
 
+              </div>
             </div>
+
           </div>
 
-        <% }) %>
+        <% }); %>
 
       </div>
-
     <% } else if (searchQuery) { %>
 
-      <!-- PREMIUM EMPTY STATE -->
-      <div class="bg-white rounded-3xl shadow-lg p-16 text-center">
-        <h2 class="text-3xl font-semibold text-gray-700 mb-3">
-          No Products Found
+      <!-- No Results -->
+      <div class="text-center py-16">
+        <h2 class="text-2xl font-semibold text-gray-700 mb-3">
+          No Premium Products Found
         </h2>
-
-        <p class="text-gray-500 mb-6 text-lg">
-          Try searching with different keywords
+        <p class="text-gray-500 mb-6">
+          Try different keywords to find what you’re looking for
         </p>
-
-        <a
-          href="/products"
-          class="inline-block bg-gradient-to-r from-orange-500 to-red-500 
-                 text-white px-6 py-3 rounded-xl shadow-md 
-                 hover:scale-105 transition">
+        <a href="/products" 
+           class="inline-block bg-gradient-to-r from-orange-400 to-red-500 text-white 
+                  px-6 py-3 rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition">
           Browse All Products
         </a>
       </div>
@@ -163,6 +121,16 @@
     <% } %>
 
   </main>
+
+  <!-- AOS JS -->
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script>
+    AOS.init({
+      duration: 800,
+      easing: 'ease-in-out',
+      once: true,
+    });
+  </script>
 
 </body>
 </html>

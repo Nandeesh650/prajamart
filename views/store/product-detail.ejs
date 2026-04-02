@@ -77,17 +77,198 @@
             <button class="px-10 py-3 rounded-full bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300">
             🛒 Add to Cart
             </button>
-
         </form>
 
-        <form action="/buy-now" method="POST">
+        <% if (isLoggedIn) { %>
+          <button onclick="document.getElementById('orderModal').classList.remove('hidden')" class="px-10 py-3 rounded-full bg-red-600 text-white font-semibold shadow-md hover:shadow-xl hover:bg-red-700 hover:-translate-y-0.5 transition-all duration-300">
+            🛍️ Order Now
+          </button>
+        <% } else { %>
+          <a href="/login" class="px-10 py-3 rounded-full bg-red-600 text-white font-semibold shadow-md hover:shadow-xl hover:bg-red-700 hover:-translate-y-0.5 transition-all duration-300 inline-block">
+            🛍️ Order Now
+          </a>
+        <% } %>
+
+      </div>
+
+      <!-- ORDER MODAL -->
+      <div id="orderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto py-8">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 my-auto max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Place Order</h2>
+            <button onclick="document.getElementById('orderModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+          </div>
+
+          <form action="/orders/create" method="POST" class="space-y-4" id="orderFormDetail" onsubmit="return validateAndSubmitOrder(event)">
             <input type="hidden" name="productId" value="<%= product._id %>">
-            <button class="px-10 py-3 rounded-full bg-black text-white font-semibold shadow-md hover:shadow-xl hover:bg-gray-900 hover:-translate-y-0.5 transition-all duration-300">
-            Buy Now
-            </button>
-        </form>
 
+            <!-- Quantity -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Quantity</label>
+              <input type="number" id="quantityInput" name="quantity" min="1" max="100" value="1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+
+            <!-- Shipping Address -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Shipping Address *</label>
+              <textarea name="shippingAddress" placeholder="Enter your full shipping address" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" rows="3"></textarea>
+            </div>
+
+            <!-- Notes -->
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-2">Special Instructions (Optional)</label>
+              <textarea name="notes" placeholder="Any special requests or notes..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" rows="2"></textarea>
+            </div>
+
+            <!-- Payment Method Selection -->
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <label class="block text-sm font-semibold text-gray-700 mb-3">💳 Payment Method</label>
+              
+              <!-- Cash on Delivery (Default) -->
+              <label class="flex items-start mb-3 cursor-pointer hover:bg-white p-2 rounded transition">
+                <input 
+                  type="radio" 
+                  name="paymentMethod" 
+                  value="cod"
+                  checked
+                  class="mt-1 w-4 h-4 text-green-600 cursor-pointer"
+                >
+                <div class="ml-3">
+                  <p class="font-semibold text-sm text-gray-800">💵 Cash on Delivery (COD)</p>
+                  <p class="text-xs text-gray-600">Pay when you receive</p>
+                </div>
+              </label>
+
+              <!-- UPI -->
+              <label class="flex items-start mb-3 cursor-pointer hover:bg-white p-2 rounded transition">
+                <input 
+                  type="radio" 
+                  name="paymentMethod" 
+                  value="upi"
+                  class="mt-1 w-4 h-4 text-blue-600 cursor-pointer"
+                >
+                <div class="ml-3">
+                  <p class="font-semibold text-sm text-gray-800">📱 UPI</p>
+                  <p class="text-xs text-gray-600">Pay instantly via UPI</p>
+                </div>
+              </label>
+
+              <!-- UPI ID Input (Hidden by default) -->
+              <div id="upiContainerDetail" class="mb-3 pl-7 hidden">
+                <input 
+                  type="text"
+                  name="upiId"
+                  placeholder="Enter UPI ID (e.g., name@bank)"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+              </div>
+
+              <!-- Debit Card -->
+              <label class="flex items-start mb-3 cursor-pointer hover:bg-white p-2 rounded transition">
+                <input 
+                  type="radio" 
+                  name="paymentMethod" 
+                  value="debit_card"
+                  class="mt-1 w-4 h-4 text-purple-600 cursor-pointer"
+                >
+                <div class="ml-3">
+                  <p class="font-semibold text-sm text-gray-800">🏧 Debit Card</p>
+                  <p class="text-xs text-gray-600">Use your debit card securely</p>
+                </div>
+              </label>
+
+              <!-- Debit Card Details (Hidden by default) -->
+              <div id="cardContainerDetail" class="mb-3 pl-7 hidden space-y-2">
+                <input 
+                  type="text"
+                  name="cardNumber"
+                  placeholder="Card Number (16 digits)"
+                  maxlength="16"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                <input 
+                  type="text"
+                  name="cardHolder"
+                  placeholder="Cardholder Name"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                <input 
+                  type="text"
+                  name="expiryDate"
+                  placeholder="MM/YY"
+                  maxlength="5"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+              </div>
+            </div>
+
+            <!-- Product Rating - Modern -->
+            <div class="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 p-6 rounded-2xl border-2 border-amber-200 shadow-md hover:shadow-lg transition-all duration-300">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="text-2xl">⭐</span>
+                <label class="text-lg font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">Rate this Product</label>
+              </div>
+              
+              <!-- Star Rating - Interactive -->
+              <div class="flex gap-3 mb-4 justify-center py-2" id="ratingStarsContainer">
+                <% for (let i = 1; i <= 5; i++) { %>
+                  <label class="cursor-pointer group">
+                    <input type="radio" name="ratingStars" value="<%= i %>" class="hidden peer" data-rating="<%= i %>" />
+                    <span class="text-5xl transition-all duration-200 text-gray-300 group-hover:scale-110 group-hover:text-yellow-400" data-index="<%= i %>">☆</span>
+                  </label>
+                <% } %>
+              </div>
+
+              <!-- Rating Text Feedback -->
+              <div id="ratingFeedback" class="text-center text-sm font-semibold text-gray-700 mb-3">Select your rating</div>
+
+              <!-- Comment -->
+              <textarea name="ratingComment" placeholder="✍️ Share your experience with this product (optional)" class="w-full px-4 py-3 text-sm border-2 border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white/70 backdrop-blur-sm transition-all duration-200" rows="2"></textarea>
+            </div>
+
+            <!-- Total Price Display - Modern -->
+            <div class="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 p-6 rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 relative overflow-hidden">
+              <!-- Animated Background -->
+              <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-2 right-2 w-20 h-20 bg-white rounded-full blur-2xl"></div>
+              </div>
+              
+              <div class="relative z-10">
+                <!-- Quantity Breakdown -->
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="text-2xl">📦</span>
+                    <span class="text-white/90 font-medium">Quantity: <span id="quantityDisplay">1</span> item<span id="quantityPlural"></span></span>
+                  </div>
+                  <span class="text-white/90 text-sm font-semibold">₹<span id="priceEach"><%= product.price %></span> each</span>
+                </div>
+
+                <!-- Divider -->
+                <div class="h-0.5 bg-white/30 my-3"></div>
+
+                <!-- Total Amount -->
+                <div class="flex items-baseline justify-between">
+                  <span class="text-white/90 font-semibold text-lg">💰 Total Amount:</span>
+                  <div class="text-right">
+                    <p class="text-4xl font-black text-white tracking-tight">₹<span id="totalAmount"><%= product.price %></span></p>
+                    <p class="text-xs text-white/70 mt-1">Inclusive of all charges</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-3 mt-6">
+              <button type="button" onclick="document.getElementById('orderModal').classList.add('hidden')" class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 hover:from-gray-300 hover:to-gray-400 hover:shadow-lg transition-all duration-300 font-semibold transform hover:-translate-y-1">
+                ✕ Cancel
+              </button>
+              <button type="submit" class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700 hover:shadow-2xl transition-all duration-300 font-semibold transform hover:-translate-y-1 shadow-lg">
+                ✓ Confirm Order
+              </button>
+            </div>
+          </form>
         </div>
+      </div>
 
 
     </div>
@@ -95,6 +276,174 @@
   </div>
 
 </main>
+
+<script>
+  // Form validation and submission
+  function validateAndSubmitOrder(event) {
+    event.preventDefault(); // Prevent default form submission initially
+    
+    const form = document.getElementById('orderFormDetail');
+    const shippingAddress = form.querySelector('textarea[name="shippingAddress"]');
+    const quantity = form.querySelector('input[name="quantity"]');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    // Validate Shipping Address
+    if (!shippingAddress.value.trim()) {
+      alert('❌ Please enter your shipping address to proceed!');
+      shippingAddress.focus();
+      shippingAddress.style.borderColor = '#ef4444';
+      shippingAddress.style.borderWidth = '2px';
+      return false;
+    }
+
+    // Validate Quantity
+    if (!quantity.value || parseInt(quantity.value) < 1) {
+      alert('❌ Please enter a valid quantity!');
+      quantity.focus();
+      quantity.style.borderColor = '#ef4444';
+      quantity.style.borderWidth = '2px';
+      return false;
+    }
+
+    // Reset border color on valid input
+    shippingAddress.style.borderColor = '';
+    shippingAddress.style.borderWidth = '';
+    quantity.style.borderColor = '';
+    quantity.style.borderWidth = '';
+
+    // Show loading state
+    const originalText = submitBtn.innerHTML;
+    const originalBg = submitBtn.style.opacity;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '⏳ Placing your order...';
+    submitBtn.style.opacity = '0.7';
+
+    // Actually submit the form after showing loading state
+    setTimeout(() => {
+      form.submit();
+    }, 500);
+
+    return false;
+  }
+
+  // Product price constant
+  const basePrice = <%= product.price %>;
+
+  // Quantity update handler
+  const quantityInput = document.getElementById('quantityInput');
+  const quantityDisplay = document.getElementById('quantityDisplay');
+  const quantityPlural = document.getElementById('quantityPlural');
+  const totalAmount = document.getElementById('totalAmount');
+
+  function updateTotalPrice() {
+    const quantity = parseInt(quantityInput.value) || 1;
+    const total = basePrice * quantity;
+    
+    // Update quantity display
+    quantityDisplay.textContent = quantity;
+    quantityPlural.textContent = quantity > 1 ? 's' : '';
+    
+    // Update total amount
+    totalAmount.textContent = total.toLocaleString('en-IN');
+  }
+
+  // Add event listeners
+  quantityInput.addEventListener('input', updateTotalPrice);
+  quantityInput.addEventListener('change', updateTotalPrice);
+
+  // Rating feedback messages
+  const ratingMessages = {
+    1: "😞 Poor - Needs improvement",
+    2: "😕 Not Good - Below expectation",
+    3: "😐 Average - It's okay",
+    4: "😊 Good - Pretty satisfied",
+    5: "😍 Excellent - Love it!"
+  };
+
+  // Star Rating Handler
+  const ratingStars = document.querySelectorAll('input[name="ratingStars"]');
+  const ratingFeedback = document.getElementById('ratingFeedback');
+  const starsContainer = document.getElementById('ratingStarsContainer');
+
+  function updateStarDisplay(rating) {
+    const spans = starsContainer.querySelectorAll('span[data-index]');
+    spans.forEach((span, index) => {
+      span.textContent = (index + 1) <= rating ? '★' : '☆';
+    });
+  }
+
+  ratingStars.forEach((star) => {
+    star.addEventListener('change', () => {
+      const value = parseInt(star.value);
+      updateStarDisplay(value);
+      ratingFeedback.textContent = ratingMessages[value];
+      ratingFeedback.classList.add('animate-pulse');
+      setTimeout(() => ratingFeedback.classList.remove('animate-pulse'), 1000);
+    });
+  });
+
+  starsContainer.addEventListener('mouseover', (e) => {
+    const span = e.target.closest('span[data-index]');
+    if (span) {
+      const index = parseInt(span.dataset.index);
+      const spans = starsContainer.querySelectorAll('span[data-index]');
+      spans.forEach((s, i) => {
+        s.textContent = (i + 1) <= index ? '★' : '☆';
+        s.style.color = (i + 1) <= index ? '#FBBF24' : '#D1D5DB';
+      });
+      ratingFeedback.textContent = ratingMessages[index] || 'Select your rating';
+    }
+  });
+
+  starsContainer.addEventListener('mouseleave', () => {
+    const checked = document.querySelector('input[name="ratingStars"]:checked');
+    if (checked) {
+      const value = parseInt(checked.value);
+      updateStarDisplay(value);
+      const spans = starsContainer.querySelectorAll('span[data-index]');
+      spans.forEach((s, i) => {
+        if ((i + 1) <= value) {
+          s.style.color = '#FBBF24';
+        } else {
+          s.style.color = '#D1D5DB';
+        }
+      });
+      ratingFeedback.textContent = ratingMessages[value];
+    } else {
+      const spans = starsContainer.querySelectorAll('span[data-index]');
+      spans.forEach(s => {
+        s.textContent = '☆';
+        s.style.color = '#D1D5DB';
+      });
+      ratingFeedback.textContent = 'Select your rating';
+    }
+  });
+
+  // Payment Method Selection Handler
+  const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+  const upiContainer = document.getElementById('upiContainerDetail');
+  const cardContainer = document.getElementById('cardContainerDetail');
+
+  function handlePaymentMethodChange() {
+    const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+    
+    // Hide all containers first
+    upiContainer.classList.add('hidden');
+    cardContainer.classList.add('hidden');
+
+    // Show relevant container
+    if (selectedMethod === 'upi') {
+      upiContainer.classList.remove('hidden');
+    } else if (selectedMethod === 'debit_card') {
+      cardContainer.classList.remove('hidden');
+    }
+  }
+
+  // Add event listeners to radio buttons
+  paymentRadios.forEach(radio => {
+    radio.addEventListener('change', handlePaymentMethodChange);
+  });
+</script>
 
 </body>
 </html>

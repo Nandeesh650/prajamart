@@ -15,6 +15,7 @@ const DB_PATH = "mongodb+srv://root:root@nandeesh.3tbg3gi.mongodb.net/?appName=N
 //Local Module
 const storeRouter = require("./routes/storeRouter")
 const hostRouter = require("./routes/hostRouter")
+const orderRouter = require("./routes/orderRouter")
 const authRouter = require("./routes/authRouter")
 const rootDir = require("./utils/pathUtil");
 const errorsController = require("./controllers/errors");
@@ -79,6 +80,16 @@ app.use((req, res, next) => {
 
 app.use(authRouter)
 app.use(storeRouter);
+
+app.use("/orders", (req, res, next) => {
+  if (req.isLoggedIn) {
+    next();
+  } else {
+    res.redirect("/login");
+  }
+});
+app.use("/orders", orderRouter);
+
 app.use("/host", (req, res, next) => {
   if (req.isLoggedIn) {
     next();
@@ -90,7 +101,7 @@ app.use("/host", hostRouter);
 
 app.use(errorsController.pageNotFound);
 
-const PORT = 5007;
+const PORT = 5001;
 
 mongoose.connect(DB_PATH).then(() => {
   console.log('Connected to Mongo');
