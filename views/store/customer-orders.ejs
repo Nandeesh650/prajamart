@@ -1,253 +1,208 @@
 <%- include('../partials/head') %>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+<style>
+  :root {
+    --primary-red: #ef4444;
+  }
+
+  /* Smooth reveal for the whole page */
+  body {
+    animation: fadeInPage 0.8s ease-in-out;
+  }
+
+  @keyframes fadeInPage {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Magnetic Card Effect */
+  .order-card {
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    border: 1px solid #f3f4f6;
+  }
+
+  .order-card:hover {
+    transform: translateY(-10px) scale(1.01);
+    border-color: var(--primary-red);
+    box-shadow: 0 40px 80px -20px rgba(0,0,0,0.05);
+  }
+
+  /* Image Pulse on Hover */
+  .img-container {
+    background-color: #ffffff;
+    transition: all 0.5s ease;
+  }
+
+  .order-card:hover .product-img {
+    transform: scale(1.1);
+  }
+
+  .product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 2.5rem;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* Shimmer effect for status badges */
+  .status-badge {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .status-badge::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: rotate(45deg);
+    animation: shimmer 3s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
+  }
+
+  /* Button Bounce */
+  .btn-premium {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .btn-premium:hover {
+    transform: scale(1.05);
+  }
+  .btn-premium:active {
+    transform: scale(0.95);
+  }
+</style>
 </head>
-<body>
+
+<body class="bg-white min-h-screen font-sans antialiased">
   <%- include('../partials/nav') %>
 
-  <main class="px-6 py-10 bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen">
+  <main class="max-w-5xl mx-auto px-6 py-20">
     
-    <!-- HEADING -->
-    <div class="text-center mb-12">
-      <h1 class="text-4xl font-bold text-gray-800 tracking-wide">
-        My Orders
-      </h1>
-      <p class="text-gray-500 mt-2 text-lg">
-        Track your orders and manage purchases
-      </p>
-    </div>
-
-    <!-- MESSAGES -->
-    <div class="max-w-6xl mx-auto mb-6">
-      <% if (success) { %>
-        <div class="p-4 rounded-lg bg-green-100 text-green-800 border border-green-300">
-          <%= success %>
+    <header class="mb-16 flex flex-col md:flex-row md:items-end justify-between border-b border-gray-100 pb-10 gap-6" data-aos="fade-down">
+      <div>
+        <h1 class="text-5xl font-black text-gray-900 tracking-tighter">Your Orders</h1>
+        <p class="text-gray-400 font-medium mt-3 text-lg">Manage history and tracking info</p>
+      </div>
+      <div class="flex items-center gap-3" data-aos="fade-left" data-aos-delay="200">
+        <span class="text-xs font-bold text-gray-300 uppercase tracking-widest">Total Purchases</span>
+        <div class="h-12 w-12 rounded-2xl border-2 border-gray-900 flex items-center justify-center text-gray-900 font-black">
+          <%= orders.length %>
         </div>
-      <% } %>
-      <% if (error) { %>
-        <div class="p-4 rounded-lg bg-red-100 text-red-800 border border-red-300">
-          <%= error %>
-        </div>
-      <% } %>
-    </div>
+      </div>
+    </header>
 
-    <!-- ORDERS LIST -->
-    <div class="max-w-6xl mx-auto">
-      <% if (orders && orders.length > 0) { %>
-        
-        <div class="space-y-6">
-          <% orders.forEach(order => { %>
-            <div class="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-6 border-l-4 border-red-500">
+    <% if (orders && orders.length > 0) { %>
+      <div class="space-y-12">
+        <% orders.forEach((order, index) => { %>
+          <div class="order-card bg-white rounded-[2.5rem] flex flex-col lg:flex-row overflow-hidden" 
+               data-aos="fade-up" 
+               data-aos-delay="<%= index * 100 %>">
+            
+            <div class="w-full lg:w-[400px] h-96 img-container relative border-b lg:border-b-0 lg:border-r border-gray-50">
+              <img src="<%= order.productId.photo %>" class="product-img" alt="Product">
               
-              <!-- Order Header -->
-              <div class="flex justify-between items-start mb-4">
-                <div>
-                  <h3 class="text-xl font-bold text-gray-800">
-                    <%= order.productId.productName %>
-                  </h3>
-                  <p class="text-sm text-gray-600 mt-1">
-                    Order ID: <%= order._id %>
-                  </p>
-                </div>
-                <span class="px-4 py-2 rounded-full text-sm font-semibold
-                  <% if (order.status === 'pending') { %>
-                    bg-yellow-100 text-yellow-800
-                  <% } else if (order.status === 'confirmed') { %>
-                    bg-blue-100 text-blue-800
-                  <% } else if (order.status === 'ready_to_deliver') { %>
-                    bg-orange-100 text-orange-800
-                  <% } else if (order.status === 'out_for_delivery' || order.status === 'shipped') { %>
-                    bg-purple-100 text-purple-800
-                  <% } else if (order.status === 'delivered') { %>
-                    bg-green-100 text-green-800
-                  <% } else if (order.status === 'return_requested') { %>
-                    bg-amber-100 text-amber-800
-                  <% } else if (order.status === 'returned') { %>
-                    bg-slate-200 text-slate-800
-                  <% } else if (order.status === 'cancelled') { %>
-                    bg-red-100 text-red-800
-                  <% } %>
-                ">
-                  <%= order.status === 'ready_to_deliver' ? 'READY TO DELIVER' : order.status === 'out_for_delivery' ? 'OUT FOR DELIVERY' : order.status === 'shipped' ? 'SHIPPED' : order.status === 'return_requested' ? 'RETURN REQUESTED' : order.status === 'returned' ? 'RETURNED' : order.status.toUpperCase() %>
+              <div class="absolute top-8 left-8">
+                <span class="status-badge bg-gray-900 text-white px-5 py-2 rounded-xl font-black uppercase text-[10px] tracking-widest inline-block">
+                  <%= order.status.replace(/_/g, ' ') %>
                 </span>
               </div>
-
-              <!-- Order Details -->
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                <div>
-                  <p class="text-xs text-gray-500 uppercase font-semibold">Quantity</p>
-                  <p class="text-lg font-bold text-gray-800"><%= order.quantity %></p>
-                </div>
-                <div>
-                  <p class="text-xs text-gray-500 uppercase font-semibold">Total Price</p>
-                  <p class="text-lg font-bold text-red-600">₹<%= order.totalPrice %></p>
-                </div>
-                <div>
-                  <p class="text-xs text-gray-500 uppercase font-semibold">Host</p>
-                  <p class="text-lg font-bold text-gray-800"><%= order.hostId.firstName %></p>
-                </div>
-                <div>
-                  <p class="text-xs text-gray-500 uppercase font-semibold">Order Date</p>
-                  <p class="text-lg font-bold text-gray-800">
-                    <%= new Date(order.orderDate).toLocaleDateString() %>
-                  </p>
-                </div>
-              </div>
-
-              <!-- Shipping Address -->
-              <div class="mb-4 pb-4 border-b border-gray-200 grid gap-4 md:grid-cols-3">
-                <div>
-                  <p class="text-xs text-gray-500 uppercase font-semibold">Shipping Address</p>
-                  <p class="text-gray-700"><%= order.shippingAddress %></p>
-                  <p class="mt-2 text-xs text-gray-500 uppercase font-semibold">Mapped Place</p>
-                  <p class="text-sm text-gray-600"><%= order.deliveryLocation?.placeName || order.deliveryLocation?.city || 'Not mapped yet' %></p>
-                </div>
-                <div>
-                  <p class="text-xs text-gray-500 uppercase font-semibold">Host Phone</p>
-                  <p class="text-gray-700"><%= order.hostId.phoneNumber || 'Not available' %></p>
-                </div>
-                <div>
-                  <p class="text-xs text-gray-500 uppercase font-semibold">Delivery Boy</p>
-                  <p class="text-gray-700">
-                    <%= order.deliveryBoyId ? `${order.deliveryBoyId.firstName} ${order.deliveryBoyId.lastName}` : 'Waiting for delivery acceptance' %>
-                  </p>
-                  <p class="text-sm text-gray-500"><%= order.deliveryBoyId?.phoneNumber || '' %></p>
-                </div>
-              </div>
-
-              <% if ((order.status === 'shipped' || order.status === 'out_for_delivery') && order.deliveryOtp) { %>
-                <div class="mb-4 pb-4 border-b border-gray-200 rounded-lg bg-orange-50 p-4">
-                  <p class="text-xs text-orange-500 uppercase font-semibold">Delivery OTP</p>
-                  <p class="mt-2 text-sm text-gray-700">Share this OTP only when your order is delivered.</p>
-                  <p class="mt-2 text-2xl font-black tracking-[0.35em] text-orange-700"><%= order.deliveryOtp %></p>
-                </div>
-              <% } %>
-
-              <% if (order.status === 'return_requested' || order.status === 'returned') { %>
-                <div class="mb-4 pb-4 border-b border-gray-200 rounded-lg bg-amber-50 p-4">
-                  <p class="text-xs text-amber-600 uppercase font-semibold">Return Status</p>
-                  <p class="mt-2 text-sm text-gray-700">
-                    <%= order.status === 'return_requested'
-                      ? 'Your return request has been sent to the host. They can now mark the product as returned.'
-                      : 'This product has been marked as returned.' %>
-                  </p>
-                  <% if (order.returnRequestedAt) { %>
-                    <p class="mt-2 text-xs text-gray-500">Requested on <%= new Date(order.returnRequestedAt).toLocaleString() %></p>
-                  <% } %>
-                  <% if (order.returnedAt) { %>
-                    <p class="mt-1 text-xs text-gray-500">Returned on <%= new Date(order.returnedAt).toLocaleString() %></p>
-                  <% } %>
-                </div>
-              <% } %>
-
-              <!-- Payment Information -->
-              <div class="mb-4 pb-4 border-b border-gray-200 bg-blue-50 p-3 rounded-lg">
-                <p class="text-xs text-gray-500 uppercase font-semibold mb-2">💳 Payment Method</p>
-                <div class="flex justify-between items-center">
-                  <div>
-                    <% if (order.paymentMethod === 'cod') { %>
-                      <p class="font-semibold text-gray-800">💵 Cash on Delivery (COD)</p>
-                      <p class="text-sm text-gray-600">Pay when you receive your order</p>
-                    <% } else if (order.paymentMethod === 'upi') { %>
-                      <p class="font-semibold text-gray-800">📱 UPI</p>
-                      <p class="text-sm text-gray-600">UPI ID: <span class="font-mono"><%= order.upiId %></span></p>
-                    <% } else if (order.paymentMethod === 'debit_card') { %>
-                      <p class="font-semibold text-gray-800">🏧 Debit Card</p>
-                      <p class="text-sm text-gray-600">Card: <span class="font-mono"><%= order.cardDetails.cardNumber %></span></p>
-                    <% } %>
-                  </div>
-                  <span class="px-3 py-1 rounded-full text-xs font-semibold
-                    <% if (order.paymentStatus === 'completed') { %>
-                      bg-green-200 text-green-800
-                    <% } else if (order.paymentStatus === 'failed') { %>
-                      bg-red-200 text-red-800
-                    <% } else { %>
-                      bg-yellow-200 text-yellow-800
-                    <% } %>
-                  ">
-                    <%= order.paymentStatus.toUpperCase() %>
-                  </span>
-                </div>
-              </div>
-
-              <!-- User Rating -->
-              <% if (order.status === 'delivered' && order.userRating && order.userRating.stars > 0) { %>
-                <div class="mb-4 pb-4 border-b border-gray-200 bg-yellow-50 p-3 rounded-lg">
-                  <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Your Rating</p>
-                  <div class="flex items-center gap-2 mb-2">
-                    <span class="text-2xl">
-                      <% for (let i = 0; i < 5; i++) { %>
-                        <% if (i < order.userRating.stars) { %>
-                          ⭐
-                        <% } else { %>
-                          ☆
-                        <% } %>
-                      <% } %>
-                    </span>
-                    <span class="font-semibold text-gray-800"><%= order.userRating.stars %>/5</span>
-                  </div>
-                  <% if (order.userRating.comment) { %>
-                    <p class="text-sm text-gray-700 italic">"<%= order.userRating.comment %>"</p>
-                  <% } %>
-                </div>
-              <% } %>
-
-              <!-- Actions -->
-              <div class="flex gap-3">
-                <a href="/orders/<%= order._id %>" class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition font-medium">
-                  View Details
-                </a>
-                <% if (order.deliveryBoyId || order.status === 'shipped' || order.status === 'out_for_delivery' || order.status === 'delivered') { %>
-                  <a href="/orders/<%= order._id %>/tracking" class="px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition font-medium">
-                    Track Order
-                  </a>
-                <% } %>
-                <% if (order.status === 'delivered') { %>
-                  <form action="/orders/<%= order._id %>/return" method="POST" style="display: inline;">
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition font-medium"
-                      onclick="return confirm('Do you want to request a return for this product?')">
-                      Return Product
-                    </button>
-                  </form>
-                <% } %>
-                <% if (order.status === 'cancelled'){ %>
-                <form action="/host/orders/<%= order._id %>/delete" method="POST" style="display: inline;">
-                  <button type="submit" class="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition font-medium" onclick="return confirm('Are you sure you want to delete this order? This action cannot be undone.');">
-                    Delete Order
-                  </button>
-                </form>
-                <% } %>
-                <% if (order.status === 'pending' || order.status === 'confirmed' || order.status === 'ready_to_deliver') { %>
-                  <form action="/orders/<%= order._id %>/cancel" method="POST" style="display: inline;">
-                    <button type="submit" class="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition font-medium"
-                      onclick="return confirm('Are you sure you want to cancel this order?')">
-                      Cancel Order
-                    </button>
-                  </form>
-                <% } %>
-              </div>
-
             </div>
-          <% }) %>
-        </div>
 
-      <% } else { %>
+            <div class="flex-grow p-10 flex flex-col justify-between">
+              
+              <div class="flex flex-col md:flex-row justify-between items-start gap-6">
+                <div class="max-w-md">
+                  <h2 class="text-4xl font-black text-gray-900 leading-[0.9] mb-4 tracking-tighter uppercase"><%= order.productId.productName %></h2>
+                  <div class="flex flex-wrap gap-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest">
+                    <span>ID: #<%= order._id.toString().slice(-6).toUpperCase() %></span>
+                    <span class="text-gray-100">|</span>
+                    <span>Ordered: <%= new Date(order.orderDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) %></span>
+                  </div>
+                </div>
+                <div class="text-left md:text-right">
+                  <p class="text-4xl font-black text-red-600 tracking-tighter">₹<%= order.totalPrice.toLocaleString() %></p>
+                  <p class="text-[10px] font-bold text-gray-200 uppercase tracking-widest mt-1">Total Amount</p>
+                </div>
+              </div>
 
-        <div class="text-center py-20">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-16 h-16 mx-auto text-gray-400 mb-4">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.821 4.915h15.412a2.25 2.25 0 012.189 2.664l-1.236 7.415H5.25M9 12.75a.75.75 0 100-1.5.75.75 0 000 1.5zm12 0a.75.75 0 100-1.5.75.75 0 000 1.5z" />
-          </svg>
-          <p class="text-gray-500 text-xl">
-            You haven't placed any orders yet
-          </p>
-          <a href="/products" class="mt-4 inline-block px-6 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition font-medium">
-            Continue Shopping
-          </a>
-        </div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-8 my-10 py-8 border-y border-gray-50">
+                <div class="transition-all hover:translate-x-1">
+                  <p class="text-[10px] font-black text-gray-300 uppercase mb-2">Size</p>
+                  <p class="text-sm font-black text-gray-900"><%= order.size || 'STANDARD' %></p>
+                </div>
+                <div class="transition-all hover:translate-x-1">
+                  <p class="text-[10px] font-black text-gray-300 uppercase mb-2">Qty</p>
+                  <p class="text-sm font-black text-gray-900"><%= order.quantity %> Units</p>
+                </div>
+                <div class="col-span-2 transition-all hover:translate-x-1">
+                  <p class="text-[10px] font-black text-gray-300 uppercase mb-2">Address</p>
+                  <p class="text-sm font-bold text-gray-500 truncate"><%= order.shippingAddress %></p>
+                </div>
+              </div>
 
-      <% } %>
-    </div>
+              <div class="flex flex-wrap items-center justify-between gap-8 pt-4">
+                
+                <div class="flex items-center gap-5">
+                  <% if ((order.status === 'shipped' || order.status === 'out_for_delivery') && order.deliveryOtp) { %>
+                    <div class="flex items-center gap-3 bg-red-600 text-white px-6 py-3 rounded-2xl shadow-xl shadow-red-100 animate-pulse">
+                      <span class="text-[10px] font-black opacity-70">OTP</span>
+                      <span class="text-2xl font-black tracking-[0.3em]"><%= order.deliveryOtp %></span>
+                    </div>
+                  <% } %>
 
+                  <div class="flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-100 hover:bg-gray-50 transition-colors">
+                    <span class="w-2 h-2 rounded-full <%= order.paymentStatus === 'completed' ? 'bg-emerald-500' : 'bg-amber-400 animate-bounce' %>"></span>
+                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest"><%= order.paymentStatus %></span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-4">
+                  <% if (['pending', 'confirmed'].includes(order.status)) { %>
+                    <form action="/orders/<%= order._id %>/cancel" method="POST">
+                      <button class="text-xs font-black text-gray-300 hover:text-red-600 transition-all uppercase tracking-widest px-4" onclick="return confirm('Cancel Order?')">Cancel</button>
+                    </form>
+                  <% } %>
+                  
+                  <a href="/orders/<%= order._id %>" class="btn-premium h-16 px-10 rounded-2xl bg-white border-2 border-gray-900 text-gray-900 font-black text-sm flex items-center shadow-sm">Details</a>
+                  
+                  <% if (order.deliveryBoyId || ['shipped', 'delivered'].includes(order.status)) { %>
+                    <a href="/orders/<%= order._id %>/tracking" class="btn-premium h-16 px-10 rounded-2xl bg-red-600 text-white font-black text-sm flex items-center shadow-lg shadow-red-100">Track Now</a>
+                  <% } %>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+    <% } else { %>
+      <div class="text-center py-40 bg-white border border-dashed border-gray-100 rounded-[4rem]" data-aos="zoom-in">
+        <h2 class="text-5xl font-black text-gray-100 uppercase tracking-tighter italic mb-8">No Orders</h2>
+        <a href="/products" class="px-12 py-5 bg-gray-900 text-white font-black rounded-2xl hover:bg-red-600 transition-all inline-block shadow-2xl">Shop Collection</a>
+      </div>
+    <% } %>
   </main>
 
   <%- include('../partials/footer') %>
+
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    // Initialize animations with smooth duration
+    AOS.init({
+      duration: 1000,
+      once: true,
+      easing: 'ease-out-back'
+    });
+  </script>
 </body>
 </html>

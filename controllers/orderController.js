@@ -145,11 +145,13 @@ exports.getHostOrders = (req, res, next) => {
 };
 
 // Create a new order from a product
+// Create a new order from a product
 exports.postCreateOrder = async (req, res) => {
   try {
     const {
       productId,
       quantity,
+      size, // 1. ADDED: Extract size from req.body
       addressLabel,
       addressDetails,
       deliveryLatitude,
@@ -187,6 +189,11 @@ exports.postCreateOrder = async (req, res) => {
 
     if (!product) {
       return res.status(404).send("Product not found");
+    }
+
+    // 2. ADDED: Validation to ensure size is not empty before proceeding
+    if (!size) {
+      return res.status(400).send("Product size is required. Please select a size.");
     }
 
     let hostId = product.hostId;
@@ -230,6 +237,7 @@ exports.postCreateOrder = async (req, res) => {
       productId,
       hostId,
       quantity: qty,
+      size, // 3. ADDED: Save the size to the order object
       totalPrice,
       userRating: {
         stars: ratingValue,

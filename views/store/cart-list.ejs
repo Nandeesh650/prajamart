@@ -1,442 +1,171 @@
 <%- include('../partials/head') %>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #f1f1f1; }
+  ::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 10px; }
+</style>
 </head>
 
-<body class="bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen">
+<body class="bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen font-sans">
 
-  <!-- Navbar -->
   <%- include('../partials/nav') %>
 
-  <main class="px-6 py-10 bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen">
+  <main class="max-w-7xl mx-auto px-4 py-10">
 
-    <!-- HEADING -->
     <div class="text-center mb-12">
-      <h2 class="text-4xl font-bold text-red-700 tracking-wide">
-        🛒 Your Shopping Cart
-      </h2>
-      <p class="text-gray-500 mt-2 text-lg">
-        Review your selected items
-      </p>
+      <h2 class="text-4xl font-extrabold text-red-700 tracking-tight">🛒 Your Shopping Cart</h2>
+      <p class="text-gray-500 mt-2 text-lg italic">Ready to bring these home?</p>
     </div>
 
     <% if (cartProducts && cartProducts.length > 0) { %>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        <!-- LEFT: PRODUCTS -->
-        <div class="lg:col-span-2 space-y-8">
+      <div class="lg:col-span-2 space-y-6">
+        <% cartProducts.forEach((product, index) => { %>
+          
+          <input type="hidden" name="productId" value="<%= product._id %>" form="checkoutForm">
 
-          <% cartProducts.forEach(product => { %>
-
-            <!-- PREMIUM CART CARD -->
-            <div class="flex items-center gap-6 bg-white rounded-3xl p-8
-                        shadow-md hover:shadow-2xl hover:-translate-y-1
-                        transition-all duration-300
-                        max-w-3xl mx-auto min-h-[280px]">
-
-              <!-- IMAGE -->
-              <div class="w-48 h-48 bg-white rounded-2xl overflow-hidden
-                          flex items-center justify-center shrink-0
-                         ">
-                <img 
-                  src="<%= product.photo %>" 
-                  alt="<%= product.productName %>"
-                  class="w-full h-full object-contain"
-                >
-              </div>
-
-              <!-- DETAILS -->
-              <div class="flex-1 space-y-4">
-
-                <h3 class="text-2xl font-semibold text-gray-800">
-                  <%= product.productName %>
-                </h3>
-
-                <!-- Price + Qty -->
-                <div class="flex items-center justify-between">
-
-                  <p class="text-red-700 font-bold text-2xl">
-                    ₹ <%= product.price %>
-                  </p>
-
-                  <div class="flex items-center gap-2">
-                    <label class="text-gray-600 text-base">Qty:</label>
-                    <input 
-                      type="number"
-                      min="1"
-                      value="1"
-                      class="qty w-20 border border-gray-300 rounded-lg px-2 py-2 text-center 
-                             outline-none focus:ring-2 text-red-700"
-                      data-price="<%= product.price %>"
-                      onchange="updateTotal()"
-                    >
-                  </div>
-
-                </div>
-
-                <!-- Rating -->
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg"
-                       viewBox="0 0 24 24"
-                       fill="currentColor"
-                       class="w-6 h-6text-red-700 mr-1">
-                    <path fill-rule="evenodd"
-                      d="M10.788 3.21c.448-1.077 1.976-1.077 
-                      2.424 0l2.082 5.007 5.404.433c1.164.093 
-                      1.636 1.545.749 2.305l-4.117 3.527 
-                      1.257 5.273c.271 1.136-.964 2.033-1.96 
-                      1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29 
-                      -1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76 
-                      -.415-2.212.749-2.305l5.404-.433 
-                      2.082-5.006z"
-                      clip-rule="evenodd" />
-                  </svg>
-
-                  <span class="text-gray-700 text-lg">
-                    <%= product.rating && product.rating.stars !== undefined 
-                        ? product.rating.stars 
-                        : product.rating %>
-                  </span>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex gap-6 text-base pt-3">
-                  <a href="/products/<%= product._id %>" 
-                     class="text-blue-600 hover:underline">
-                    View Details
-                  </a>
-
-                  <form action="/cart/delete/<%= product._id %>" method="POST">
-                    <button class="text-red-500 hover:underline">
-                      Remove
-                    </button>
-                  </form>
-                </div>
-
-              </div>
-            </div>
-
-          <% }) %>
-
-        </div>
-
-        <!-- RIGHT: ORDER SUMMARY -->
-        <div class="bg-white rounded-3xl p-8 shadow-lg h-fit sticky top-10">
-
-          <h3 class="text-2xl font-bold mb-6 text-gray-800">
-            Order Summary
-          </h3>
-
-          <div class="flex justify-between mb-3 text-gray-600">
-            <span>Items</span>
-            <span id="totalItems">0</span>
-          </div>
-
-          <div class="flex justify-between mb-3 text-gray-600">
-            <span>Subtotal</span>
-            <span id="subtotal">₹ 0</span>
-          </div>
-
-          <div class="flex justify-between mb-4 text-gray-600">
-            <span>Delivery</span>
-            <span class="text-green-500 font-medium">Free</span>
-          </div>
-
-          <hr class="my-4">
-
-          <div class="flex justify-between text-xl font-bold text-gray-800 mb-6">
-            <span>Total</span>
-            <span id="grandTotal">₹ 0</span>
-          </div>
-
-          <!-- PAYMENT METHOD SECTION -->
-          <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h4 class="text-lg font-semibold text-gray-800 mb-4">
-              💳 Payment Method
-            </h4>
+          <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-8 transition-transform hover:shadow-lg">
             
-            <!-- Cash on Delivery (Default) -->
-            <label class="flex items-start mb-4 cursor-pointer hover:bg-white p-2 rounded transition">
-              <input 
-                type="radio" 
-                name="paymentMethod" 
-                value="cod"
-                checked
-                form="checkoutForm"
-                class="mt-1 w-4 h-4 text-green-600 cursor-pointer"
-              >
-              <div class="ml-3">
-                <p class="font-semibold text-gray-800">💵 Cash on Delivery (COD)</p>
-                <p class="text-sm text-gray-600">Pay when you receive your order</p>
-              </div>
-            </label>
-
-            <!-- UPI -->
-            <label class="flex items-start mb-4 cursor-pointer hover:bg-white p-2 rounded transition">
-              <input 
-                type="radio" 
-                name="paymentMethod" 
-                value="upi"
-                form="checkoutForm"
-                class="mt-1 w-4 h-4 text-blue-600 cursor-pointer"
-              >
-              <div class="ml-3">
-                <p class="font-semibold text-gray-800">📱 UPI</p>
-                <p class="text-sm text-gray-600">Pay instantly via Google Pay, PhonePe, or Paytm</p>
-              </div>
-            </label>
-
-            <!-- UPI ID Input (Hidden by default) -->
-            <div id="upiContainer" class="mb-4 pl-7 hidden">
-              <input 
-                type="text"
-                name="upiId"
-                form="checkoutForm"
-                placeholder="Enter UPI ID (e.g., name@bank)"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+            <div class="w-40 h-40 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border">
+              <img src="<%= product.photo %>" alt="<%= product.productName %>" class="w-full h-full object-contain p-2">
             </div>
 
-            <!-- Debit Card -->
-            <label class="flex items-start mb-4 cursor-pointer hover:bg-white p-2 rounded transition">
-              <input 
-                type="radio" 
-                name="paymentMethod" 
-                value="debit_card"
-                form="checkoutForm"
-                class="mt-1 w-4 h-4 text-purple-600 cursor-pointer"
-              >
-              <div class="ml-3">
-                <p class="font-semibold text-gray-800">🏧 Debit Card</p>
-                <p class="text-sm text-gray-600">Use your debit card securely</p>
+            <div class="flex-grow w-full">
+              <div class="flex justify-between items-start">
+                <h3 class="text-2xl font-bold text-gray-800"><%= product.productName %></h3>
+                <p class="text-2xl font-black text-red-600">₹<%= product.price %></p>
               </div>
-            </label>
 
-            <!-- Debit Card Details (Hidden by default) -->
-            <div id="cardContainer" class="mb-4 pl-7 hidden space-y-3">
-              <input 
-                type="text"
-                name="cardNumber"
-                form="checkoutForm"
-                placeholder="Card Number (16 digits)"
-                maxlength="16"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-              <input 
-                type="text"
-                name="cardHolder"
-                form="checkoutForm"
-                placeholder="Cardholder Name"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
-              <input 
-                type="text"
-                name="expiryDate"
-                form="checkoutForm"
-                placeholder="MM/YY"
-                maxlength="5"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-              >
+              <div class="mt-6 flex flex-wrap items-end gap-6">
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs font-bold text-gray-400 uppercase">Quantity</label>
+                  <input type="number" name="quantity" value="1" min="1" form="checkoutForm"
+                         class="qty-input w-20 border-2 border-gray-100 rounded-xl px-3 py-2 text-center font-bold text-red-600 focus:border-red-500 outline-none transition"
+                         data-price="<%= product.price %>" onchange="calculateGrandTotal()">
+                </div>
+
+                <div class="flex flex-col gap-2 flex-grow">
+                  <label class="text-xs font-bold text-gray-400 uppercase">Select Size <span class="text-red-500">*</span></label>
+                  <div class="flex flex-wrap gap-2">
+                    <% if (product.availableSizes && product.availableSizes.length > 0) { %>
+                      <% product.availableSizes.forEach((size, sIdx) => { %>
+                        <label class="cursor-pointer group">
+                          <input type="radio" name="size" value="<%= size %>" form="checkoutForm" required class="peer hidden">
+                          <div class="px-4 py-2 rounded-xl border-2 border-gray-100 text-sm font-bold text-gray-600 
+                                      peer-checked:border-red-600 peer-checked:bg-red-50 peer-checked:text-red-700 
+                                      group-hover:border-red-300 transition-all">
+                            <%= size %>
+                          </div>
+                        </label>
+                      <% }) %>
+                    <% } else { %>
+                      <input type="hidden" name="size" value="Standard" form="checkoutForm">
+                      <span class="text-gray-400 text-sm italic">One Size Fits All</span>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
+                <div class="flex items-center text-yellow-500 font-bold">
+                  ★ <span class="ml-1 text-gray-700"><%= product.rating || '4.5' %></span>
+                </div>
+                <form action="/cart/delete/<%= product._id %>" method="POST">
+                  <button type="submit" class="text-sm font-semibold text-gray-400 hover:text-red-600 transition">Remove Item</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 sticky top-10">
+          <h3 class="text-2xl font-bold text-gray-800 mb-6">Summary</h3>
+
+          <div class="space-y-4 mb-8">
+            <div class="flex justify-between text-gray-500 font-medium">
+              <span>Subtotal</span>
+              <span id="display-subtotal">₹0</span>
+            </div>
+            <div class="flex justify-between text-gray-500 font-medium">
+              <span>Shipping</span>
+              <span class="text-green-600 font-bold">FREE</span>
+            </div>
+            <div class="border-t pt-4 flex justify-between text-3xl font-black text-gray-800">
+              <span>Total</span>
+              <span id="display-total">₹0</span>
             </div>
           </div>
 
-          <form action="/orders/create" method="POST" id="checkoutForm" class="space-y-4">
+          <form action="/orders/create" method="POST" id="checkoutForm" class="space-y-6">
+            <div class="space-y-3">
+              <p class="text-xs font-bold text-gray-400 uppercase">Payment Method</p>
+              <label class="flex items-center p-4 border-2 border-gray-100 rounded-2xl cursor-pointer hover:bg-red-50 hover:border-red-100 transition group">
+                <input type="radio" name="paymentMethod" value="cod" checked class="w-5 h-5 text-red-600">
+                <span class="ml-3 font-bold text-gray-700 group-hover:text-red-700">Cash on Delivery</span>
+              </label>
+            </div>
 
-           <input type="hidden" name="productId" value="<%= cartProducts[0]._id %>">
-           <!-- Rating Text Feedback -->
-              <div id="ratingFeedback" class="text-center text-sm font-semibold text-gray-700 mb-3">Select your rating</div>
-
-              
-            <!-- Product Rating - Modern -->
-            <div class="bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 p-6 rounded-2xl border-2 border-amber-200 shadow-md hover:shadow-lg transition-all duration-300">
-              <div class="flex items-center gap-2 mb-4">
-                <span class="text-2xl">⭐</span>
-                <label class="text-lg font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">Rate this Product</label>
-              </div>
-              
-              <!-- Star Rating - Interactive -->
-              <div class="flex gap-3 mb-4 justify-center py-2" id="ratingStarsContainer">
+            <div class="bg-gray-50 p-5 rounded-2xl border-2 border-dashed border-gray-200">
+              <p class="text-center text-sm font-bold text-gray-600 mb-3">Quick Rating</p>
+              <div class="flex justify-center gap-2 mb-3" id="star-rating-ui">
                 <% for (let i = 1; i <= 5; i++) { %>
-                  <label class="cursor-pointer group">
-                    <input type="radio" name="ratingStars" value="<%= i %>" class="hidden peer" data-rating="<%= i %>" />
-                    <span class="text-5xl transition-all duration-200 text-gray-300 group-hover:scale-110 group-hover:text-yellow-400" data-index="<%= i %>">☆</span>
+                  <label class="cursor-pointer">
+                    <input type="radio" name="ratingStars" value="<%= i %>" class="hidden peer">
+                    <span class="text-3xl text-gray-300 peer-checked:text-yellow-400 transition" data-val="<%= i %>">★</span>
                   </label>
                 <% } %>
               </div>
-              <!-- Comment -->
-              <textarea name="ratingComment" placeholder="✍️ Share your experience with this product (optional)" class="w-full px-4 py-3 text-sm border-2 border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white/70 backdrop-blur-sm transition-all duration-200" rows="2"></textarea>
+              <textarea name="ratingComment" placeholder="Optional feedback..." class="w-full text-sm p-3 rounded-xl border-0 focus:ring-2 focus:ring-red-500 transition"></textarea>
             </div>
+
             <%- include('../partials/order-location-picker') %>
 
-
-          <button type="submit"
-            class="w-full bg-red-700 text-white py-3 rounded-xl font-semibold
-                  shadow-md hover:bg-white hover:text-red-700
-                  hover:shadow-xl hover:scale-105 transition duration-300">
-             Proceed to Checkout
-          </button>
-        </form>
-
-
+            <button type="submit" class="w-full bg-red-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-red-800 transition-all">
+              PLACE ORDER NOW
+            </button>
+          </form>
         </div>
-
       </div>
+    </div>
 
     <% } else { %>
-
-      <!-- EMPTY CART -->
-      <div class="text-center py-20">
-        <h3 class="text-3xl font-semibold text-gray-600">
-          🛒 Your cart is empty
-        </h3>
-
-        <p class="text-gray-400 mt-3">
-          Add something amazing to get started!
-        </p>
-
-        <a href="/"
-           class="inline-block mt-6 bg-gradient-to-r from-orange-500 to-red-500 
-                  text-white px-6 py-3 rounded-xl shadow-md hover:scale-105 transition">
-          🛍️ Shop Now
-        </a>
+      <div class="bg-white rounded-3xl p-20 text-center shadow-sm border border-gray-100">
+        <div class="text-6xl mb-6">💨</div>
+        <h3 class="text-3xl font-bold text-gray-800">Your cart is feeling light!</h3>
+        <a href="/" class="bg-red-700 text-white px-10 py-4 rounded-2xl font-bold mt-8 inline-block">Back to Store</a>
       </div>
-
     <% } %>
-
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/js/order-location-picker.js"></script>
   <script>
-    function updateTotal() {
-      let qtyInputs = document.querySelectorAll(".qty");
-      let total = 0;
-      let totalQty = 0;
-
-      qtyInputs.forEach(input => {
-        let price = Number(input.dataset.price);
-        let qty = Number(input.value);
-
-        if (qty < 1) {
-          input.value = 1;
-          qty = 1;
-        }
-
-        total += price * qty;
-        totalQty += qty;
+    function calculateGrandTotal() {
+      const inputs = document.querySelectorAll('.qty-input');
+      let grandTotal = 0;
+      inputs.forEach(input => {
+        const price = parseFloat(input.dataset.price);
+        const qty = parseInt(input.value) || 1;
+        grandTotal += (price * qty);
       });
-
-      document.getElementById("subtotal").innerText = "₹ " + total;
-      document.getElementById("grandTotal").innerText = "₹ " + total;
-      document.getElementById("totalItems").innerText = totalQty;
+      document.getElementById('display-subtotal').innerText = '₹' + grandTotal.toLocaleString();
+      document.getElementById('display-total').innerText = '₹' + grandTotal.toLocaleString();
     }
 
-    window.onload = updateTotal;
-
-    // Payment Method Selection Handler
-    const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
-    const upiContainer = document.getElementById('upiContainer');
-    const cardContainer = document.getElementById('cardContainer');
-
-    function handlePaymentMethodChange() {
-      const selectedMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-      
-      // Hide all containers first
-      upiContainer.classList.add('hidden');
-      cardContainer.classList.add('hidden');
-
-      // Show relevant container
-      if (selectedMethod === 'upi') {
-        upiContainer.classList.remove('hidden');
-      } else if (selectedMethod === 'debit_card') {
-        cardContainer.classList.remove('hidden');
-      }
-    }
-
-    // Add event listeners to radio buttons
-    paymentRadios.forEach(radio => {
-      radio.addEventListener('change', handlePaymentMethodChange);
+    document.querySelectorAll('#star-rating-ui span').forEach(star => {
+      star.addEventListener('click', function() {
+        const val = this.dataset.val;
+        document.querySelectorAll('#star-rating-ui span').forEach(s => {
+          s.style.color = s.dataset.val <= val ? '#fbbf24' : '#d1d5db';
+        });
+      });
     });
-    // Rating feedback messages
-  const ratingMessages = {
-    1: "😞 Poor - Needs improvement",
-    2: "😕 Not Good - Below expectation",
-    3: "😐 Average - It's okay",
-    4: "😊 Good - Pretty satisfied",
-    5: "😍 Excellent - Love it!"
-  };
-
-  // Star Rating Handler
-  const ratingStars = document.querySelectorAll('input[name="ratingStars"]');
-  const ratingFeedback = document.getElementById('ratingFeedback');
-  const starsContainer = document.getElementById('ratingStarsContainer');
-
-  function updateStarDisplay(rating) {
-    const spans = starsContainer.querySelectorAll('span[data-index]');
-    spans.forEach((span, index) => {
-      span.textContent = (index + 1) <= rating ? '★' : '☆';
-    });
-  }
-
-  ratingStars.forEach((star) => {
-    star.addEventListener('change', () => {
-      const value = parseInt(star.value);
-      updateStarDisplay(value);
-      ratingFeedback.textContent = ratingMessages[value];
-      ratingFeedback.classList.add('animate-pulse');
-      setTimeout(() => ratingFeedback.classList.remove('animate-pulse'), 1000);
-    });
-  });
-
-  starsContainer.addEventListener('mouseover', (e) => {
-    const span = e.target.closest('span[data-index]');
-    if (span) {
-      const index = parseInt(span.dataset.index);
-      const spans = starsContainer.querySelectorAll('span[data-index]');
-      spans.forEach((s, i) => {
-        s.textContent = (i + 1) <= index ? '★' : '☆';
-        s.style.color = (i + 1) <= index ? '#FBBF24' : '#D1D5DB';
-      });
-      ratingFeedback.textContent = ratingMessages[index] || 'Select your rating';
-    }
-  });
-
-  starsContainer.addEventListener('mouseleave', () => {
-    const checked = document.querySelector('input[name="ratingStars"]:checked');
-    if (checked) {
-      const value = parseInt(checked.value);
-      updateStarDisplay(value);
-      const spans = starsContainer.querySelectorAll('span[data-index]');
-      spans.forEach((s, i) => {
-        if ((i + 1) <= value) {
-          s.style.color = '#FBBF24';
-        } else {
-          s.style.color = '#D1D5DB';
-        }
-      });
-      ratingFeedback.textContent = ratingMessages[value];
-    } else {
-      const spans = starsContainer.querySelectorAll('span[data-index]');
-      spans.forEach(s => {
-        s.textContent = '☆';
-        s.style.color = '#D1D5DB';
-      });
-      ratingFeedback.textContent = 'Select your rating';
-    }
-  });
-
+    window.onload = calculateGrandTotal;
   </script>
-  <script>
-    const checkoutForm = document.getElementById('checkoutForm');
-
-    if (checkoutForm) {
-      checkoutForm.addEventListener('submit', (event) => {
-        if (window.validateOrderLocation && !window.validateOrderLocation(checkoutForm)) {
-          event.preventDefault();
-        }
-      });
-    }
-  </script>
-
 </body>
 </html>

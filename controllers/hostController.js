@@ -77,7 +77,6 @@ exports.postAddProduct = async (req, res, next) => {
       price,
       description = "",
       location = "",
-      discount = 0,
       stock = 0
     } = req.body;
 
@@ -89,11 +88,9 @@ exports.postAddProduct = async (req, res, next) => {
 
     // Parse numbers
     const parsedPrice = parseFloat(price);
-    const parsedDiscount = parseFloat(discount);
     const parsedStock = parseInt(stock, 10);
 
     if (isNaN(parsedPrice) || parsedPrice < 0) return res.status(422).send("Invalid price");
-    if (isNaN(parsedDiscount) || parsedDiscount < 0 || parsedDiscount > 100) return res.status(422).send("Invalid discount");
     if (isNaN(parsedStock) || parsedStock < 0) return res.status(422).send("Invalid stock");
 
     // Handle sizes
@@ -108,7 +105,6 @@ exports.postAddProduct = async (req, res, next) => {
       productName,
       key: keys,
       price: parsedPrice,
-      discount: parsedDiscount,
       stock: parsedStock,
       availableSizes: filteredSizes,
       location: location.trim(),
@@ -136,7 +132,6 @@ exports.postEditProduct = async (req, res, next) => {
       price,
       description = "",
       location = "",
-      discount = 0,
       stock = 0
     } = req.body;
 
@@ -150,11 +145,9 @@ exports.postEditProduct = async (req, res, next) => {
 
     // Parse numbers
     const parsedPrice = parseFloat(price);
-    const parsedDiscount = parseFloat(discount);
     const parsedStock = parseInt(stock, 10);
 
     if (isNaN(parsedPrice) || parsedPrice < 0) return res.status(422).send("Invalid price");
-    if (isNaN(parsedDiscount) || parsedDiscount < 0 || parsedDiscount > 100) return res.status(422).send("Invalid discount");
     if (isNaN(parsedStock) || parsedStock < 0) return res.status(422).send("Invalid stock");
 
     // Handle sizes
@@ -169,7 +162,6 @@ exports.postEditProduct = async (req, res, next) => {
     product.productName = productName;
     product.key = keys;
     product.price = parsedPrice;
-    product.discount = parsedDiscount;
     product.stock = parsedStock;
     product.availableSizes = filteredSizes;
     product.location = location.trim();
