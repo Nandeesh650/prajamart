@@ -1,73 +1,123 @@
 <%- include('../partials/head') %>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  </head>
-  <body class="bg-gray-100">
-    <%- include('../partials/nav') %>
-    <main class="container mx-auto mt-8 p-8 bg-white rounded-lg shadow-md max-w-2xl">
-      <h1 class="text-3xl font-bold mb-6 text-center text-gray-800 border-b pb-4">Welcome Back</h1>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-red-100 via-white to-red-50">
+
+  <%- include('../partials/nav') %>
+
+  <main class="min-h-[85vh] flex items-center justify-center px-6 py-10">
+    
+    <!-- Increased width for laptop -->
+    <div class="w-full max-w-4xl mx-auto">
       
-      <form action="/login" method="POST" class="max-w-md mx-auto">
-        <% if (success) { %>
-          <div class="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-            <%= success %>
-          </div>
-        <% } %>
-        <% if (error) { %>
-          <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            <%= error %>
-          </div>
-        <% } %>
-        <%- include('../partials/errors') %>
+      <!-- Premium Card -->
+      <div class="bg-white/90 backdrop-blur-xl shadow-2xl rounded-[2rem] overflow-hidden border border-white/40">
         
-        <!-- Email field -->
-        <div class="mb-5">
-          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-              <i class="fas fa-envelope"></i>
-            </span>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="your.email@example.com"
-              value="<%= oldInput.email ? oldInput.email : '' %>"
-              class="w-full pl-10 px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
-              required />
-          </div>
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-red-600 via-red-500 to-red-700 px-10 py-8 text-center">
+          <h1 class="text-4xl font-bold text-white tracking-wide">
+            Welcome Back
+          </h1>
+          <p class="text-red-100 mt-2 text-base">
+            Sign in to continue to Prajamart
+          </p>
         </div>
-        
-        <!-- Password field -->
-        <div class="mb-6">
-          <div class="flex items-center justify-between mb-1">
-            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-            <a href="/forgot-password" class="text-sm font-medium text-red-500 hover:underline">Forgot password?</a>
-          </div>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-              <i class="fas fa-lock"></i>
-            </span>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="Enter Your Password"
-              class="w-full pl-10 px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
-              required/>
-          </div>
+
+        <!-- Form Body -->
+        <div class="p-12">
+          <form action="/login" method="POST" class="max-w-2xl mx-auto space-y-8">
+
+            <% if (success) { %>
+              <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700 shadow-sm">
+                <%= success %>
+              </div>
+            <% } %>
+
+            <% if (error) { %>
+              <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 shadow-sm">
+                <%= error %>
+              </div>
+            <% } %>
+
+            <%- include('../partials/errors') %>
+
+            <!-- Email -->
+            <div>
+              <label for="email" class="block text-sm font-semibold text-gray-700 mb-3">
+                Email Address
+              </label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                  <i class="fas fa-envelope text-lg"></i>
+                </span>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="your.email@example.com"
+                  value="<%= oldInput.email ? oldInput.email : '' %>"
+                  class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-500 focus:outline-none shadow-sm transition duration-300"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <label for="password" class="block text-sm font-semibold text-gray-700">
+                  Password
+                </label>
+                <a href="/forgot-password" class="text-sm text-red-500 hover:text-red-600 hover:underline">
+                  Forgot password?
+                </a>
+              </div>
+
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
+                  <i class="fas fa-lock text-lg"></i>
+                </span>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-red-500 focus:outline-none shadow-sm transition duration-300"
+                  required
+                />
+              </div>
+            </div>
+
+            <!-- Button -->
+            <button
+              type="submit"
+              class="w-full py-4 rounded-2xl bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] transition duration-300 flex items-center justify-center"
+            >
+              <span>Sign In</span>
+              <i class="fas fa-arrow-right ml-3"></i>
+            </button>
+
+            <!-- Divider -->
+            <div class="flex items-center">
+              <div class="flex-1 border-t border-gray-200"></div>
+              <span class="px-4 text-sm text-gray-400">OR</span>
+              <div class="flex-1 border-t border-gray-200"></div>
+            </div>
+
+            <!-- Signup -->
+            <p class="text-center text-gray-600 text-base">
+              Don’t have an account?
+              <a href="/signup" class="text-red-500 font-semibold hover:underline">
+                Create Account
+              </a>
+            </p>
+
+          </form>
         </div>
-        
-        <!-- Submit button with animation -->
-        <button type="submit" class="w-full bg-red-500 text-white py-3 rounded-md hover:bg-red-600 focus:ring-4 focus:ring-red-300 font-medium transition duration-300 flex items-center justify-center">
-          <span>Sign In</span>
-          <i class="fas fa-sign-in-alt ml-2"></i>
-        </button>
-        
-        <!-- Sign up link -->
-        <p class="text-center mt-6 text-gray-600">
-          Don't have an account yet? <a href="/signup" class="text-red-500 hover:underline">Sign up</a>
-        </p>
-      </form>
-    </main>
-  </body>
+      </div>
+    </div>
+  </main>
+
+</body>
 </html>
