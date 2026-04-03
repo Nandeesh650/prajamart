@@ -16,6 +16,10 @@ const orderSchema = mongoose.Schema({
     ref: 'User',
     required: true
   },
+  size: {
+    type: String,
+    required: true
+  },
   quantity: {
     type: Number,
     required: true,

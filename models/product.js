@@ -1,46 +1,55 @@
 const mongoose = require("mongoose");
 
-const productSchema = mongoose.Schema({
+const productSchema = new mongoose.Schema({
   productName: {
     type: String,
     required: true,
+    trim: true,
   },
+
   price: {
     type: Number,
     required: true,
   },
-  key: {
+
+  key: [{
     type: String,
     required: true,
+    trim: true,
+  }],
+
+  discount: {
+    type: Number,
+    default: 0,
   },
+
   location: {
     type: String,
     trim: true,
     default: "",
   },
+
   hostId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: "User",
   },
-  rating: {
-    stars: {
-      type: Number,
-      default: 0,
-    },
-    count: {
-      type: Number,
-      default: 0,
-    },
+
+  availableSizes: [{
+    type: String,
+    enum: [
+      "S", "M", "L", "XL", "XXL",
+      "1", "2", "3", "4", "5",
+      "6", "7", "8", "9", "10"
+    ]
+  }],
+
+  stock: {
+    type: Number,
+    default: 0,
   },
+
   photo: String,
   description: String,
 });
-
-// productSchema.pre('findOneAndDelete', async function(next) {
-//   console.log('Came to pre hook while deleting a product');
-//   const productId = this.getQuery()._id;
-//   await favourite.deleteMany({houseId: productId});
-//   next();
-// });
 
 module.exports = mongoose.model("Product", productSchema);
