@@ -1,6 +1,36 @@
 const Product = require("../models/product");
 const User = require("../models/user");
 
+const LOCATION_OPTIONS = [
+  "Bangalore",
+  "Chennai",
+  "Delhi",
+  "Hyderabad",
+  "Kolkata",
+  "Mumbai",
+  "Pune",
+];
+
+const buildProductFilter = (query, location) => {
+  const trimmedQuery = (query || "").trim();
+  const trimmedLocation = (location || "").trim();
+  const filter = {};
+
+  if (trimmedQuery) {
+    filter.$or = [
+      { productName: { $regex: trimmedQuery, $options: "i" } },
+      { key: { $regex: trimmedQuery, $options: "i" } },
+      { location: { $regex: trimmedQuery, $options: "i" } }
+    ];
+  }
+
+  if (trimmedLocation) {
+    filter.location = trimmedLocation;
+  }
+
+  return { filter, trimmedQuery, trimmedLocation };
+};
+
 exports.getIndex = (req, res, next) => {
   console.log("Session Value: ", req.session);
   Product.find()
@@ -27,13 +57,21 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.find()
+  const { filter, trimmedQuery, trimmedLocation } = buildProductFilter(
+    req.query.query,
+    req.query.location
+  );
+
+  Product.find(filter)
     .populate('hostId', 'firstName lastName')
     .then((registeredProducts) => {
       res.render("store/product-list", {
         registeredProducts: registeredProducts,
         pageTitle: "Products List",
         currentPage: "Products",
+        searchQuery: trimmedQuery,
+        selectedLocation: trimmedLocation,
+        locationOptions: LOCATION_OPTIONS,
         isLoggedIn: req.isLoggedIn, 
         user: req.session.user,
       });
@@ -44,6 +82,9 @@ exports.getProducts = (req, res, next) => {
         registeredProducts: [],
         pageTitle: "Products List",
         currentPage: "Products",
+        searchQuery: trimmedQuery,
+        selectedLocation: trimmedLocation,
+        locationOptions: LOCATION_OPTIONS,
         isLoggedIn: req.isLoggedIn, 
         user: req.session.user,
       });
@@ -119,30 +160,31 @@ exports.getProductDetails = (req, res, next) => {
 
 exports.getSearch = async (req, res, next) => {
   const query = req.query.query || "";
+  const location = req.query.location || "";
+  const { filter, trimmedQuery, trimmedLocation } = buildProductFilter(query, location);
   
-  if (!query.trim()) {
+  if (!trimmedQuery && !trimmedLocation) {
     return res.render("store/search-results", {
       searchResults: [],
       searchQuery: "",
+      selectedLocation: "",
+      locationOptions: LOCATION_OPTIONS,
       pageTitle: "Search Results",
       currentPage: "search",
       isLoggedIn: req.isLoggedIn,
       user: req.session.user,
-      message: "Please enter a search term"
+      message: "Please enter a search term or choose a location"
     });
   }
 
   try {
-    const searchResults = await Product.find({
-      $or: [
-        { productName: { $regex: query, $options: "i" } },
-        { key: { $regex: query, $options: "i" } }
-      ]
-    });
+    const searchResults = await Product.find(filter);
 
     res.render("store/search-results", {
       searchResults: searchResults,
-      searchQuery: query,
+      searchQuery: trimmedQuery,
+      selectedLocation: trimmedLocation,
+      locationOptions: LOCATION_OPTIONS,
       pageTitle: "Search Results",
       currentPage: "search",
       isLoggedIn: req.isLoggedIn,
@@ -153,7 +195,9 @@ exports.getSearch = async (req, res, next) => {
     console.log("Search error:", error);
     res.render("store/search-results", {
       searchResults: [],
-      searchQuery: query,
+      searchQuery: trimmedQuery,
+      selectedLocation: trimmedLocation,
+      locationOptions: LOCATION_OPTIONS,
       pageTitle: "Search Results",
       currentPage: "search",
       isLoggedIn: req.isLoggedIn,

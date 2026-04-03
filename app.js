@@ -19,6 +19,7 @@ const orderRouter = require("./routes/orderRouter")
 const authRouter = require("./routes/authRouter")
 const rootDir = require("./utils/pathUtil");
 const errorsController = require("./controllers/errors");
+const User = require("./models/user");
 
 const app = express();
 
@@ -77,6 +78,33 @@ app.use((req, res, next) => {
   req.isLoggedIn = req.session.isLoggedIn
   next();
 })
+
+app.use(async (req, res, next) => {
+  res.locals.cartCount = 0;
+
+  if (!req.session.user?._id) {
+    return next();
+  }
+
+  try {
+    const freshUser = await User.findById(req.session.user._id).select("firstName lastName email userType cart");
+
+    if (!freshUser) {
+      req.session.isLoggedIn = false;
+      req.session.user = null;
+      return next();
+    }
+
+    req.session.user = freshUser;
+    res.locals.cartCount = Array.isArray(freshUser.cart)
+      ? freshUser.cart.filter(Boolean).length
+      : 0;
+    next();
+  } catch (err) {
+    console.log("Error loading user for navbar:", err);
+    next();
+  }
+});
 
 app.use(authRouter)
 app.use(storeRouter);

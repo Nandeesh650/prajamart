@@ -1,11 +1,23 @@
 const Product = require("../models/product");
 const fs = require("fs");
 
+const LOCATION_OPTIONS = [
+  "Bangalore",
+  "Chennai",
+  "Delhi",
+  "Hyderabad",
+  "Kolkata",
+  "Mumbai",
+  "Pune",
+];
+
 exports.getAddProduct = (req, res, next) => {
   res.render("host/edit-product", {
     pageTitle: "Add Product to prajamart",
     currentPage: "addProduct",
     editing: false,
+    product: null,
+    locationOptions: LOCATION_OPTIONS,
     isLoggedIn: req.isLoggedIn,
     user: req.session.user,
   });
@@ -27,6 +39,7 @@ exports.getEditProduct = (req, res, next) => {
       pageTitle: "Edit your Product",
       currentPage: "host-products",
       editing: editing,
+      locationOptions: LOCATION_OPTIONS,
       isLoggedIn: req.isLoggedIn,
       user: req.session.user,
     });
@@ -46,8 +59,8 @@ exports.getHostProducts = (req, res, next) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
-  const { productName, key, price, description } = req.body;
-  console.log(productName, key, price, description);
+  const { productName, key, price, description, location } = req.body;
+  console.log(productName, key, price, description, location);
   console.log(req.file);
 
   if (!req.file) {
@@ -60,6 +73,7 @@ exports.postAddProduct = (req, res, next) => {
     productName,
     key,
     price,
+    location: (location || "").trim(),
     hostId: req.session.user._id,
     rating: {
       stars: 0,
@@ -76,13 +90,14 @@ exports.postAddProduct = (req, res, next) => {
 };
 
 exports.postEditProduct = (req, res, next) => {
-  const { id, productName, key, price, description } = req.body;
+  const { id, productName, key, price, description, location } = req.body;
   
   Product.findById(id)
     .then((product) => {
       product.productName = productName;
       product.key = key;
       product.price = price;
+      product.location = (location || "").trim();
       
       // Ensure hostId is set
       if (!product.hostId) {

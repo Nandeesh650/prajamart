@@ -18,6 +18,17 @@
           value="<%= editing ? product.key : ''%>"
           placeholder="Enter search key and Name of the Product (e.g. electronics, furniture)"
           class="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"/>
+        <select
+          name="location"
+          class="w-full px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+        >
+          <option value="">Select product location</option>
+          <% locationOptions.forEach(function(locationOption) { %>
+            <option value="<%= locationOption %>" <%= editing && product && product.location === locationOption ? 'selected' : '' %>>
+              <%= locationOption %>
+            </option>
+          <% }) %>
+        </select>
         <input
           type="text"
           name="price"

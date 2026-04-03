@@ -1,77 +1,166 @@
-<header class="bg-gradient-to-r from-red-500 to-red-600 text-white p-4 shadow-lg sticky top-0 z-20">
-  <nav class="container mx-auto flex items-center justify-between">
-    <a href="<%= (isLoggedIn && user.userType === 'guest') ? '/' : '/host/host-product-list' %>"
-   class="flex items-center font-bold text-xl hover:scale-105 transition-transform">
-    <!-- Logo -->
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 mr-2">
-        <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
-        <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H5.625a1.875 1.875 0 01-1.875-1.875v-6.198a2.29 2.29 0 00.091-.086L12 5.43z" />
-      </svg>
-      Prajamart
+<%
+  const current = typeof currentPage !== 'undefined' ? currentPage : '';
+  const navSearchQuery = typeof searchQuery !== 'undefined' ? searchQuery : '';
 
-    <!-- Desktop Menu -->
-    <ul class="hidden md:flex items-center gap-3 font-medium">
-      <% if (isLoggedIn && user.userType === 'guest') { %>
-        <li><a href="/" class="px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300 <%= currentPage === 'index' ? 'bg-white text-red-600 font-bold shadow-md' : '' %>">Home</a></li>
-        <li><a href="/products" class="px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300 <%= currentPage === 'Products' ? 'bg-white text-red-600 font-bold shadow-md' : '' %>">Products</a></li>
-        <li><a href="/cart" class="px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300 <%= currentPage === 'cart' ? 'bg-white text-red-600 font-bold shadow-md' : '' %>">Cart</a></li>
-        <li><a href="/orders" class="px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300 <%= currentPage === 'orders' ? 'bg-white text-red-600 font-bold shadow-md' : '' %>">Orders</a></li>
-      <% } else if (isLoggedIn && user.userType === 'host') { %>
-        <li><a href="/host/host-product-list" class="px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300 <%= currentPage === 'host-products' ? 'bg-white text-red-600 font-bold shadow-md' : '' %>">Host Products</a></li>
-        <li><a href="/host/add-product" class="px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300 <%= currentPage === 'addProduct' ? 'bg-white text-red-600 font-bold shadow-md' : '' %>">Add Product</a></li>
-        <li><a href="/host/orders" class="px-4 py-2 rounded-lg hover:bg-red-400 transition duration-300 <%= currentPage === 'host-orders' ? 'bg-white text-red-600 font-bold shadow-md' : '' %>">Orders Received</a></li>
+  const isLoggedInSafe = typeof isLoggedIn !== 'undefined' ? isLoggedIn : false;
+  const userSafe = typeof user !== 'undefined' ? user : null;
+
+  const isGuest = isLoggedInSafe && userSafe && userSafe.userType === 'guest';
+  const isHost = isLoggedInSafe && userSafe && userSafe.userType === 'host';
+  const isDeliveryboy = isLoggedInSafe && userSafe && userSafe.userType === 'deliveryboy';
+
+  const showSearch = !isLoggedInSafe || isGuest;
+
+  const userCartCount =
+    userSafe && Array.isArray(userSafe.cart)
+      ? userSafe.cart.filter(Boolean).length
+      : 0;
+
+  const homeHref = !isLoggedInSafe
+    ? '/'
+    : isHost
+      ? '/host/host-product-list'
+      : isDeliveryboy
+        ? '/orders'
+        : '/';
+
+  const navLinkClass = (isActive) =>
+    isActive
+      ? 'bg-white/20 text-white shadow-lg scale-105'
+      : 'text-white/90 hover:bg-white/10 hover:text-white hover:scale-105';
+%>
+
+<header class="sticky top-0 z-[100] bg-red-700 shadow-2xl">
+  <nav class="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
+
+    <!-- LOGO -->
+    <a href="<%= homeHref %>" class="flex shrink-0 items-center gap-3 group">
+      <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-red-700 shadow-xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3 animate-pulse">
+        <span class="text-xl font-black tracking-tight">
+          PM
+        </span>
+      </div>
+
+      <div class="transition-all duration-300 group-hover:translate-x-1">
+        <h1 class="text-2xl font-black tracking-tight text-white leading-none">
+          PrajaMart
+        </h1>
+        <p class="mt-1 text-[11px] uppercase tracking-[0.3em] text-white/80 font-semibold">
+          Premium Store
+        </p>
+      </div>
+    </a>
+
+    <!-- SEARCH -->
+    <% if (showSearch) { %>
+      <form action="/products" method="GET" class="hidden min-w-0 flex-1 md:block">
+        <div class="flex items-center gap-3 rounded-2xl bg-white/10 backdrop-blur-md p-1.5 shadow-lg transition-all duration-300 hover:bg-white/15">
+          <input
+            type="text"
+            name="query"
+            value="<%= navSearchQuery %>"
+            placeholder="Search products..."
+            class="w-full bg-transparent px-4 py-2 text-sm text-white outline-none placeholder:text-white/60"
+          />
+          <button
+            type="submit"
+            class="rounded-xl bg-white px-5 py-2 text-sm font-semibold text-red-700 shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl"
+          >
+            Search
+          </button>
+        </div>
+      </form>
+    <% } %>
+
+    <!-- DESKTOP LINKS -->
+    <div class="ml-auto hidden items-center gap-2 lg:flex">
+      <% if (isGuest) { %>
+        <a href="/" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'index') %>">Home</a>
+        <a href="/products" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'Products' || current === 'search') %>">Products</a>
+        <a href="/cart" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'cart') %>">Cart</a>
+        <a href="/orders" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'orders') %>">Orders</a>
+
+      <% } else if (isHost) { %>
+        <a href="/host/host-product-list" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'host-products') %>">Host Products</a>
+        <a href="/host/add-product" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'addProduct') %>">Add Product</a>
+        <a href="/host/orders" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'host-orders') %>">Orders</a>
+
+      <% } else if (isDeliveryboy) { %>
+        <a href="/orders" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'orders') %>">Deliveries</a>
+
+      <% } else { %>
+        <a href="/" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'index') %>">Home</a>
+        <a href="/products" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'Products' || current === 'search') %>">Products</a>
       <% } %>
-    </ul>
+    </div>
 
-    <!-- Auth Buttons -->
-    <div class="hidden md:flex items-center gap-2">
-      <% if (!isLoggedIn) { %>
-        <a href="/signup" class="px-4 py-2 rounded-lg border border-white hover:bg-white hover:text-red-600 transition duration-300">Sign Up</a>
-        <a href="/login" class="px-4 py-2 rounded-lg bg-white text-red-600 font-semibold hover:bg-gray-100 transition duration-300">Login</a>
+    <!-- RIGHT SIDE -->
+    <div class="hidden items-center gap-3 md:flex">
+      <% if (isGuest) { %>
+        <a href="/cart" class="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-red-700 shadow-md transition-all duration-300 hover:scale-110 hover:shadow-xl">
+          <span class="text-xl">🛒</span>
+
+          <% if (userCartCount > 0) { %>
+            <span class="absolute -right-2 -top-2 min-w-[1.35rem] rounded-full bg-white px-1.5 py-0.5 text-[11px] font-bold text-red-700 shadow">
+              <%= userCartCount %>
+            </span>
+          <% } %>
+        </a>
+      <% } %>
+
+      <% if (!isLoggedInSafe) { %>
+        <a href="/signup" class="rounded-xl border border-white/30 px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-white/10">
+          Sign Up
+        </a>
+
+        <a href="/login" class="rounded-xl bg-white px-5 py-2.5 text-sm font-semibold text-red-700 shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl">
+          Login
+        </a>
       <% } else { %>
         <form action="/logout" method="POST">
-          <button type="submit" class="px-4 py-2 rounded-lg border border-white hover:bg-white hover:text-red-600 transition duration-300 font-medium">Logout</button>
+          <button class="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition-all duration-300 hover:scale-105 hover:shadow-xl">
+            Logout
+          </button>
         </form>
       <% } %>
     </div>
 
-    <!-- Mobile Menu Button -->
-    <button id="mobile-menu-button" class="md:hidden p-2 rounded-lg hover:bg-red-400">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
-      </svg>
+    <!-- MOBILE BUTTON -->
+    <button id="mobile-menu-button" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-red-700 shadow-md transition-all duration-300 hover:scale-110 md:hidden">
+      ☰
     </button>
   </nav>
 
-  <!-- Mobile Menu -->
-  <div id="mobile-menu" class="hidden md:hidden mt-2 bg-red-600 rounded-lg p-3 shadow-lg">
-    <ul class="flex flex-col gap-2">
-      <% if (isLoggedIn && user.userType === 'guest') { %>
-        <li><a href="/products" class="block px-4 py-2 rounded-lg hover:bg-red-500 <%= currentPage === 'Products' ? 'bg-white text-red-600 font-bold' : '' %>">Products</a></li>
-        <li><a href="/cart" class="block px-4 py-2 rounded-lg hover:bg-red-500 <%= currentPage === 'cart' ? 'bg-white text-red-600 font-bold' : '' %>">Cart</a></li>
-        <li><a href="/bookings" class="block px-4 py-2 rounded-lg hover:bg-red-500 <%= currentPage === 'bookings' ? 'bg-white text-red-600 font-bold' : '' %>">Bookings</a></li>
-        <li><a href="/orders" class="block px-4 py-2 rounded-lg hover:bg-red-500 <%= currentPage === 'orders' ? 'bg-white text-red-600 font-bold' : '' %>">Orders</a></li>
-      <% } else if (isLoggedIn && user.userType === 'host') { %>
-        <li><a href="/host/host-product-list" class="block px-4 py-2 rounded-lg hover:bg-red-500 <%= currentPage === 'host-products' ? 'bg-white text-red-600 font-bold' : '' %>">Host Products</a></li>
-        <li><a href="/host/add-product" class="block px-4 py-2 rounded-lg hover:bg-red-500 <%= currentPage === 'addProduct' ? 'bg-white text-red-600 font-bold' : '' %>">Add Product</a></li>
-        <li><a href="/host/orders" class="block px-4 py-2 rounded-lg hover:bg-red-500 <%= currentPage === 'host-orders' ? 'bg-white text-red-600 font-bold' : '' %>">Orders Received</a></li>
+  <!-- MOBILE MENU -->
+  <div id="mobile-menu" class="hidden bg-red-800 shadow-xl md:hidden transition-all duration-500">
+    <div class="space-y-3 px-4 py-4 text-white">
+
+      <% if (showSearch) { %>
+        <form action="/products" method="GET" class="space-y-3">
+          <input
+            type="text"
+            name="query"
+            value="<%= navSearchQuery %>"
+            placeholder="Search products..."
+            class="w-full rounded-2xl bg-white/10 px-4 py-3 text-white placeholder:text-white/60"
+          />
+          <button class="w-full rounded-2xl bg-white px-4 py-3 font-semibold text-red-700">
+            Search
+          </button>
+        </form>
       <% } %>
-      <% if (!isLoggedIn) { %>
-        <li><a href="/signup" class="block px-4 py-2 rounded-lg border border-white hover:bg-white hover:text-red-600 transition">Sign Up</a></li>
-        <li><a href="/login" class="block px-4 py-2 rounded-lg bg-white text-red-600 hover:bg-gray-100 transition">Login</a></li>
-      <% } else { %>
-        <li>
-          <form action="/logout" method="POST">
-            <button type="submit" class="w-full text-left px-4 py-2 rounded-lg border border-white hover:bg-white hover:text-red-600 transition">Logout</button>
-          </form>
-        </li>
-      <% } %>
-    </ul>
+
+      <a href="/" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Home</a>
+      <a href="/products" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Products</a>
+      <a href="/cart" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Cart</a>
+      <a href="/orders" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Orders</a>
+    </div>
   </div>
 </header>
 
 <script>
   document.getElementById("mobile-menu-button")?.addEventListener("click", () => {
-    document.getElementById("mobile-menu").classList.toggle("hidden");
+    const menu = document.getElementById("mobile-menu");
+    menu?.classList.toggle("hidden");
   });
 </script>

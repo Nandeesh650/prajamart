@@ -13,6 +13,11 @@ const productSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  location: {
+    type: String,
+    trim: true,
+    default: "",
+  },
   hostId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
