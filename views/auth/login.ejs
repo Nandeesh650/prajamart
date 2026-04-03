@@ -7,6 +7,16 @@
       <h1 class="text-3xl font-bold mb-6 text-center text-gray-800 border-b pb-4">Welcome Back</h1>
       
       <form action="/login" method="POST" class="max-w-md mx-auto">
+        <% if (success) { %>
+          <div class="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <%= success %>
+          </div>
+        <% } %>
+        <% if (error) { %>
+          <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <%= error %>
+          </div>
+        <% } %>
         <%- include('../partials/errors') %>
         
         <!-- Email field -->
@@ -31,6 +41,7 @@
         <div class="mb-6">
           <div class="flex items-center justify-between mb-1">
             <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <a href="/forgot-password" class="text-sm font-medium text-red-500 hover:underline">Forgot password?</a>
           </div>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">

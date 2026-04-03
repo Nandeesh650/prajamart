@@ -1,4 +1,5 @@
 <%- include('../partials/head') %>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body class="bg-white min-h-screen">
@@ -80,7 +81,7 @@
         </form>
 
         <% if (isLoggedIn) { %>
-          <button onclick="document.getElementById('orderModal').classList.remove('hidden')" class="px-10 py-3 rounded-full bg-red-600 text-white font-semibold shadow-md hover:shadow-xl hover:bg-red-700 hover:-translate-y-0.5 transition-all duration-300">
+          <button onclick="toggleOrderModal(true)" class="px-10 py-3 rounded-full bg-red-600 text-white font-semibold shadow-md hover:shadow-xl hover:bg-red-700 hover:-translate-y-0.5 transition-all duration-300">
             🛍️ Order Now
           </button>
         <% } else { %>
@@ -96,7 +97,7 @@
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 my-auto max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Place Order</h2>
-            <button onclick="document.getElementById('orderModal').classList.add('hidden')" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            <button onclick="toggleOrderModal(false)" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
           </div>
 
           <form action="/orders/create" method="POST" class="space-y-4" id="orderFormDetail" onsubmit="return validateAndSubmitOrder(event)">
@@ -108,11 +109,7 @@
               <input type="number" id="quantityInput" name="quantity" min="1" max="100" value="1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
             </div>
 
-            <!-- Shipping Address -->
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Shipping Address *</label>
-              <textarea name="shippingAddress" placeholder="Enter your full shipping address" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" rows="3"></textarea>
-            </div>
+            <%- include('../partials/order-location-picker') %>
 
             <!-- Notes -->
             <div>
@@ -259,7 +256,7 @@
 
             <!-- Buttons -->
             <div class="flex gap-3 mt-6">
-              <button type="button" onclick="document.getElementById('orderModal').classList.add('hidden')" class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 hover:from-gray-300 hover:to-gray-400 hover:shadow-lg transition-all duration-300 font-semibold transform hover:-translate-y-1">
+              <button type="button" onclick="toggleOrderModal(false)" class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-gray-200 to-gray-300 text-gray-800 hover:from-gray-300 hover:to-gray-400 hover:shadow-lg transition-all duration-300 font-semibold transform hover:-translate-y-1">
                 ✕ Cancel
               </button>
               <button type="submit" class="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700 hover:shadow-2xl transition-all duration-300 font-semibold transform hover:-translate-y-1 shadow-lg">
@@ -277,7 +274,18 @@
 
 </main>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/js/order-location-picker.js"></script>
 <script>
+  function toggleOrderModal(shouldOpen) {
+    const modal = document.getElementById('orderModal');
+    modal.classList.toggle('hidden', !shouldOpen);
+
+    if (shouldOpen && window.refreshOrderLocationPickers) {
+      setTimeout(() => window.refreshOrderLocationPickers(), 150);
+    }
+  }
+
   // Form validation and submission
   function validateAndSubmitOrder(event) {
     event.preventDefault(); // Prevent default form submission initially
@@ -444,7 +452,40 @@
     radio.addEventListener('change', handlePaymentMethodChange);
   });
 </script>
+<script>
+  function validateAndSubmitOrder(event) {
+    event.preventDefault();
+
+    const form = document.getElementById('orderFormDetail');
+    const quantity = form.querySelector('input[name="quantity"]');
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    if (window.validateOrderLocation && !window.validateOrderLocation(form)) {
+      return false;
+    }
+
+    if (!quantity.value || parseInt(quantity.value, 10) < 1) {
+      alert('Please enter a valid quantity!');
+      quantity.focus();
+      quantity.style.borderColor = '#ef4444';
+      quantity.style.borderWidth = '2px';
+      return false;
+    }
+
+    quantity.style.borderColor = '';
+    quantity.style.borderWidth = '';
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Placing your order...';
+    submitBtn.style.opacity = '0.7';
+
+    setTimeout(() => {
+      form.submit();
+    }, 500);
+
+    return false;
+  }
+</script>
 
 </body>
 </html>
-

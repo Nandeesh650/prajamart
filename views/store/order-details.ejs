@@ -27,15 +27,21 @@
               bg-yellow-100 text-yellow-800
             <% } else if (order.status === 'confirmed') { %>
               bg-blue-100 text-blue-800
-            <% } else if (order.status === 'shipped') { %>
+            <% } else if (order.status === 'ready_to_deliver') { %>
+              bg-orange-100 text-orange-800
+            <% } else if (order.status === 'out_for_delivery' || order.status === 'shipped') { %>
               bg-purple-100 text-purple-800
             <% } else if (order.status === 'delivered') { %>
               bg-green-100 text-green-800
+            <% } else if (order.status === 'return_requested') { %>
+              bg-amber-100 text-amber-800
+            <% } else if (order.status === 'returned') { %>
+              bg-slate-200 text-slate-800
             <% } else if (order.status === 'cancelled') { %>
               bg-red-100 text-red-800
             <% } %>
           ">
-            <%= order.status.toUpperCase() %>
+            <%= order.status === 'ready_to_deliver' ? 'READY TO DELIVER' : order.status === 'out_for_delivery' ? 'OUT FOR DELIVERY' : order.status === 'shipped' ? 'SHIPPED' : order.status === 'return_requested' ? 'RETURN REQUESTED' : order.status === 'returned' ? 'RETURNED' : order.status.toUpperCase() %>
           </span>
         </div>
 
@@ -63,16 +69,29 @@
         <!-- Parties Info -->
         <div class="mb-8 pb-8 border-b border-gray-200">
           <h3 class="text-xl font-bold text-gray-800 mb-4">Parties Involved</h3>
-          <div class="grid grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div class="bg-blue-50 p-4 rounded-lg">
               <p class="text-sm text-gray-500 uppercase font-semibold mb-2">Customer</p>
               <p class="font-bold text-gray-800"><%= order.userId.firstName %> <%= order.userId.lastName %></p>
               <p class="text-sm text-gray-600"><%= order.userId.email %></p>
+              <p class="text-sm text-gray-600"><%= order.userId.phoneNumber || 'Phone not available' %></p>
             </div>
             <div class="bg-green-50 p-4 rounded-lg">
               <p class="text-sm text-gray-500 uppercase font-semibold mb-2">Host/Seller</p>
               <p class="font-bold text-gray-800"><%= order.hostId.firstName %> <%= order.hostId.lastName %></p>
               <p class="text-sm text-gray-600"><%= order.hostId.email %></p>
+              <p class="text-sm text-gray-600"><%= order.hostId.phoneNumber || 'Phone not available' %></p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+              <p class="text-sm text-gray-500 uppercase font-semibold mb-2">Delivery Boy</p>
+              <% if (order.deliveryBoyId) { %>
+                <p class="font-bold text-gray-800"><%= order.deliveryBoyId.firstName %> <%= order.deliveryBoyId.lastName %></p>
+                <p class="text-sm text-gray-600"><%= order.deliveryBoyId.email %></p>
+                <p class="text-sm text-gray-600"><%= order.deliveryBoyId.phoneNumber || 'Phone not available' %></p>
+              <% } else { %>
+                <p class="font-bold text-gray-800">Not assigned yet</p>
+                <p class="text-sm text-gray-600">The order will appear for nearby delivery boys once the host marks it ready to deliver.</p>
+              <% } %>
             </div>
           </div>
         </div>
@@ -90,6 +109,46 @@
                 <p class="text-sm text-gray-600"><%= new Date(order.orderDate).toLocaleString() %></p>
               </div>
             </div>
+
+            <% if (order.status === 'ready_to_deliver' || order.status === 'shipped' || order.status === 'out_for_delivery' || order.status === 'delivered' || order.status === 'return_requested' || order.status === 'returned') { %>
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" class="w-5 h-5 text-orange-600 mr-3">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-10.5a.75.75 0 00-1.5 0v3.19l-1.22 1.22a.75.75 0 101.06 1.06l1.44-1.44a.75.75 0 00.22-.53V7.5z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                  <p class="font-semibold text-gray-800">Ready To Deliver</p>
+                  <p class="text-sm text-gray-600">This order is visible to delivery boys near <%= order.deliveryLocation?.placeName || order.deliveryLocation?.city || 'the mapped delivery point' %>.</p>
+                </div>
+              </div>
+            <% } %>
+
+            <% if (order.status === 'shipped' || order.status === 'out_for_delivery' || order.status === 'delivered' || order.status === 'return_requested' || order.status === 'returned') { %>
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" class="w-5 h-5 text-indigo-600 mr-3">
+                  <path fill-rule="evenodd" d="M3 4.75A1.75 1.75 0 014.75 3h6.19a1.75 1.75 0 011.237.513l2.31 2.31A1.75 1.75 0 0115 7.06v8.19A1.75 1.75 0 0113.25 17h-8.5A1.75 1.75 0 013 15.25v-10.5z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                  <p class="font-semibold text-gray-800">Shipped</p>
+                  <p class="text-sm text-gray-600">
+                    <%= order.deliveryAcceptedAt ? new Date(order.deliveryAcceptedAt).toLocaleString() : 'Picked up by delivery boy' %>
+                  </p>
+                </div>
+              </div>
+            <% } %>
+
+            <% if (order.status === 'out_for_delivery' || order.status === 'delivered' || order.status === 'return_requested' || order.status === 'returned') { %>
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" class="w-5 h-5 text-purple-600 mr-3">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-8.5a1 1 0 012 0v2a1 1 0 11-2 0v-2zm1-4a1.25 1.25 0 100 2.5 1.25 1.25 0 000-2.5z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                  <p class="font-semibold text-gray-800">Out For Delivery</p>
+                  <p class="text-sm text-gray-600">
+                    <%= order.deliveryAcceptedAt ? new Date(order.deliveryAcceptedAt).toLocaleString() : 'Accepted by delivery boy' %>
+                  </p>
+                </div>
+              </div>
+            <% } %>
             
             <% if (order.deliveryDate) { %>
               <div class="flex items-center">
@@ -102,6 +161,30 @@
                 </div>
               </div>
             <% } %>
+
+            <% if (order.status === 'return_requested' || order.status === 'returned') { %>
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" class="w-5 h-5 text-amber-600 mr-3">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.25-7.25a.75.75 0 00-1.5 0v.56a2.25 2.25 0 11-2.25-2.25h1.19l-.97.97a.75.75 0 101.06 1.06l2.25-2.25a.75.75 0 000-1.06l-2.25-2.25a.75.75 0 10-1.06 1.06l.97.97H9.5a3.75 3.75 0 103.75 3.75v-.56z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                  <p class="font-semibold text-gray-800">Return Requested</p>
+                  <p class="text-sm text-gray-600"><%= order.returnRequestedAt ? new Date(order.returnRequestedAt).toLocaleString() : 'Customer requested a product return.' %></p>
+                </div>
+              </div>
+            <% } %>
+
+            <% if (order.returnedAt) { %>
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" class="w-5 h-5 text-slate-600 mr-3">
+                  <path fill-rule="evenodd" d="M3.505 2.365A.75.75 0 014.25 2h11.5a.75.75 0 01.75.75v12.5a.75.75 0 01-.75.75H4.25a.75.75 0 01-.75-.75V2.75a.75.75 0 01.005-.385zM6 6.75A.75.75 0 016.75 6h6.5a.75.75 0 010 1.5h-6.5A.75.75 0 016 6.75zm0 3.5a.75.75 0 01.75-.75h6.5a.75.75 0 010 1.5h-6.5a.75.75 0 01-.75-.75z" clip-rule="evenodd" />
+                </svg>
+                <div>
+                  <p class="font-semibold text-gray-800">Returned</p>
+                  <p class="text-sm text-gray-600"><%= new Date(order.returnedAt).toLocaleString() %></p>
+                </div>
+              </div>
+            <% } %>
           </div>
         </div>
 
@@ -110,8 +193,43 @@
           <h3 class="text-xl font-bold text-gray-800 mb-4">Shipping Address</h3>
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-gray-700"><%= order.shippingAddress %></p>
+            <p class="mt-2 text-sm text-gray-500">Mapped place: <%= order.deliveryLocation?.placeName || order.deliveryLocation?.city || 'Not mapped' %></p>
+            <% if (order.deliveryLocation?.latitude && order.deliveryLocation?.longitude) { %>
+              <p class="mt-1 text-xs text-gray-500">
+                Coordinates: <%= Number(order.deliveryLocation.latitude).toFixed(6) %>, <%= Number(order.deliveryLocation.longitude).toFixed(6) %>
+              </p>
+            <% } %>
           </div>
         </div>
+
+        <% if (showDeliveryOtp) { %>
+          <div class="mb-8 pb-8 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Delivery OTP</h3>
+            <div class="rounded-lg border border-orange-200 bg-orange-50 p-4">
+              <p class="text-sm text-gray-700">Share this OTP only after the delivery boy reaches you.</p>
+              <p class="mt-3 text-3xl font-black tracking-[0.35em] text-orange-700"><%= order.deliveryOtp %></p>
+            </div>
+          </div>
+        <% } %>
+
+        <% if (order.status === 'return_requested' || order.status === 'returned') { %>
+          <div class="mb-8 pb-8 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Return Status</h3>
+            <div class="rounded-lg border border-amber-200 bg-amber-50 p-4">
+              <p class="text-sm text-gray-700">
+                <%= order.status === 'return_requested'
+                  ? 'The return request is waiting for the host to confirm the product has been collected back.'
+                  : 'This order has been marked as returned.' %>
+              </p>
+              <% if (order.returnRequestedAt) { %>
+                <p class="mt-3 text-sm text-gray-600">Requested on <%= new Date(order.returnRequestedAt).toLocaleString() %></p>
+              <% } %>
+              <% if (order.returnedAt) { %>
+                <p class="mt-1 text-sm text-gray-600">Returned on <%= new Date(order.returnedAt).toLocaleString() %></p>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
 
         <!-- Payment Information -->
         <div class="mb-8 pb-8 border-b border-gray-200">
@@ -150,7 +268,7 @@
         </div>
 
         <!-- User Rating -->
-        <% if (order.userRating && order.userRating.stars > 0) { %>
+        <% if (order.status === 'delivered' && order.userRating && order.userRating.stars > 0) { %>
           <div class="mb-8 pb-8 border-b border-gray-200">
             <h3 class="text-xl font-bold text-gray-800 mb-4">Your Product Rating ⭐</h3>
             <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
@@ -194,6 +312,28 @@
           <a href="javascript:history.back()" class="px-6 py-2 rounded-lg bg-gray-300 text-gray-800 hover:bg-gray-400 transition font-medium">
             Back
           </a>
+          <% if (order.deliveryBoyId || order.status === 'shipped' || order.status === 'out_for_delivery' || order.status === 'delivered') { %>
+            <a href="/orders/<%= order._id %>/tracking" class="px-6 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition font-medium">
+              Open Tracking
+            </a>
+          <% } %>
+          <% if (viewerRole === 'customer' && order.status === 'delivered') { %>
+            <form action="/orders/<%= order._id %>/return" method="POST">
+              <button type="submit" class="px-6 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition font-medium"
+                onclick="return confirm('Do you want to request a return for this product?')">
+                Return Product
+              </button>
+            </form>
+          <% } %>
+          <% if (viewerRole === 'host' && order.status === 'return_requested') { %>
+            <form action="/host/orders/<%= order._id %>/status" method="POST">
+              <input type="hidden" name="status" value="returned">
+              <button type="submit" class="px-6 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition font-medium"
+                onclick="return confirm('Mark this order as returned?')">
+                Mark Returned
+              </button>
+            </form>
+          <% } %>
         </div>
 
       </div>

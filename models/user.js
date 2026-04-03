@@ -11,10 +11,17 @@ const userSchema = mongoose.Schema({
     required: [true, 'Email is required'],
     unique: true
   },
+  phoneNumber: {
+    type: String,
+    trim: true,
+    default: ""
+  },
   password: {
     type: String,
     required: [true, 'Password is required']
   },
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   userType: {
     type: String,
     enum: ['guest', 'host', 'deliveryboy'],

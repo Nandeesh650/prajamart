@@ -1,0 +1,77 @@
+<%- include('../partials/head') %>
+  </head>
+  <body class="bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen">
+    <%- include('../partials/nav') %>
+
+    <main class="mx-auto max-w-5xl px-6 py-10">
+      <div class="rounded-3xl bg-white p-8 shadow-lg">
+        <div class="flex flex-col gap-6 border-b border-gray-200 pb-8 md:flex-row md:items-center md:justify-between">
+          <div class="flex items-center gap-5">
+            <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-red-100 text-3xl font-black text-red-700">
+              <%= (profileUser.firstName || 'U').charAt(0).toUpperCase() %>
+            </div>
+            <div>
+              <p class="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">Account Profile</p>
+              <h1 class="mt-2 text-3xl font-black text-slate-900">
+                <%= profileUser.firstName %> <%= profileUser.lastName %>
+              </h1>
+              <p class="mt-2 text-sm text-slate-500">Manage your account details from one place.</p>
+            </div>
+          </div>
+
+          <a href="/profile/edit" class="inline-flex items-center justify-center rounded-2xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
+            Edit Profile
+          </a>
+        </div>
+
+        <% if (success) { %>
+          <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
+            <%= success %>
+          </div>
+        <% } %>
+
+        <% if (error) { %>
+          <div class="mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
+            <%= error %>
+          </div>
+        <% } %>
+
+        <div class="mt-8 grid gap-5 md:grid-cols-2">
+          <div class="rounded-2xl bg-slate-50 p-5">
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">First Name</p>
+            <p class="mt-2 text-lg font-bold text-slate-900"><%= profileUser.firstName %></p>
+          </div>
+
+          <div class="rounded-2xl bg-slate-50 p-5">
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Last Name</p>
+            <p class="mt-2 text-lg font-bold text-slate-900"><%= profileUser.lastName || 'Not set' %></p>
+          </div>
+
+          <div class="rounded-2xl bg-slate-50 p-5">
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Email</p>
+            <p class="mt-2 text-lg font-bold text-slate-900 break-all"><%= profileUser.email %></p>
+          </div>
+
+          <div class="rounded-2xl bg-slate-50 p-5">
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Phone Number</p>
+            <p class="mt-2 text-lg font-bold text-slate-900"><%= profileUser.phoneNumber || 'Not set' %></p>
+          </div>
+
+          <div class="rounded-2xl bg-slate-50 p-5">
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Role</p>
+            <p class="mt-2 text-lg font-bold capitalize text-slate-900"><%= profileUser.userType %></p>
+          </div>
+
+          <div class="rounded-2xl bg-slate-50 p-5">
+            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Cart Items</p>
+            <p class="mt-2 text-lg font-bold text-slate-900"><%= Array.isArray(profileUser.cart) ? profileUser.cart.length : 0 %></p>
+          </div>
+        </div>
+
+        <div class="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-5 text-sm text-blue-700">
+          Forgot your password later? Use <a href="/forgot-password" class="font-semibold underline">Forgot Password</a> from the login screen to reset it.
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

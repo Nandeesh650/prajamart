@@ -52,15 +52,21 @@
                     bg-yellow-100 text-yellow-800
                   <% } else if (order.status === 'confirmed') { %>
                     bg-blue-100 text-blue-800
-                  <% } else if (order.status === 'shipped') { %>
+                  <% } else if (order.status === 'ready_to_deliver') { %>
+                    bg-orange-100 text-orange-800
+                  <% } else if (order.status === 'out_for_delivery' || order.status === 'shipped') { %>
                     bg-purple-100 text-purple-800
                   <% } else if (order.status === 'delivered') { %>
                     bg-green-100 text-green-800
+                  <% } else if (order.status === 'return_requested') { %>
+                    bg-amber-100 text-amber-800
+                  <% } else if (order.status === 'returned') { %>
+                    bg-slate-200 text-slate-800
                   <% } else if (order.status === 'cancelled') { %>
                     bg-red-100 text-red-800
                   <% } %>
                 ">
-                  <%= order.status.toUpperCase() %>
+                  <%= order.status === 'ready_to_deliver' ? 'READY TO DELIVER' : order.status === 'out_for_delivery' ? 'OUT FOR DELIVERY' : order.status === 'shipped' ? 'SHIPPED' : order.status === 'return_requested' ? 'RETURN REQUESTED' : order.status === 'returned' ? 'RETURNED' : order.status.toUpperCase() %>
                 </span>
               </div>
 
@@ -87,10 +93,50 @@
               </div>
 
               <!-- Shipping Address -->
-              <div class="mb-4 pb-4 border-b border-gray-200">
-                <p class="text-xs text-gray-500 uppercase font-semibold">Shipping Address</p>
-                <p class="text-gray-700"><%= order.shippingAddress %></p>
+              <div class="mb-4 pb-4 border-b border-gray-200 grid gap-4 md:grid-cols-3">
+                <div>
+                  <p class="text-xs text-gray-500 uppercase font-semibold">Shipping Address</p>
+                  <p class="text-gray-700"><%= order.shippingAddress %></p>
+                  <p class="mt-2 text-xs text-gray-500 uppercase font-semibold">Mapped Place</p>
+                  <p class="text-sm text-gray-600"><%= order.deliveryLocation?.placeName || order.deliveryLocation?.city || 'Not mapped yet' %></p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500 uppercase font-semibold">Host Phone</p>
+                  <p class="text-gray-700"><%= order.hostId.phoneNumber || 'Not available' %></p>
+                </div>
+                <div>
+                  <p class="text-xs text-gray-500 uppercase font-semibold">Delivery Boy</p>
+                  <p class="text-gray-700">
+                    <%= order.deliveryBoyId ? `${order.deliveryBoyId.firstName} ${order.deliveryBoyId.lastName}` : 'Waiting for delivery acceptance' %>
+                  </p>
+                  <p class="text-sm text-gray-500"><%= order.deliveryBoyId?.phoneNumber || '' %></p>
+                </div>
               </div>
+
+              <% if ((order.status === 'shipped' || order.status === 'out_for_delivery') && order.deliveryOtp) { %>
+                <div class="mb-4 pb-4 border-b border-gray-200 rounded-lg bg-orange-50 p-4">
+                  <p class="text-xs text-orange-500 uppercase font-semibold">Delivery OTP</p>
+                  <p class="mt-2 text-sm text-gray-700">Share this OTP only when your order is delivered.</p>
+                  <p class="mt-2 text-2xl font-black tracking-[0.35em] text-orange-700"><%= order.deliveryOtp %></p>
+                </div>
+              <% } %>
+
+              <% if (order.status === 'return_requested' || order.status === 'returned') { %>
+                <div class="mb-4 pb-4 border-b border-gray-200 rounded-lg bg-amber-50 p-4">
+                  <p class="text-xs text-amber-600 uppercase font-semibold">Return Status</p>
+                  <p class="mt-2 text-sm text-gray-700">
+                    <%= order.status === 'return_requested'
+                      ? 'Your return request has been sent to the host. They can now mark the product as returned.'
+                      : 'This product has been marked as returned.' %>
+                  </p>
+                  <% if (order.returnRequestedAt) { %>
+                    <p class="mt-2 text-xs text-gray-500">Requested on <%= new Date(order.returnRequestedAt).toLocaleString() %></p>
+                  <% } %>
+                  <% if (order.returnedAt) { %>
+                    <p class="mt-1 text-xs text-gray-500">Returned on <%= new Date(order.returnedAt).toLocaleString() %></p>
+                  <% } %>
+                </div>
+              <% } %>
 
               <!-- Payment Information -->
               <div class="mb-4 pb-4 border-b border-gray-200 bg-blue-50 p-3 rounded-lg">
@@ -123,7 +169,7 @@
               </div>
 
               <!-- User Rating -->
-              <% if (order.userRating && order.userRating.stars > 0) { %>
+              <% if (order.status === 'delivered' && order.userRating && order.userRating.stars > 0) { %>
                 <div class="mb-4 pb-4 border-b border-gray-200 bg-yellow-50 p-3 rounded-lg">
                   <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Your Rating</p>
                   <div class="flex items-center gap-2 mb-2">
@@ -149,6 +195,19 @@
                 <a href="/orders/<%= order._id %>" class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition font-medium">
                   View Details
                 </a>
+                <% if (order.deliveryBoyId || order.status === 'shipped' || order.status === 'out_for_delivery' || order.status === 'delivered') { %>
+                  <a href="/orders/<%= order._id %>/tracking" class="px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition font-medium">
+                    Track Order
+                  </a>
+                <% } %>
+                <% if (order.status === 'delivered') { %>
+                  <form action="/orders/<%= order._id %>/return" method="POST" style="display: inline;">
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition font-medium"
+                      onclick="return confirm('Do you want to request a return for this product?')">
+                      Return Product
+                    </button>
+                  </form>
+                <% } %>
                 <% if (order.status === 'cancelled'){ %>
                 <form action="/host/orders/<%= order._id %>/delete" method="POST" style="display: inline;">
                   <button type="submit" class="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition font-medium" onclick="return confirm('Are you sure you want to delete this order? This action cannot be undone.');">
@@ -156,7 +215,7 @@
                   </button>
                 </form>
                 <% } %>
-                <% if (order.status === 'pending' || order.status === 'confirmed') { %>
+                <% if (order.status === 'pending' || order.status === 'confirmed' || order.status === 'ready_to_deliver') { %>
                   <form action="/orders/<%= order._id %>/cancel" method="POST" style="display: inline;">
                     <button type="submit" class="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition font-medium"
                       onclick="return confirm('Are you sure you want to cancel this order?')">

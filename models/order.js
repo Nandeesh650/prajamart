@@ -27,7 +27,7 @@ const orderSchema = mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'],
+    enum: ['pending', 'confirmed', 'ready_to_deliver', 'out_for_delivery', 'shipped', 'delivered', 'return_requested', 'returned', 'cancelled'],
     default: 'pending'
   },
   userRating: {
@@ -44,6 +44,25 @@ const orderSchema = mongoose.Schema({
     default: Date.now
   },
   deliveryDate: Date,
+  returnRequestedAt: Date,
+  returnedAt: Date,
+  deliveryLocation: {
+    label: String,
+    addressDetails: String,
+    placeName: String,
+    formattedAddress: String,
+    city: String,
+    latitude: Number,
+    longitude: Number
+  },
+  deliveryBoyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  deliveryAcceptedAt: Date,
+  deliveryOtp: String,
+  deliveryOtpGeneratedAt: Date,
+  deliveryOtpVerifiedAt: Date,
   shippingAddress: String,
   notes: String,
   paymentMethod: {

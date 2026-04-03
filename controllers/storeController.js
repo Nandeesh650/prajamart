@@ -11,6 +11,16 @@ const LOCATION_OPTIONS = [
   "Pune",
 ];
 
+const requireSessionUser = (req, res) => {
+  if (req.session.user?._id) {
+    return req.session.user._id;
+  }
+
+  req.session.error = "Please log in to use your cart.";
+  res.redirect("/login");
+  return null;
+};
+
 const buildProductFilter = (query, location) => {
   const trimmedQuery = (query || "").trim();
   const trimmedLocation = (location || "").trim();
@@ -32,7 +42,6 @@ const buildProductFilter = (query, location) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  console.log("Session Value: ", req.session);
   Product.find()
     .populate('hostId', 'firstName lastName')
     .then((registeredProducts) => {
@@ -101,37 +110,90 @@ exports.getBookings = (req, res, next) => {
 };
 
 exports.getCartList = async (req, res, next) => {
-  const userId = req.session.user._id;
-  const user = await User.findById(userId).populate('cart');
-  res.render("store/cart-list", {
-    cartProducts: user.cart,
-    pageTitle: "My Cart",
-    currentPage: "cart",
-    isLoggedIn: req.isLoggedIn, 
-    user: req.session.user,
-  });
+  const userId = requireSessionUser(req, res);
+
+  if (!userId) {
+    return;
+  }
+
+  try {
+    const user = await User.findById(userId).populate('cart');
+
+    if (!user) {
+      req.session.isLoggedIn = false;
+      req.session.user = null;
+      req.session.error = "Please log in again to view your cart.";
+      return res.redirect("/login");
+    }
+
+    res.render("store/cart-list", {
+      cartProducts: user.cart,
+      pageTitle: "My Cart",
+      currentPage: "cart",
+      isLoggedIn: req.isLoggedIn, 
+      user: req.session.user,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.postAddToCart = async (req, res, next) => {
   const productId = req.body.productId || req.body.id;
-  const userId = req.session.user._id;
-  const user = await User.findById(userId);
-  if (!user.cart.includes(productId)) {
-    user.cart.push(productId);
-    await user.save();
+  const userId = requireSessionUser(req, res);
+
+  if (!userId) {
+    return;
   }
-  res.redirect("/cart");
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      req.session.isLoggedIn = false;
+      req.session.user = null;
+      req.session.error = "Please log in again to use your cart.";
+      return res.redirect("/login");
+    }
+
+    const alreadyInCart = user.cart.some((item) => String(item) === String(productId));
+
+    if (!alreadyInCart) {
+      user.cart.push(productId);
+      await user.save();
+    }
+
+    res.redirect("/cart");
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.postRemoveFromCart = async (req, res, next) => {
   const productId = req.params.productId;
-  const userId = req.session.user._id;
-  const user = await User.findById(userId);
-  if (user.cart.includes(productId)) {
-    user.cart = user.cart.filter(item => item != productId);
-    await user.save();
+  const userId = requireSessionUser(req, res);
+
+  if (!userId) {
+    return;
   }
-  res.redirect("/cart");
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      req.session.isLoggedIn = false;
+      req.session.user = null;
+      req.session.error = "Please log in again to use your cart.";
+      return res.redirect("/login");
+    }
+
+    user.cart = user.cart.filter((item) => String(item) !== String(productId));
+    await user.save();
+
+    res.redirect("/cart");
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.getProductDetails = (req, res, next) => {

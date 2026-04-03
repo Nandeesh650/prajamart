@@ -52,15 +52,21 @@
                     bg-yellow-100 text-yellow-800
                   <% } else if (order.status === 'confirmed') { %>
                     bg-blue-100 text-blue-800
-                  <% } else if (order.status === 'shipped') { %>
+                  <% } else if (order.status === 'ready_to_deliver') { %>
+                    bg-orange-100 text-orange-800
+                  <% } else if (order.status === 'out_for_delivery' || order.status === 'shipped') { %>
                     bg-purple-100 text-purple-800
                   <% } else if (order.status === 'delivered') { %>
                     bg-green-100 text-green-800
+                  <% } else if (order.status === 'return_requested') { %>
+                    bg-amber-100 text-amber-800
+                  <% } else if (order.status === 'returned') { %>
+                    bg-slate-200 text-slate-800
                   <% } else if (order.status === 'cancelled') { %>
                     bg-red-100 text-red-800
                   <% } %>
                 ">
-                  <%= order.status.toUpperCase() %>
+                  <%= order.status === 'ready_to_deliver' ? 'READY TO DELIVER' : order.status === 'out_for_delivery' ? 'OUT FOR DELIVERY' : order.status === 'shipped' ? 'SHIPPED' : order.status === 'return_requested' ? 'RETURN REQUESTED' : order.status === 'returned' ? 'RETURNED' : order.status.toUpperCase() %>
                 </span>
               </div>
 
@@ -88,10 +94,14 @@
 
               <!-- Customer Info -->
               <div class="mb-4 pb-4 border-b border-gray-200">
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
                     <p class="text-xs text-gray-500 uppercase font-semibold">Customer Email</p>
                     <p class="text-gray-700"><%= order.userId.email %></p>
+                  </div>
+                  <div>
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Customer Phone</p>
+                    <p class="text-gray-700"><%= order.userId.phoneNumber || 'Not available' %></p>
                   </div>
                   <div>
                     <p class="text-xs text-gray-500 uppercase font-semibold">Shipping Address</p>
@@ -99,6 +109,32 @@
                   </div>
                 </div>
               </div>
+
+              <% if (order.deliveryLocation || order.deliveryBoyId) { %>
+                <div class="mb-4 pb-4 border-b border-gray-200 bg-emerald-50 p-3 rounded-lg">
+                  <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                    <div>
+                      <p class="text-xs text-gray-500 uppercase font-semibold">Mapped Place</p>
+                      <p class="text-gray-700"><%= order.deliveryLocation?.placeName || order.deliveryLocation?.city || 'Not mapped' %></p>
+                      <% if (order.deliveryLocation?.latitude && order.deliveryLocation?.longitude) { %>
+                        <p class="mt-1 text-xs text-gray-500">
+                          Lat <%= Number(order.deliveryLocation.latitude).toFixed(6) %>, Lng <%= Number(order.deliveryLocation.longitude).toFixed(6) %>
+                        </p>
+                      <% } %>
+                    </div>
+                    <div>
+                      <p class="text-xs text-gray-500 uppercase font-semibold">Assigned Delivery Boy</p>
+                      <p class="text-gray-700">
+                        <%= order.deliveryBoyId ? `${order.deliveryBoyId.firstName} ${order.deliveryBoyId.lastName}` : 'Waiting for acceptance' %>
+                      </p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-gray-500 uppercase font-semibold">Delivery Boy Phone</p>
+                      <p class="text-gray-700"><%= order.deliveryBoyId?.phoneNumber || 'Not assigned yet' %></p>
+                    </div>
+                  </div>
+                </div>
+              <% } %>
 
               <!-- Payment Information -->
               <div class="mb-4 pb-4 border-b border-gray-200 bg-blue-50 p-3 rounded-lg">
@@ -133,22 +169,63 @@
               <!-- Status Update -->
               <div class="mb-4">
                 <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Update Order Status</p>
-                <form action="/host/orders/<%= order._id %>/status" method="POST" class="flex gap-2">
-                  <select name="status" class="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
-                    <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending</option>
-                    <option value="confirmed" <%= order.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
-                    <option value="shipped" <%= order.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
-                    <option value="delivered" <%= order.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
-                    <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
-                  </select>
-                  <button type="submit" class="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition font-medium">
-                    Update
-                  </button>
-                </form>
+                <% if (order.status === 'return_requested') { %>
+                  <div class="space-y-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                    <p class="text-sm text-amber-800">
+                      Customer requested a return<% if (order.returnRequestedAt) { %> on <%= new Date(order.returnRequestedAt).toLocaleString() %><% } %>. Mark it returned once the product comes back.
+                    </p>
+                    <form action="/host/orders/<%= order._id %>/status" method="POST">
+                      <input type="hidden" name="status" value="returned">
+                      <button type="submit" class="px-4 py-2 rounded-lg bg-amber-500 text-white hover:bg-amber-600 transition font-medium"
+                        onclick="return confirm('Mark this order as returned?')">
+                        Mark Returned
+                      </button>
+                    </form>
+                  </div>
+                <% } else if (order.status === 'shipped' || order.status === 'out_for_delivery' || order.status === 'delivered' || order.status === 'returned') { %>
+                  <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                    <%= order.status === 'shipped'
+                      ? 'This order has been picked up by the delivery boy and will move to out for delivery next.'
+                      : order.status === 'out_for_delivery'
+                        ? 'This order is with the delivery boy now. Delivery completion will happen with customer OTP.'
+                        : order.status === 'delivered'
+                          ? 'This order is already delivered. The customer can now request a return if needed.'
+                          : 'This order has been marked as returned.' %>
+                  </div>
+                <% } else { %>
+                  <form action="/host/orders/<%= order._id %>/status" method="POST" class="flex gap-2">
+                    <select name="status" class="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500">
+                      <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                      <option value="confirmed" <%= order.status === 'confirmed' ? 'selected' : '' %>>Confirmed</option>
+                      <option value="ready_to_deliver" <%= order.status === 'ready_to_deliver' ? 'selected' : '' %>>Ready To Deliver</option>
+                      <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                    </select>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-green-500 text-white hover:bg-green-600 transition font-medium">
+                      Update
+                    </button>
+                  </form>
+                <% } %>
               </div>
 
+              <% if (order.status === 'return_requested' || order.status === 'returned') { %>
+                <div class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                  <% if (order.returnRequestedAt) { %>
+                    <p>Return requested on <%= new Date(order.returnRequestedAt).toLocaleString() %>.</p>
+                  <% } %>
+                  <% if (order.returnedAt) { %>
+                    <p class="mt-1">Marked returned on <%= new Date(order.returnedAt).toLocaleString() %>.</p>
+                  <% } %>
+                </div>
+              <% } %>
+
+              <% if ((order.status === 'shipped' || order.status === 'out_for_delivery') && order.deliveryOtp) { %>
+                <div class="mb-4 rounded-lg border border-orange-200 bg-orange-50 p-4 text-sm text-orange-800">
+                  Share this OTP with the customer so the delivery boy can complete the order: <span class="font-bold tracking-[0.25em]"><%= order.deliveryOtp %></span>
+                </div>
+              <% } %>
+
               <!-- Customer Rating -->
-              <% if (order.userRating && order.userRating.stars > 0) { %>
+              <% if (order.status === 'delivered' && order.userRating && order.userRating.stars > 0) { %>
                 <div class="mb-4 pb-4 border-b border-gray-200 bg-yellow-50 p-3 rounded-lg">
                   <p class="text-xs text-gray-500 uppercase font-semibold mb-2">Customer Rating ⭐</p>
                   <div class="flex items-center gap-2 mb-2">
@@ -182,6 +259,11 @@
                 <a href="/orders/<%= order._id %>" class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 transition font-medium">
                   View Details
                 </a>
+                <% if (order.deliveryBoyId || order.status === 'shipped' || order.status === 'out_for_delivery' || order.status === 'delivered') { %>
+                  <a href="/orders/<%= order._id %>/tracking" class="px-4 py-2 rounded-lg bg-emerald-500 text-white hover:bg-emerald-600 transition font-medium">
+                    Live Tracking
+                  </a>
+                <% } %>
                 <form action="/host/orders/<%= order._id %>/delete" method="POST" style="display: inline;">
                   <button type="submit" class="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition font-medium" onclick="return confirm('Are you sure you want to delete this order? This action cannot be undone.');">
                     Delete Order

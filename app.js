@@ -1,6 +1,7 @@
 // Core Module
 const path = require('path');
 const dns = require('dns');
+const http = require('http');
 
 dns.setServers(['8.8.8.8', '8.8.4.4']); 
 
@@ -16,15 +17,32 @@ const DB_PATH = "mongodb+srv://root:root@nandeesh.3tbg3gi.mongodb.net/?appName=N
 const storeRouter = require("./routes/storeRouter")
 const hostRouter = require("./routes/hostRouter")
 const orderRouter = require("./routes/orderRouter")
+const deliveryRouter = require("./routes/deliveryboy")
 const authRouter = require("./routes/authRouter")
 const rootDir = require("./utils/pathUtil");
 const errorsController = require("./controllers/errors");
 const User = require("./models/user");
+const { attachTrackingSockets } = require("./utils/trackingSocket");
 
 const app = express();
+const server = http.createServer(app);
+
+let SocketIOServer = null;
+
+try {
+  ({ Server: SocketIOServer } = require("socket.io"));
+} catch (error) {
+  ({ Server: SocketIOServer } = require("./tracking/node_modules/socket.io"));
+}
+
+const io = new SocketIOServer(server);
+attachTrackingSockets(io);
 
 app.set('view engine', 'ejs');
-app.set('views', 'views');
+app.set('views', [
+  path.join(rootDir, 'views'),
+  path.join(rootDir, 'tracking', 'views')
+]);
 
 const store = new MongoDBStore({
   uri: DB_PATH,
@@ -61,9 +79,10 @@ const multerOptions = {
   storage, fileFilter
 };
 
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 app.use(multer(multerOptions).single('photo'));
 app.use(express.static(path.join(rootDir, 'public')))
+app.use("/tracking-assets", express.static(path.join(rootDir, 'tracking', 'public')));
 app.use("/uploads", express.static(path.join(rootDir, 'uploads')))
 app.use("/products/uploads", express.static(path.join(rootDir, 'uploads')));
 
@@ -87,15 +106,17 @@ app.use(async (req, res, next) => {
   }
 
   try {
-    const freshUser = await User.findById(req.session.user._id).select("firstName lastName email userType cart");
+    const freshUser = await User.findById(req.session.user._id).select("firstName lastName email phoneNumber userType cart");
 
     if (!freshUser) {
       req.session.isLoggedIn = false;
       req.session.user = null;
+      req.isLoggedIn = false;
       return next();
     }
 
     req.session.user = freshUser;
+    req.isLoggedIn = true;
     res.locals.cartCount = Array.isArray(freshUser.cart)
       ? freshUser.cart.filter(Boolean).length
       : 0;
@@ -111,6 +132,9 @@ app.use(storeRouter);
 
 app.use("/orders", (req, res, next) => {
   if (req.isLoggedIn) {
+    if (req.session.user?.userType === "deliveryboy") {
+      return res.redirect("/delivery/orders");
+    }
     next();
   } else {
     res.redirect("/login");
@@ -118,12 +142,29 @@ app.use("/orders", (req, res, next) => {
 });
 app.use("/orders", orderRouter);
 
-app.use("/host", (req, res, next) => {
-  if (req.isLoggedIn) {
-    next();
-  } else {
-    res.redirect("/login");
+app.use("/delivery", (req, res, next) => {
+  if (!req.isLoggedIn) {
+    return res.redirect("/login");
   }
+
+  if (req.session.user?.userType !== "deliveryboy") {
+    return res.redirect("/");
+  }
+
+  next();
+});
+app.use("/delivery", deliveryRouter);
+
+app.use("/host", (req, res, next) => {
+  if (!req.isLoggedIn) {
+    return res.redirect("/login");
+  }
+
+  if (req.session.user?.userType !== "host") {
+    return res.redirect("/");
+  }
+
+  next();
 });
 app.use("/host", hostRouter);
 
@@ -133,7 +174,7 @@ const PORT = 5001;
 
 mongoose.connect(DB_PATH).then(() => {
   console.log('Connected to Mongo');
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Server running on address http://localhost:${PORT}`);
   });
 }).catch(err => {

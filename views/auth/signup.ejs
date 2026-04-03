@@ -7,6 +7,16 @@
       <h1 class="text-3xl font-bold mb-6 text-center text-gray-800 border-b pb-4">Create Your Account</h1>
       
       <form action="/signup" method="POST" class="max-w-md mx-auto">
+        <% if (success) { %>
+          <div class="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            <%= success %>
+          </div>
+        <% } %>
+        <% if (error) { %>
+          <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <%= error %>
+          </div>
+        <% } %>
  
         <%- include('../partials/errors') %>
         <!-- Name fields in a flex layout -->
@@ -58,6 +68,24 @@
               name="email"
               value="<%= oldInput.email ? oldInput.email : '' %>"
               placeholder="your.email@example.com"
+              class="w-full pl-10 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+              required />
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+              <i class="fas fa-phone"></i>
+            </span>
+            <input
+              type="tel"
+              id="phoneNumber"
+              name="phoneNumber"
+              value="<%= oldInput.phoneNumber ? oldInput.phoneNumber : '' %>"
+              placeholder="9876543210"
+              maxlength="10"
               class="w-full pl-10 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
               required />
           </div>

@@ -21,7 +21,7 @@
     : isHost
       ? '/host/host-product-list'
       : isDeliveryboy
-        ? '/orders'
+        ? '/delivery/orders'
         : '/';
 
   const navLinkClass = (isActive) =>
@@ -79,14 +79,17 @@
         <a href="/products" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'Products' || current === 'search') %>">Products</a>
         <a href="/cart" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'cart') %>">Cart</a>
         <a href="/orders" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'orders') %>">Orders</a>
+        <a href="/profile" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'profile') %>">Profile</a>
 
       <% } else if (isHost) { %>
         <a href="/host/host-product-list" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'host-products') %>">Host Products</a>
         <a href="/host/add-product" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'addProduct') %>">Add Product</a>
         <a href="/host/orders" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'host-orders') %>">Orders</a>
+        <a href="/profile" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'profile') %>">Profile</a>
 
       <% } else if (isDeliveryboy) { %>
-        <a href="/orders" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'orders') %>">Deliveries</a>
+        <a href="/delivery/orders" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'delivery-orders') %>">Deliveries</a>
+        <a href="/profile" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'profile') %>">Profile</a>
 
       <% } else { %>
         <a href="/" class="rounded-full px-4 py-2 text-sm font-semibold transition-all duration-300 <%= navLinkClass(current === 'index') %>">Home</a>
@@ -117,6 +120,9 @@
           Login
         </a>
       <% } else { %>
+        <a href="/profile" class="rounded-xl border border-white/30 px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-white/10">
+          Profile
+        </a>
         <form action="/logout" method="POST">
           <button class="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition-all duration-300 hover:scale-105 hover:shadow-xl">
             Logout
@@ -150,10 +156,33 @@
         </form>
       <% } %>
 
-      <a href="/" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Home</a>
-      <a href="/products" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Products</a>
-      <a href="/cart" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Cart</a>
-      <a href="/orders" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Orders</a>
+      <% if (isGuest) { %>
+        <a href="/" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Home</a>
+        <a href="/products" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Products</a>
+        <a href="/cart" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Cart</a>
+        <a href="/orders" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Orders</a>
+        <a href="/profile" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Profile</a>
+      <% } else if (isHost) { %>
+        <a href="/host/host-product-list" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Host Products</a>
+        <a href="/host/add-product" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Add Product</a>
+        <a href="/host/orders" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Orders</a>
+        <a href="/profile" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Profile</a>
+      <% } else if (isDeliveryboy) { %>
+        <a href="/delivery/orders" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Deliveries</a>
+        <a href="/profile" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Profile</a>
+      <% } else { %>
+        <a href="/" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Home</a>
+        <a href="/products" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Products</a>
+      <% } %>
+
+      <% if (isLoggedInSafe) { %>
+        <form action="/logout" method="POST">
+          <button class="block w-full rounded-xl px-4 py-3 text-left hover:bg-white/10 transition">Logout</button>
+        </form>
+      <% } else { %>
+        <a href="/login" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Login</a>
+        <a href="/signup" class="block rounded-xl px-4 py-3 hover:bg-white/10 transition">Sign Up</a>
+      <% } %>
     </div>
   </div>
 </header>
