@@ -1,77 +1,255 @@
 <%- include('../partials/head') %>
-  </head>
-  <body class="bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen">
-    <%- include('../partials/nav') %>
 
-    <main class="mx-auto max-w-5xl px-6 py-10">
-      <div class="rounded-3xl bg-white p-8 shadow-lg">
-        <div class="flex flex-col gap-6 border-b border-gray-200 pb-8 md:flex-row md:items-center md:justify-between">
-          <div class="flex items-center gap-5">
-            <div class="flex h-20 w-20 items-center justify-center rounded-3xl bg-red-100 text-3xl font-black text-red-700">
-              <%= (profileUser.firstName || 'U').charAt(0).toUpperCase() %>
+<% 
+  /* --- CRASH PROTECTION: Default values for all possible variables --- */
+  var view = locals.view || 'profile'; 
+  var profileUser = locals.profileUser || {};
+  var oldInput = locals.oldInput || profileUser;
+  var success = locals.success || null;
+  var error = locals.error || null;
+%>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+  :root {
+    --brand-blue: #2563eb;
+    --brand-slate: #0f172a;
+    --glass: rgba(255, 255, 255, 0.9);
+  }
+
+  body { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background: #ffffff; 
+    color: var(--brand-slate);
+    overflow-x: hidden;
+  }
+
+  /* 1. Dynamic Particle Canvas */
+  #particle-canvas {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f1f5f9 100%);
+  }
+
+  /* 2. Frosted Glass Container with 3D Depth */
+  .vault-viewport { perspective: 2000px; }
+  .vault-card {
+    background: var(--glass);
+    backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out;
+    box-shadow: 0 50px 100px -30px rgba(0,0,0,0.06);
+  }
+
+  /* 3. Neumorphic Info Nodes & Inputs */
+  .info-node {
+    @apply rounded-3xl bg-white p-6 transition-all duration-500 border border-slate-100;
+  }
+  .info-node:hover {
+    @apply -translate-y-2;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 30px 60px -15px rgba(0,0,0,0.08);
+    border-color: rgba(37, 99, 235, 0.1);
+  }
+
+  .input-field {
+    @apply w-full bg-transparent border-none text-slate-900 font-bold focus:ring-0 p-0 mt-1 placeholder:text-slate-300;
+  }
+
+  /* 4. Magnetic Action Button */
+  .btn-magnetic {
+    @apply px-9 py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] transition-all duration-500 relative overflow-hidden inline-flex items-center justify-center;
+    background: var(--brand-slate);
+    color: white;
+    box-shadow: 0 15px 30px -5px rgba(15, 23, 42, 0.3);
+  }
+  .btn-magnetic:hover {
+    @apply scale-[1.03] -translate-y-1;
+    background: var(--brand-blue);
+    box-shadow: 0 20px 40px -8px rgba(37, 99, 235, 0.4);
+    color: white;
+  }
+
+  /* 5. Rippling Initial Dot */
+  @keyframes status-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.3); }
+    100% { box-shadow: 0 0 0 20px rgba(37, 99, 235, 0); }
+  }
+  .status-ripple { position: relative; }
+  .status-ripple::before {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border-radius: 99px;
+    background: rgba(37, 99, 235, 0.05);
+    animation: status-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    z-index: -1;
+  }
+</style>
+
+<body class="antialiased min-h-screen">
+  <canvas id="particle-canvas"></canvas>
+  <%- include('../partials/nav') %>
+
+  <main class="mx-auto max-w-5xl px-6 py-20 vault-viewport">
+
+    <% if (success) { %>
+      <div class="mb-8 rounded-2xl bg-emerald-50 border border-emerald-100 px-6 py-4 text-xs font-bold text-emerald-700 flex items-center gap-3 animate-bounce-short" data-aos="fade-down">
+         <div class="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+         <%= success %>
+      </div>
+    <% } %>
+
+    <% if (view === 'profile') { %>
+      <div class="text-left mb-16" data-aos="fade-down" data-aos-duration="1500">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="h-[1.5px] w-8 bg-blue-600 rounded-full"></span>
+          <p class="text-blue-600 font-black text-[10px] uppercase tracking-[0.4em]">Node Identity System</p>
+        </div>
+        <h1 class="text-6xl font-[1000] text-slate-900 tracking-[-0.07em]">System<span class="text-slate-400">Vault.</span></h1>
+      </div>
+
+      <div id="interactiveCard" class="vault-card rounded-[3.5rem] p-10 md:p-16" data-aos="zoom-in-up">
+        <div class="flex flex-col gap-8 border-b border-slate-100 pb-10 md:flex-row md:items-center md:justify-between">
+          <div class="flex items-center gap-6">
+            <div class="status-ripple flex h-24 w-24 items-center justify-center rounded-[2rem] bg-slate-950 text-4xl font-[950] text-white shadow-xl relative overflow-hidden" data-aos="zoom-in" data-aos-delay="300">
+              <span class="relative z-10"><%= (profileUser.firstName || 'U').charAt(0).toUpperCase() %></span>
+              <div class="absolute inset-0 bg-blue-500 opacity-20 blur-xl animate-pulse"></div>
             </div>
             <div>
-              <p class="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">Account Profile</p>
-              <h1 class="mt-2 text-3xl font-black text-slate-900">
+              <p class="text-[9px] font-black uppercase tracking-[0.6em] text-blue-600">Secure Profile Node</p>
+              <h1 class="mt-2 text-4xl font-[900] text-slate-900 tracking-tighter">
                 <%= profileUser.firstName %> <%= profileUser.lastName %>
               </h1>
-              <p class="mt-2 text-sm text-slate-500">Manage your account details from one place.</p>
+              <p class="mt-2 text-sm text-slate-500 font-medium">Core system configurations</p>
             </div>
           </div>
-
-          <a href="/profile/edit" class="inline-flex items-center justify-center rounded-2xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
-            Edit Profile
-          </a>
-        </div>
-
-        <% if (success) { %>
-          <div class="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700">
-            <%= success %>
-          </div>
-        <% } %>
-
-        <% if (error) { %>
-          <div class="mt-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-700">
-            <%= error %>
-          </div>
-        <% } %>
-
-        <div class="mt-8 grid gap-5 md:grid-cols-2">
-          <div class="rounded-2xl bg-slate-50 p-5">
-            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">First Name</p>
-            <p class="mt-2 text-lg font-bold text-slate-900"><%= profileUser.firstName %></p>
-          </div>
-
-          <div class="rounded-2xl bg-slate-50 p-5">
-            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Last Name</p>
-            <p class="mt-2 text-lg font-bold text-slate-900"><%= profileUser.lastName || 'Not set' %></p>
-          </div>
-
-          <div class="rounded-2xl bg-slate-50 p-5">
-            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Email</p>
-            <p class="mt-2 text-lg font-bold text-slate-900 break-all"><%= profileUser.email %></p>
-          </div>
-
-          <div class="rounded-2xl bg-slate-50 p-5">
-            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Phone Number</p>
-            <p class="mt-2 text-lg font-bold text-slate-900"><%= profileUser.phoneNumber || 'Not set' %></p>
-          </div>
-
-          <div class="rounded-2xl bg-slate-50 p-5">
-            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Role</p>
-            <p class="mt-2 text-lg font-bold capitalize text-slate-900"><%= profileUser.userType %></p>
-          </div>
-
-          <div class="rounded-2xl bg-slate-50 p-5">
-            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Cart Items</p>
-            <p class="mt-2 text-lg font-bold text-slate-900"><%= Array.isArray(profileUser.cart) ? profileUser.cart.length : 0 %></p>
+          <div data-aos="fade-left" data-aos-delay="400">
+            <a href="/profile/edit" class="btn-magnetic">Authorize Edit</a>
           </div>
         </div>
 
-        <div class="mt-8 rounded-2xl border border-blue-200 bg-blue-50 p-5 text-sm text-blue-700">
-          Forgot your password later? Use <a href="/forgot-password" class="font-semibold underline">Forgot Password</a> from the login screen to reset it.
+        <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div class="info-node" data-aos="fade-up" data-aos-delay="200">
+            <p class="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400">Identity Forename</p>
+            <p class="mt-3 text-2xl font-bold text-slate-900"><%= profileUser.firstName %></p>
+          </div>
+          <div class="info-node" data-aos="fade-up" data-aos-delay="300">
+            <p class="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400">Identity Surname</p>
+            <p class="mt-3 text-2xl font-bold <%= profileUser.lastName ? 'text-slate-900' : 'text-slate-300 italic' %>">
+              <%= profileUser.lastName || 'Not set' %>
+            </p>
+          </div>
+          <div class="info-node md:col-span-2 lg:col-span-1" data-aos="fade-up" data-aos-delay="400">
+            <p class="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400">System Endpoint</p>
+            <p class="mt-3 text-xl font-black text-slate-900 break-all truncate"><%= profileUser.email %></p>
+          </div>
+          <div class="info-node" data-aos="fade-up" data-aos-delay="500">
+            <p class="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400">Terminal Contact</p>
+            <p class="mt-3 text-2xl font-bold text-slate-900"><%= profileUser.phoneNumber || 'Node unmapped' %></p>
+          </div>
+          <div class="info-node" data-aos="fade-up" data-aos-delay="600">
+            <p class="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400">Asset Nodes</p>
+            <p class="mt-3 text-4xl font-[1000] text-slate-900"><%= Array.isArray(profileUser.cart) ? profileUser.cart.length : 0 %></p>
+          </div>
+        </div>
+
+        <div class="mt-12 rounded-3xl bg-slate-50 p-8 border border-slate-100 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.03)] transition-all duration-500 hover:shadow-lg" data-aos="fade-up" data-aos-delay="900">
+          <div class="flex items-start gap-5">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm border border-slate-100">
+                  <span class="text-xl animate-pulse">🔐</span>
+              </div>
+              <div>
+                  <p class="text-[10px] font-[900] uppercase tracking-[0.3em] text-blue-600 mb-1">System Advisory</p>
+                  <p class="text-sm font-bold text-slate-800">Security Credentials</p>
+                  <p class="text-xs text-slate-500 mt-2 leading-relaxed max-w-md">
+                      Need to re-establish your core credentials later? Use the 
+                      <a href="/forgot-password" class="font-black text-blue-600 underline decoration-blue-200 underline-offset-4 hover:decoration-blue-600 transition-all">Forgot Password</a> 
+                      protocol from the logic screen to reset your node access.
+                  </p>
+              </div>
+          </div>
         </div>
       </div>
-    </main>
-  </body>
+
+    <% } else if (view === 'edit') { %>
+      <div class="text-center mb-16" data-aos="fade-down">
+        <h1 class="text-6xl font-[1000] text-slate-900 tracking-tighter">Sync<span class="text-blue-600">.</span></h1>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.5em]">Identity Update protocol</p>
+      </div>
+
+      <div id="interactiveCard" class="vault-card rounded-[3.5rem] p-12 max-w-2xl mx-auto" data-aos="zoom-in">
+        <form action="/profile/edit" method="POST" class="space-y-6">
+          <div class="info-node">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-400">Legal Forename</label>
+            <input type="text" name="firstName" value="<%= oldInput.firstName %>" class="input-field" required>
+          </div>
+          <div class="info-node">
+            <label class="text-[9px] font-black uppercase tracking-widest text-slate-400">Secure Email</label>
+            <input type="email" name="email" value="<%= oldInput.email %>" class="input-field" required>
+          </div>
+          <div class="flex flex-col md:flex-row gap-6 pt-6">
+            <button type="submit" class="btn-magnetic w-full">Commit Changes</button>
+            <a href="/profile" class="text-[9px] font-black uppercase tracking-[0.4em] text-slate-400 flex items-center justify-center">Abort Action</a>
+          </div>
+        </form>
+      </div>
+    <% } %>
+
+  </main>
+
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init({ duration: 1000, once: true, easing: 'ease-out-back' });
+
+    // 1. Dynamic Particle Canvas Engine
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    function initCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = Math.random() * 0.6 - 0.3;
+        this.speedY = Math.random() * 0.6 - 0.3;
+      }
+      update() {
+        this.x += this.speedX; this.y += this.speedY;
+        if (this.x > canvas.width) this.x = 0; if (this.y > canvas.height) this.y = 0;
+      }
+      draw() {
+        ctx.fillStyle = 'rgba(37, 99, 235, 0.04)';
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < 60; i++) particles.push(new Particle());
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', initCanvas);
+    initCanvas(); animate();
+
+    // 2. High-Precision 3D Tilt Logic
+    const card = document.getElementById('interactiveCard');
+    if(card && window.innerWidth > 768) {
+      document.addEventListener('mousemove', (e) => {
+        const x = (window.innerWidth / 2 - e.pageX) / 80;
+        const y = (window.innerHeight / 2 - e.pageY) / 80;
+        card.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
+      });
+    }
+  </script>
+</body>
 </html>

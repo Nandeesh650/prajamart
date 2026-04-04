@@ -1,89 +1,203 @@
 <%- include('../partials/head') %>
-  </head>
-  <body class="bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen">
-    <%- include('../partials/nav') %>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <main class="mx-auto max-w-3xl px-6 py-10">
-      <div class="rounded-3xl bg-white p-8 shadow-lg">
-        <div class="border-b border-gray-200 pb-6">
-          <p class="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">Account Profile</p>
-          <h1 class="mt-2 text-3xl font-black text-slate-900">Edit Profile</h1>
-          <p class="mt-2 text-sm text-slate-500">Update your personal details here.</p>
+<style>
+  :root {
+    --brand-blue: #2563eb;
+    --brand-glow: rgba(37, 99, 235, 0.15);
+  }
+
+  body { 
+    font-family: 'Plus Jakarta Sans', sans-serif; 
+    background: #ffffff; 
+    overflow-x: hidden;
+  }
+
+  /* 1. Particle Canvas Overlay */
+  #particle-canvas {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1;
+    background: radial-gradient(circle at 50% 50%, #ffffff 0%, #f1f5f9 100%);
+  }
+
+  /* 2. The "Living" Card */
+  .vault-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 3. Animated Border Stroke */
+  .vault-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid var(--brand-blue);
+    border-radius: 3.5rem;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.1;
+    animation: border-flow 6s linear infinite;
+  }
+
+  @keyframes border-flow {
+    0% { clip-path: inset(0 0 95% 0); }
+    25% { clip-path: inset(0 95% 0 0); }
+    50% { clip-path: inset(95% 0 0 0); }
+    75% { clip-path: inset(0 0 0 95%); }
+    100% { clip-path: inset(0 0 95% 0); }
+  }
+
+  /* 4. Luxury Floating Inputs */
+  .input-container {
+    @apply relative transition-all duration-500;
+  }
+
+  .input-container input {
+    @apply w-full rounded-2xl bg-slate-50/30 px-6 py-5 text-sm font-bold text-slate-800 transition-all duration-300 border-2 border-transparent;
+  }
+
+  .input-container input:focus {
+    @apply bg-white border-blue-500/20 ring-[12px] ring-blue-500/5 outline-none translate-x-2;
+  }
+
+  /* 5. Magnetic "Commit" Button */
+  .btn-commit {
+    @apply relative px-12 py-5 rounded-2xl bg-slate-900 text-[10px] font-black uppercase tracking-[0.4em] text-white overflow-hidden transition-all duration-500;
+    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.3);
+  }
+
+  .btn-commit:hover {
+    @apply -translate-y-1 bg-blue-600 scale-[1.02];
+    box-shadow: 0 25px 50px -12px rgba(37, 99, 235, 0.5);
+  }
+
+  .btn-commit::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 0; height: 0;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+  }
+
+  .btn-commit:active::before {
+    width: 300px; height: 300px; opacity: 0;
+  }
+
+</style>
+</head>
+
+<body class="antialiased">
+  <canvas id="particle-canvas"></canvas>
+  <%- include('../partials/nav') %>
+
+  <main class="mx-auto max-w-2xl px-6 py-20 relative">
+    
+    <div class="mb-16 text-center" data-aos="fade-down" data-aos-duration="1500">
+      <h1 class="text-7xl font-[1000] text-slate-900 tracking-[-0.07em] leading-none mb-4">
+        Sync<span class="text-blue-600">.</span>
+      </h1>
+      <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.6em]">System Identity Node 04</p>
+    </div>
+
+    <div class="vault-card rounded-[3.5rem] p-12 md:p-20 shadow-[0_80px_120px_-40px_rgba(0,0,0,0.08)]" data-aos="zoom-in-up">
+      
+      <form action="/profile/edit" method="POST" class="space-y-10">
+        
+        <div class="grid gap-10">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="input-container" data-aos="fade-up" data-aos-delay="200">
+              <label class="text-[9px] font-black text-blue-600 uppercase tracking-widest mb-2 block ml-1">Identity Forename</label>
+              <input type="text" name="firstName" value="<%= oldInput.firstName %>" required placeholder="Ex: Channesh" />
+            </div>
+            <div class="input-container" data-aos="fade-up" data-aos-delay="300">
+              <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Identity Surname</label>
+              <input type="text" name="lastName" value="<%= oldInput.lastName %>" placeholder="Ex: Honnali" />
+            </div>
+          </div>
+
+          <div class="input-container" data-aos="fade-up" data-aos-delay="400">
+            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Data Endpoint (Email)</label>
+            <input type="email" name="email" value="<%= oldInput.email %>" required />
+          </div>
+
+          <div class="input-container" data-aos="fade-up" data-aos-delay="500">
+            <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Terminal Contact</label>
+            <div class="relative">
+              <input type="tel" name="phoneNumber" value="<%= oldInput.phoneNumber %>" maxlength="10" class="font-mono" required />
+              <div class="absolute right-6 top-1/2 -translate-y-1/2 opacity-20 font-black text-xs uppercase tracking-tighter">Verified</div>
+            </div>
+          </div>
         </div>
 
-        <form action="/profile/edit" method="POST" class="mt-8">
-          <% if (success) { %>
-            <div class="mb-4 rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-              <%= success %>
-            </div>
-          <% } %>
-          <% if (error) { %>
-            <div class="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              <%= error %>
-            </div>
-          <% } %>
-          <%- include('../partials/errors') %>
+        <div class="pt-12 mt-12 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-8">
+          <button type="submit" class="btn-commit group w-full md:w-auto">
+            Authorize Changes
+          </button>
+          
+          <a href="/profile" class="text-[9px] font-black text-slate-300 uppercase tracking-[0.4em] hover:text-red-500 transition-all duration-300">
+            Abort Protocol
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
 
-          <div class="grid gap-5 md:grid-cols-2">
-            <div>
-              <label for="firstName" class="mb-1 block text-sm font-medium text-gray-700">First Name</label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value="<%= oldInput.firstName %>"
-                class="w-full rounded-md border px-4 py-3 transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
-                required
-              />
-            </div>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init({ duration: 1000, easing: 'ease-out-expo' });
 
-            <div>
-              <label for="lastName" class="mb-1 block text-sm font-medium text-gray-700">Last Name</label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value="<%= oldInput.lastName %>"
-                class="w-full rounded-md border px-4 py-3 transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
-              />
-            </div>
+    // Interactive Background Particles
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
 
-            <div class="md:col-span-2">
-              <label for="email" class="mb-1 block text-sm font-medium text-gray-700">Email Address</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value="<%= oldInput.email %>"
-                class="w-full rounded-md border px-4 py-3 transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
-                required
-              />
-            </div>
+    function initCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
 
-            <div class="md:col-span-2">
-              <label for="phoneNumber" class="mb-1 block text-sm font-medium text-gray-700">Phone Number</label>
-              <input
-                type="tel"
-                id="phoneNumber"
-                name="phoneNumber"
-                value="<%= oldInput.phoneNumber %>"
-                maxlength="10"
-                class="w-full rounded-md border px-4 py-3 transition focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500"
-                required
-              />
-            </div>
-          </div>
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2 + 1;
+            this.speedX = Math.random() * 0.5 - 0.25;
+            this.speedY = Math.random() * 0.5 - 0.25;
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.x > canvas.width) this.x = 0;
+            if (this.y > canvas.height) this.y = 0;
+        }
+        draw() {
+            ctx.fillStyle = 'rgba(37, 99, 235, 0.05)';
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
 
-          <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-            <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700">
-              Save Changes
-            </button>
-            <a href="/profile" class="inline-flex items-center justify-center rounded-2xl bg-slate-200 px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-300">
-              Cancel
-            </a>
-          </div>
-        </form>
-      </div>
-    </main>
-  </body>
+    for (let i = 0; i < 50; i++) particles.push(new Particle());
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', initCanvas);
+    initCanvas();
+    animate();
+  </script>
+</body>
 </html>

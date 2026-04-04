@@ -1,233 +1,252 @@
 <%- include('../partials/head') %>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    /* 1. Snow-Rain Layer */
+    #snowCanvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100; 
+        pointer-events: none;
+    }
+
+    /* 2. Deep Obsidian Background */
+    body {
+        background: #050505;
+        background-image: 
+            radial-gradient(at 0% 0%, rgba(20, 30, 50, 0.6) 0, transparent 50%), 
+            radial-gradient(at 100% 100%, rgba(30, 10, 30, 0.4) 0, transparent 50%);
+        color: #ffffff;
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    /* 3. The Animated Card with White Hover */
+    .signup-card {
+        background: rgba(10, 10, 12, 0.85);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 2.5rem;
+        position: relative;
+        z-index: 10;
+        box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.9);
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: cardEntrance 0.8s ease-out;
+    }
+
+    @keyframes cardEntrance {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* HOVER: Card turns White */
+    .signup-card:hover {
+        background: #ffffff;
+        backdrop-filter: blur(0px);
+        box-shadow: 0 50px 120px -20px rgba(255, 255, 255, 0.15);
+    }
+
+    /* 4. BRANDING: Prajamart Gray Style */
+    .brand-text {
+        color: #94a3b8; /* Metallic Gray */
+        transition: color 0.5s ease;
+    }
+
+    .signup-card:hover .brand-text {
+        color: #1e293b; /* Deep Charcoal Gray */
+    }
+
+    /* 5. Form Elements */
+    .obsidian-input {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: #ffffff !important;
+        border-radius: 1.25rem;
+        transition: all 0.4s ease;
+    }
+
+    .signup-card:hover .obsidian-input {
+        background: #f1f5f9 !important;
+        border-color: rgba(0, 0, 0, 0.1) !important;
+        color: #0f172a !important;
+    }
+
+    /* Radio/Checkbox Style */
+    input[type="radio"], input[type="checkbox"] {
+        accent-color: #64748b; /* Gray accent */
+    }
+
+    .user-type-box {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.4s ease;
+    }
+
+    .signup-card:hover .user-type-box {
+        background: #f8fafc;
+        border-color: rgba(0, 0, 0, 0.05);
+        color: #1e293b;
+    }
+
+    /* 6. Button Logic */
+    .btn-register {
+        background: #ffffff;
+        color: #000000;
+        font-weight: 800;
+        border-radius: 1.25rem;
+        transition: all 0.4s ease;
+    }
+
+    .signup-card:hover .btn-register {
+        background: #1e293b;
+        color: #ffffff;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-3px);
+        filter: brightness(1.1);
+    }
+</style>
 </head>
 
-<body class="min-h-screen bg-gradient-to-br from-red-100 via-white to-red-50">
+<body class="flex flex-col">
 
-  <%- include('../partials/nav') %>
+    <canvas id="snowCanvas"></canvas>
 
-  <main class="min-h-[85vh] flex items-center justify-center px-6 py-10">
-    
-    <!-- Wide laptop container -->
-    <div class="w-full max-w-5xl mx-auto">
-      
-      <!-- Premium Card -->
-      <div class="bg-white/90 backdrop-blur-xl shadow-2xl rounded-[2rem] overflow-hidden border border-white/40">
-        
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-red-600 via-red-500 to-red-700 px-10 py-8 text-center">
-          <h1 class="text-4xl font-bold text-white tracking-wide">
-            Create Your Account
-          </h1>
-          <p class="text-red-100 mt-2 text-base">
-            Join Prajamart and start your journey
-          </p>
+    <%- include('../partials/nav') %>
+
+    <main class="min-h-[90vh] flex items-center justify-center px-6 py-12">
+        <div class="w-full max-w-5xl mx-auto">
+            
+            <div class="signup-card overflow-hidden">
+                
+                <div class="bg-black/20 px-10 py-10 text-center border-b border-white/5">
+                    <h1 class="brand-text text-5xl font-black italic tracking-tighter uppercase">Prajamart</h1>
+                    <div class="h-[1px] w-16 bg-slate-700 mx-auto mt-4 opacity-50"></div>
+                    <p class="text-slate-500 text-[10px] font-bold tracking-[0.4em] uppercase mt-3">Identity Protocol</p>
+                </div>
+
+                <div class="p-8 md:p-14">
+                    <form action="/signup" method="POST" class="max-w-4xl mx-auto space-y-8">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">First Name</label>
+                                <input type="text" name="firstName" placeholder="Enter first name" 
+                                       value="<%= locals.oldInput ? oldInput.firstName : '' %>"
+                                       class="obsidian-input w-full px-6 py-4 outline-none" required />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Last Name</label>
+                                <input type="text" name="lastName" placeholder="Enter last name" 
+                                       value="<%= locals.oldInput ? oldInput.lastName : '' %>"
+                                       class="obsidian-input w-full px-6 py-4 outline-none" />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Email</label>
+                                <input type="email" name="email" placeholder="email@address.com" 
+                                       value="<%= locals.oldInput ? oldInput.email : '' %>"
+                                       class="obsidian-input w-full px-6 py-4 outline-none" required />
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black text-slate-500 uppercase tracking-widest ml-1">Phone</label>
+                                <input type="tel" name="phoneNumber" placeholder="9876543210" maxlength="10"
+                                       value="<%= locals.oldInput ? oldInput.phoneNumber : '' %>"
+                                       class="obsidian-input w-full px-6 py-4 outline-none" required />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <input type="password" name="password" placeholder="Create Password" 
+                                   class="obsidian-input w-full px-6 py-4 outline-none" required />
+                            <input type="password" name="confirmPassword" placeholder="Confirm Password" 
+                                   class="obsidian-input w-full px-6 py-4 outline-none" required />
+                        </div>
+
+                        <div class="user-type-box p-8 rounded-2xl">
+                            <p class="text-[11px] font-black uppercase tracking-widest mb-6 opacity-60">Identity Role</p>
+                            <div class="flex flex-wrap gap-8">
+                                <label class="flex items-center cursor-pointer group text-sm font-medium">
+                                    <input type="radio" name="userType" value="guest" 
+                                           <%= locals.oldInput && oldInput.userType === 'guest' || (!locals.oldInput || !oldInput.userType) ? 'checked' : '' %>>
+                                    <span class="ml-3">Guest</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer group text-sm font-medium">
+                                    <input type="radio" name="userType" value="host" 
+                                           <%= locals.oldInput && oldInput.userType === 'host' ? 'checked' : '' %>>
+                                    <span class="ml-3">Host</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer group text-sm font-medium">
+                                    <input type="radio" name="userType" value="deliveryboy" 
+                                           <%= locals.oldInput && oldInput.userType === 'deliveryboy' ? 'checked' : '' %>>
+                                    <span class="ml-3">Logistics</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="px-2">
+                            <label class="flex items-center cursor-pointer text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                                <input type="checkbox" name="terms" required class="w-4 h-4">
+                                <span class="ml-3">I agree to the <span class="underline">Terms of Operation</span></span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-register w-full py-5 text-sm tracking-[0.2em]">
+                            EXECUTE REGISTRATION
+                        </button>
+
+                        <p class="text-center text-slate-500 text-xs">
+                            Registered already? 
+                            <a href="/login" class="text-slate-400 hover:text-white transition-colors ml-1 font-bold">Login</a>
+                        </p>
+
+                    </form>
+                </div>
+            </div>
         </div>
+    </main>
 
-        <!-- Form -->
-        <div class="p-12">
-          <form action="/signup" method="POST" class="max-w-4xl mx-auto space-y-6">
+    <script>
+        const canvas = document.getElementById('snowCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles = [];
 
-            <% if (success) { %>
-              <div class="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700 shadow-sm">
-                <%= success %>
-              </div>
-            <% } %>
+        function init() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            particles = [];
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: Math.random() * width, y: Math.random() * height,
+                    size: Math.random() * 2 + 0.5, speed: Math.random() * 1.5 + 1,
+                    opacity: Math.random() * 0.4 + 0.1
+                });
+            }
+        }
 
-            <% if (error) { %>
-              <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 shadow-sm">
-                <%= error %>
-              </div>
-            <% } %>
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+                p.y += p.speed;
+                if (p.y > height) { p.y = -10; p.x = Math.random() * width; }
+            });
+            requestAnimationFrame(animate);
+        }
 
-            <%- include('../partials/errors') %>
-
-            <!-- Name Fields -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  First Name
-                </label>
-                <div class="relative">
-                  <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
-                    <i class="fas fa-user"></i>
-                  </span>
-                  <input
-                    type="text"
-                    name="firstName"
-                    placeholder="John"
-                    value="<%= oldInput.firstName ? oldInput.firstName : '' %>"
-                    class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-red-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  Last Name
-                </label>
-                <div class="relative">
-                  <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
-                    <i class="fas fa-user"></i>
-                  </span>
-                  <input
-                    type="text"
-                    name="lastName"
-                    placeholder="Doe"
-                    value="<%= oldInput.lastName ? oldInput.lastName : '' %>"
-                    class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-red-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Email + Phone -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  Email
-                </label>
-                <div class="relative">
-                  <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
-                    <i class="fas fa-envelope"></i>
-                  </span>
-                  <input
-                    type="email"
-                    name="email"
-                    placeholder="your.email@example.com"
-                    value="<%= oldInput.email ? oldInput.email : '' %>"
-                    class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-red-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <div class="relative">
-                  <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
-                    <i class="fas fa-phone"></i>
-                  </span>
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    placeholder="9876543210"
-                    maxlength="10"
-                    value="<%= oldInput.phoneNumber ? oldInput.phoneNumber : '' %>"
-                    class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-red-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Password -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  Password
-                </label>
-                <div class="relative">
-                  <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
-                    <i class="fas fa-lock"></i>
-                  </span>
-                  <input
-                    type="password"
-                    name="password"
-                    placeholder="Enter password"
-                    class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-red-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                  Confirm Password
-                </label>
-                <div class="relative">
-                  <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
-                    <i class="fas fa-lock"></i>
-                  </span>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    placeholder="Confirm password"
-                    class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-red-500 focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- User Type -->
-            <div class="p-6 bg-gray-50 rounded-2xl border border-gray-200">
-              <p class="text-sm font-semibold text-gray-700 mb-4">
-                Register as
-              </p>
-
-              <div class="flex flex-wrap gap-6">
-                <label class="flex items-center cursor-pointer">
-                  <input type="radio" name="userType" value="guest"
-                    class="text-red-500 focus:ring-red-500"
-                    <%= oldInput.userType === 'guest' || !oldInput.userType ? 'checked' : '' %>>
-                  <span class="ml-2">Guest</span>
-                </label>
-
-                <label class="flex items-center cursor-pointer">
-                  <input type="radio" name="userType" value="host"
-                    class="text-red-500 focus:ring-red-500"
-                    <%= oldInput.userType === 'host' ? 'checked' : '' %>>
-                  <span class="ml-2">Host</span>
-                </label>
-
-                <label class="flex items-center cursor-pointer">
-                  <input type="radio" name="userType" value="deliveryboy"
-                    class="text-red-500 focus:ring-red-500"
-                    <%= oldInput.userType === 'deliveryboy' ? 'checked' : '' %>>
-                  <span class="ml-2">Delivery Boy</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Terms -->
-            <div>
-              <label class="flex items-center cursor-pointer">
-                <input type="checkbox" name="terms" required
-                  class="text-red-500 focus:ring-red-500">
-                <span class="ml-3 text-gray-700">
-                  I agree to the
-                  <a href="#" class="text-red-500 hover:underline">
-                    terms and conditions
-                  </a>
-                </span>
-              </label>
-            </div>
-
-            <!-- Button -->
-            <button
-              type="submit"
-              class="w-full py-4 rounded-2xl bg-gradient-to-r from-red-600 to-red-500 text-white font-bold text-lg shadow-xl hover:shadow-2xl hover:scale-[1.02] transition duration-300"
-            >
-              Register Now
-            </button>
-
-            <!-- Login -->
-            <p class="text-center text-gray-600">
-              Already have an account?
-              <a href="/login" class="text-red-500 font-semibold hover:underline">
-                Log in
-              </a>
-            </p>
-
-          </form>
-        </div>
-      </div>
-    </div>
-  </main>
-
+        window.addEventListener('resize', init);
+        init(); animate();
+    </script>
 </body>
 </html>

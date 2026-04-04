@@ -1,20 +1,41 @@
-<% if (isLoggedIn && user && user.userType === 'guest') { %>
-  <form action="/cart" method="POST" class="w-full">
-    <input type="hidden" name="id" value="<%= product._id %>" />
+<style>
+  @keyframes icon-pop {
+    0% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(0.6) rotate(180deg); }
+    100% { transform: scale(1) rotate(360deg); }
+  }
+  @keyframes success-ripple {
+    0% { box-shadow: 0 0 0 0px rgba(255, 255, 255, 0.4); }
+    100% { box-shadow: 0 0 0 20px rgba(255, 255, 255, 0); }
+  }
 
-    <button 
-      type="submit"
-      class="w-full bg-white text-red-700 font-semibold py-2.5 rounded-xl
-             shadow-md hover:bg-red-700 hover:text-white
-             hover:shadow-xl hover:scale-105 transition duration-300">
-      Add to Cart
+  /* High-end button interaction */
+  .cart-active-state:active { animation: success-ripple 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .cart-active-state:active svg { animation: icon-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+  .cart-btn-layer {
+    position: relative;
+    z-index: 50; /* Top priority Layer */
+    pointer-events: auto; /* Force click acceptance */
+  }
+</style>
+
+<% if (isLoggedIn && user && user.userType === 'guest') { %>
+  <form action="/cart" method="POST" class="cart-btn-layer m-0 flex items-center justify-center group/btn relative">
+    <input type="hidden" name="id" value="<%= product._id %>" />
+    <button type="submit" class="cart-active-state relative p-5 outline-none border-none bg-transparent text-white flex items-center justify-center transition-all duration-300">
+      <svg xmlns="http://www.w3.org/2000/svg" 
+           class="relative z-10 h-8 w-8 transition-all duration-700 group-hover/btn:scale-110" 
+           fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+      </svg>
+      <span class="sr-only">Add to Cart</span>
     </button>
   </form>
 <% } else { %>
-  <a
-    href="/login"
-    class="block w-full rounded-xl bg-white py-2.5 text-center font-semibold text-red-700 shadow-md transition duration-300 hover:bg-red-700 hover:text-white hover:shadow-xl hover:scale-105"
-  >
-    Add to Cart
+  <a href="/login" class="cart-btn-layer relative p-5 flex items-center justify-center text-white">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z" />
+    </svg>
   </a>
 <% } %>

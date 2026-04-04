@@ -2,180 +2,151 @@
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
 <style>
-  :root {
-    --primary-red: #ef4444;
-  }
+  :root { --primary-red: #ef4444; --brand-indigo: #4f46e5; }
 
-  /* Smooth reveal for the whole page */
-  body {
-    animation: fadeInPage 0.8s ease-in-out;
-  }
+  body { animation: fadeInPage 0.8s ease-in-out; background-color: #fcfcfd; }
+  @keyframes fadeInPage { from { opacity: 0; } to { opacity: 1; } }
 
-  @keyframes fadeInPage {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  /* Magnetic Card Effect */
   .order-card {
-    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-    border: 1px solid #f3f4f6;
+    transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    border: 1px solid #f1f5f9;
   }
 
   .order-card:hover {
-    transform: translateY(-10px) scale(1.01);
-    border-color: var(--primary-red);
-    box-shadow: 0 40px 80px -20px rgba(0,0,0,0.05);
+    transform: translateY(-12px) scale(1.005);
+    border-color: var(--brand-indigo);
+    box-shadow: 0 50px 100px -20px rgba(79, 70, 229, 0.1);
   }
 
-  /* Image Pulse on Hover */
+  /* INCREASED IMAGE CONTAINER */
   .img-container {
-    background-color: #ffffff;
+    background-color: #f8fafc;
     transition: all 0.5s ease;
+    /* Increased base width for large screens */
+    flex: 0 0 500px; 
+    overflow: hidden;
+  }
+
+  .product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Switched to cover for that "Premium Tall" look */
+    transition: transform 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   .order-card:hover .product-img {
     transform: scale(1.1);
   }
 
-  .product-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 2.5rem;
-    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  /* Shimmer effect for status badges */
   .status-badge {
-    position: relative;
-    overflow: hidden;
+    backdrop-filter: blur(12px);
+    background: rgba(15, 23, 42, 0.8);
   }
 
-  .status-badge::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-    transform: rotate(45deg);
-    animation: shimmer 3s infinite;
-  }
-
-  @keyframes shimmer {
-    0% { transform: translateX(-100%) rotate(45deg); }
-    100% { transform: translateX(100%) rotate(45deg); }
-  }
-
-  /* Button Bounce */
   .btn-premium {
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
-  .btn-premium:hover {
-    transform: scale(1.05);
-  }
-  .btn-premium:active {
-    transform: scale(0.95);
-  }
+  .btn-premium:hover { transform: translateY(-3px); }
 </style>
-</head>
 
-<body class="bg-white min-h-screen font-sans antialiased">
+<body class="antialiased text-slate-900">
   <%- include('../partials/nav') %>
 
-  <main class="max-w-5xl mx-auto px-6 py-20">
+  <main class="max-w-[1440px] mx-auto px-6 py-20 lg:px-12">
     
-    <header class="mb-16 flex flex-col md:flex-row md:items-end justify-between border-b border-gray-100 pb-10 gap-6" data-aos="fade-down">
+    <header class="mb-20 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-100 pb-12 gap-8" data-aos="fade-down">
       <div>
-        <h1 class="text-5xl font-black text-gray-900 tracking-tighter">Your Orders</h1>
-        <p class="text-gray-400 font-medium mt-3 text-lg">Manage history and tracking info</p>
+        <h1 class="text-6xl md:text-7xl font-[900] text-slate-950 tracking-tighter uppercase">Your <span class="text-indigo-600">Orders.</span></h1>
+        <p class="text-slate-400 font-bold mt-4 text-sm uppercase tracking-[0.2em]">History & Real-time Tracking</p>
       </div>
-      <div class="flex items-center gap-3" data-aos="fade-left" data-aos-delay="200">
-        <span class="text-xs font-bold text-gray-300 uppercase tracking-widest">Total Purchases</span>
-        <div class="h-12 w-12 rounded-2xl border-2 border-gray-900 flex items-center justify-center text-gray-900 font-black">
+      <div class="flex items-center gap-4" data-aos="fade-left" data-aos-delay="200">
+        <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Total Archive</span>
+        <div class="h-16 w-16 rounded-[1.5rem] bg-slate-950 flex items-center justify-center text-white text-2xl font-black">
           <%= orders.length %>
         </div>
       </div>
     </header>
 
     <% if (orders && orders.length > 0) { %>
-      <div class="space-y-12">
+      <div class="space-y-20">
         <% orders.forEach((order, index) => { %>
-          <div class="order-card bg-white rounded-[2.5rem] flex flex-col lg:flex-row overflow-hidden" 
+          <div class="order-card bg-white rounded-[3.5rem] flex flex-col lg:flex-row overflow-hidden shadow-sm" 
                data-aos="fade-up" 
                data-aos-delay="<%= index * 100 %>">
             
-            <div class="w-full lg:w-[400px] h-96 img-container relative border-b lg:border-b-0 lg:border-r border-gray-50">
+            <div class="img-container relative h-[500px] lg:h-[600px] border-b lg:border-b-0 lg:border-r border-slate-50">
               <img src="<%= order.productId.photo %>" class="product-img" alt="Product">
               
-              <div class="absolute top-8 left-8">
-                <span class="status-badge bg-gray-900 text-white px-5 py-2 rounded-xl font-black uppercase text-[10px] tracking-widest inline-block">
+              <div class="absolute top-10 left-10">
+                <span class="status-badge text-white px-6 py-2.5 rounded-full font-black uppercase text-[10px] tracking-[0.2em] inline-block shadow-2xl">
                   <%= order.status.replace(/_/g, ' ') %>
                 </span>
               </div>
             </div>
 
-            <div class="flex-grow p-10 flex flex-col justify-between">
+            <div class="flex-grow p-12 lg:p-16 flex flex-col justify-between">
               
-              <div class="flex flex-col md:flex-row justify-between items-start gap-6">
-                <div class="max-w-md">
-                  <h2 class="text-4xl font-black text-gray-900 leading-[0.9] mb-4 tracking-tighter uppercase"><%= order.productId.productName %></h2>
-                  <div class="flex flex-wrap gap-4 text-[10px] font-bold text-gray-300 uppercase tracking-widest">
-                    <span>ID: #<%= order._id.toString().slice(-6).toUpperCase() %></span>
-                    <span class="text-gray-100">|</span>
-                    <span>Ordered: <%= new Date(order.orderDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) %></span>
+              <div class="flex flex-col xl:flex-row justify-between items-start gap-8">
+                <div class="max-w-xl">
+                  <h2 class="text-5xl font-[900] text-slate-950 leading-tight mb-4 tracking-tighter uppercase"><%= order.productId.productName %></h2>
+                  <div class="flex flex-wrap gap-5 text-[10px] font-black text-slate-300 uppercase tracking-widest">
+                    <span class="bg-slate-50 px-3 py-1 rounded">#<%= order._id.toString().slice(-8).toUpperCase() %></span>
+                    <span class="flex items-center gap-2">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        <%= new Date(order.orderDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                    </span>
                   </div>
                 </div>
-                <div class="text-left md:text-right">
-                  <p class="text-4xl font-black text-red-600 tracking-tighter">₹<%= order.totalPrice.toLocaleString() %></p>
-                  <p class="text-[10px] font-bold text-gray-200 uppercase tracking-widest mt-1">Total Amount</p>
+                <div class="text-left xl:text-right">
+                  <p class="text-5xl font-[900] text-indigo-600 tracking-tighter">₹<%= order.totalPrice.toLocaleString('en-IN') %></p>
+                  <p class="text-[10px] font-black text-slate-200 uppercase tracking-widest mt-2">Grand Total Paid</p>
                 </div>
               </div>
 
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-8 my-10 py-8 border-y border-gray-50">
-                <div class="transition-all hover:translate-x-1">
-                  <p class="text-[10px] font-black text-gray-300 uppercase mb-2">Size</p>
-                  <p class="text-sm font-black text-gray-900"><%= order.size || 'STANDARD' %></p>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-10 my-12 py-10 border-y border-slate-50">
+                <div>
+                  <p class="text-[10px] font-black text-slate-300 uppercase mb-3 tracking-widest">Size/Type</p>
+                  <p class="text-lg font-black text-slate-950"><%= order.size || 'STANDARD' %></p>
                 </div>
-                <div class="transition-all hover:translate-x-1">
-                  <p class="text-[10px] font-black text-gray-300 uppercase mb-2">Qty</p>
-                  <p class="text-sm font-black text-gray-900"><%= order.quantity %> Units</p>
+                <div>
+                  <p class="text-[10px] font-black text-slate-300 uppercase mb-3 tracking-widest">Quantity</p>
+                  <p class="text-lg font-black text-slate-950"><%= order.quantity %> Units</p>
                 </div>
-                <div class="col-span-2 transition-all hover:translate-x-1">
-                  <p class="text-[10px] font-black text-gray-300 uppercase mb-2">Address</p>
-                  <p class="text-sm font-bold text-gray-500 truncate"><%= order.shippingAddress %></p>
+                <div class="col-span-2">
+                  <p class="text-[10px] font-black text-slate-300 uppercase mb-3 tracking-widest">Delivery Address</p>
+                  <p class="text-sm font-bold text-slate-500 leading-relaxed"><%= order.shippingAddress %></p>
                 </div>
               </div>
 
-              <div class="flex flex-wrap items-center justify-between gap-8 pt-4">
+              <div class="flex flex-wrap items-center justify-between gap-10 pt-6">
                 
-                <div class="flex items-center gap-5">
-                  <% if ((order.status === 'shipped' || order.status === 'out_for_delivery') && order.deliveryOtp) { %>
-                    <div class="flex items-center gap-3 bg-red-600 text-white px-6 py-3 rounded-2xl shadow-xl shadow-red-100 animate-pulse">
-                      <span class="text-[10px] font-black opacity-70">OTP</span>
-                      <span class="text-2xl font-black tracking-[0.3em]"><%= order.deliveryOtp %></span>
+                <div class="flex items-center gap-6">
+                  <% if (['shipped', 'out_for_delivery'].includes(order.status) && order.deliveryOtp) { %>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Secure OTP</span>
+                        <div class="bg-slate-950 text-indigo-400 px-8 py-4 rounded-[1.5rem] shadow-2xl">
+                          <span class="text-3xl font-black tracking-[0.4em]"><%= order.deliveryOtp %></span>
+                        </div>
                     </div>
                   <% } %>
 
-                  <div class="flex items-center gap-2 px-5 py-2.5 rounded-full border border-gray-100 hover:bg-gray-50 transition-colors">
-                    <span class="w-2 h-2 rounded-full <%= order.paymentStatus === 'completed' ? 'bg-emerald-500' : 'bg-amber-400 animate-bounce' %>"></span>
-                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest"><%= order.paymentStatus %></span>
+                  <div class="flex items-center gap-3 px-6 py-3 rounded-full bg-slate-50 border border-slate-100">
+                    <span class="w-2.5 h-2.5 rounded-full <%= order.paymentStatus === 'completed' ? 'bg-emerald-500' : 'bg-amber-400 animate-pulse' %>"></span>
+                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest"><%= order.paymentStatus %></span>
                   </div>
                 </div>
 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-5">
                   <% if (['pending', 'confirmed'].includes(order.status)) { %>
                     <form action="/orders/<%= order._id %>/cancel" method="POST">
-                      <button class="text-xs font-black text-gray-300 hover:text-red-600 transition-all uppercase tracking-widest px-4" onclick="return confirm('Cancel Order?')">Cancel</button>
+                      <button class="text-[10px] font-black text-slate-300 hover:text-rose-600 transition-all uppercase tracking-widest px-6" onclick="return confirm('Cancel this order?')">Cancel</button>
                     </form>
                   <% } %>
                   
-                  <a href="/orders/<%= order._id %>" class="btn-premium h-16 px-10 rounded-2xl bg-white border-2 border-gray-900 text-gray-900 font-black text-sm flex items-center shadow-sm">Details</a>
+                  <a href="/orders/<%= order._id %>" class="btn-premium h-20 px-12 rounded-[2rem] bg-white border-2 border-slate-950 text-slate-950 font-black text-xs uppercase tracking-widest flex items-center hover:bg-slate-50">Details</a>
                   
-                  <% if (order.deliveryBoyId || ['shipped', 'delivered'].includes(order.status)) { %>
-                    <a href="/orders/<%= order._id %>/tracking" class="btn-premium h-16 px-10 rounded-2xl bg-red-600 text-white font-black text-sm flex items-center shadow-lg shadow-red-100">Track Now</a>
+                  <% if (order.deliveryBoyId || ['shipped', 'delivered', 'out_for_delivery'].includes(order.status)) { %>
+                    <a href="/orders/<%= order._id %>/tracking" class="btn-premium h-20 px-12 rounded-[2rem] bg-indigo-600 text-white font-black text-xs uppercase tracking-widest flex items-center shadow-2xl shadow-indigo-200">Track Order</a>
                   <% } %>
                 </div>
 
@@ -186,9 +157,9 @@
       </div>
 
     <% } else { %>
-      <div class="text-center py-40 bg-white border border-dashed border-gray-100 rounded-[4rem]" data-aos="zoom-in">
-        <h2 class="text-5xl font-black text-gray-100 uppercase tracking-tighter italic mb-8">No Orders</h2>
-        <a href="/products" class="px-12 py-5 bg-gray-900 text-white font-black rounded-2xl hover:bg-red-600 transition-all inline-block shadow-2xl">Shop Collection</a>
+      <div class="text-center py-48 bg-slate-50/50 border-4 border-dashed border-slate-100 rounded-[5rem]" data-aos="zoom-in">
+        <h2 class="text-6xl font-[900] text-slate-200 uppercase tracking-tighter mb-10">Empty History</h2>
+        <a href="/products" class="px-14 py-6 bg-slate-950 text-white font-black rounded-3xl hover:bg-indigo-600 transition-all inline-block shadow-2xl shadow-indigo-100 text-xs uppercase tracking-widest">Start Shopping</a>
       </div>
     <% } %>
   </main>
@@ -197,12 +168,7 @@
 
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script>
-    // Initialize animations with smooth duration
-    AOS.init({
-      duration: 1000,
-      once: true,
-      easing: 'ease-out-back'
-    });
+    AOS.init({ duration: 1200, once: true, easing: 'ease-out-quint' });
   </script>
 </body>
 </html>

@@ -1,14 +1,19 @@
 <%- include('../partials/head') %>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <style>
-    /* Custom style for selected size chips */
-    .size-chip-radio:checked + .size-chip-label {
-      background-color: #ef4444; /* red-600 */
-      color: white;
-      border-color: #ef4444;
-      transform: scale(1.05);
-    }
-  </style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  /* Custom style for selected size chips */
+  .size-chip-radio:checked + .size-chip-label {
+    background-color: #ef4444; /* red-600 */
+    color: white;
+    border-color: #ef4444;
+    transform: scale(1.05);
+  }
+  
+  /* Smooth transition for the modal */
+  #orderModal:not(.hidden) {
+    display: flex;
+  }
+</style>
 </head>
 
 <body class="bg-white min-h-screen">
@@ -32,7 +37,7 @@
 
       <div class="flex items-center gap-3 mt-5">
         <span class="bg-green-600 text-white px-4 py-1 rounded-md text-sm font-semibold shadow-sm">
-          <%= product.rating?.stars || product.rating %> ★
+          <%= product.rating?.stars || product.rating || 0 %> ★
         </span>
         <span class="text-gray-500 text-lg">
           <%= product.rating?.count || 0 %> Ratings & Reviews
@@ -41,7 +46,7 @@
 
       <div class="mt-6">
         <span class="text-5xl font-bold text-black">₹<%= product.price %></span>
-        <span class="ml-4 text-gray-400 line-through text-2xl">₹<%= product.price + 700 %></span>
+        <span class="ml-4 text-gray-400 line-through text-2xl">₹<%= (product.price + (product.price * 0.25)).toFixed(0) %></span>
         <span class="ml-4 text-green-600 font-semibold text-xl">25% off</span>
       </div>
 
@@ -56,10 +61,10 @@
 
       <div class="flex justify-center items-center gap-5 mt-10">
         <form action="/cart" method="POST">
-            <input type="hidden" name="productId" value="<%= product._id %>">
-            <button class="px-10 py-3 rounded-full bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition-all duration-300">
-              🛒 Add to Cart
-            </button>
+          <input type="hidden" name="productId" value="<%= product._id %>">
+          <button class="px-10 py-3 rounded-full bg-yellow-400 text-black font-semibold shadow-md hover:bg-yellow-500 transition-all duration-300">
+            🛒 Add to Cart
+          </button>
         </form>
 
         <% if (isLoggedIn) { %>
@@ -82,17 +87,19 @@
             <input type="hidden" name="productId" value="<%= product._id %>">
 
             <div>
-              <label class="block text-sm font-bold text-gray-700 mb-3">Select Size</label>
-              <div class="flex flex-wrap gap-3">
-                <% ['S', 'M', 'L', 'XL', 'XXL'].forEach(size => { %>
-                  <label class="relative cursor-pointer">
-                    <input type="radio" name="size" value="<%= size %>" class="hidden size-chip-radio" <%= size === 'M' ? 'checked' : '' %>>
-                    <span class="size-chip-label flex items-center justify-center w-12 h-12 border-2 border-gray-200 rounded-xl font-bold text-gray-600 transition-all duration-200 hover:border-red-400">
-                      <%= size %>
-                    </span>
-                  </label>
-                <% }) %>
-              </div>
+              <% if(product.availableSizes && product.availableSizes.length > 0) { %>
+                <label class="block text-sm font-bold text-gray-700 mb-3">Select Size</label>
+                <div class="flex flex-wrap gap-3">
+                  <% product.availableSizes.forEach(size => { %>
+                    <label class="relative cursor-pointer">
+                      <input type="radio" name="size" value="<%= size %>" class="hidden size-chip-radio" <%= size === 'M' ? 'checked' : '' %>>
+                      <span class="size-chip-label flex items-center justify-center w-12 h-12 border-2 border-gray-200 rounded-xl font-bold text-gray-600 transition-all duration-200 hover:border-red-400">
+                        <%= size %>
+                      </span>
+                    </label>
+                  <% }) %>
+                </div>
+              <% } %>
             </div>
 
             <div>
@@ -155,7 +162,7 @@
     }
   }
 
-  // Price Calculation
+  // Live Price Calculation based on Quantity
   const basePrice = <%= product.price %>;
   const quantityInput = document.getElementById('quantityInput');
   const totalAmount = document.getElementById('totalAmount');
@@ -165,20 +172,20 @@
     totalAmount.textContent = (basePrice * qty).toLocaleString('en-IN');
   });
 
-  // Payment Toggle
+  // Toggle UPI input field visibility
   document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
     radio.addEventListener('change', (e) => {
       document.getElementById('upiContainerDetail').classList.toggle('hidden', e.target.value !== 'upi');
     });
   });
 
-  // Validation
+  // Validation before Submit
   function validateAndSubmitOrder(event) {
     event.preventDefault();
     const form = document.getElementById('orderFormDetail');
     const submitBtn = form.querySelector('button[type="submit"]');
 
-    // Custom Location Validation (if exists)
+    // Location Validation from partial script
     if (window.validateOrderLocation && !window.validateOrderLocation(form)) {
       return false;
     }

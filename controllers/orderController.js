@@ -192,9 +192,11 @@ exports.postCreateOrder = async (req, res) => {
     }
 
     // 2. ADDED: Validation to ensure size is not empty before proceeding
-    if (!size) {
-      return res.status(400).send("Product size is required. Please select a size.");
-    }
+    if(product.availableSizes && product.availableSizes.length > 0) {
+      if (!size) {
+        return res.status(400).send("Product size is required. Please select a size.");
+      }
+  }
 
     let hostId = product.hostId;
 
