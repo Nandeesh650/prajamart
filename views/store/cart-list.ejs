@@ -8,7 +8,6 @@
 </head>
 
 <body class="bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen font-sans">
-
   <%- include('../partials/nav') %>
 
   <main class="max-w-7xl mx-auto px-4 py-10">
@@ -20,89 +19,98 @@
 
     <% if (cartProducts && cartProducts.length > 0) { %>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <form action="/orders/create" method="POST" id="checkoutForm">
 
-      <div class="lg:col-span-2 space-y-6">
-        <% cartProducts.forEach((product, index) => { %>
-          
-          <input type="hidden" name="productId" value="<%= product._id %>" form="checkoutForm">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-          <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-8 transition-transform hover:shadow-lg">
-            
-            <div class="w-40 h-40 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border">
-              <img src="<%= product.photo %>" alt="<%= product.productName %>" class="w-full h-full object-contain p-2">
-            </div>
+        <!-- Cart Items -->
+        <div class="lg:col-span-2 space-y-6">
+          <% cartProducts.forEach((product, index) => { %>
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-8 transition-transform hover:shadow-lg">
 
-            <div class="flex-grow w-full">
-              <div class="flex justify-between items-start">
-                <h3 class="text-2xl font-bold text-gray-800"><%= product.productName %></h3>
-                <p class="text-2xl font-black text-red-600">₹<%= product.price %></p>
+              <!-- Product Image -->
+              <div class="w-40 h-40 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border">
+                <img src="<%= product.photo %>" alt="<%= product.productName %>" class="w-full h-full object-contain p-2">
               </div>
 
-              <div class="mt-6 flex flex-wrap items-end gap-6">
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs font-bold text-gray-400 uppercase">Quantity</label>
-                  <input type="number" name="quantity" value="1" min="1" form="checkoutForm"
-                         class="qty-input w-20 border-2 border-gray-100 rounded-xl px-3 py-2 text-center font-bold text-red-600 focus:border-red-500 outline-none transition"
-                         data-price="<%= product.price %>" onchange="calculateGrandTotal()">
+              <!-- Product Info -->
+              <div class="flex-grow w-full">
+                <div class="flex justify-between items-start">
+                  <h3 class="text-2xl font-bold text-gray-800"><%= product.productName %></h3>
+                  <p class="text-2xl font-black text-red-600">₹<%= product.price %></p>
                 </div>
 
-                <div class="flex flex-col gap-2 flex-grow">
-                  <label class="text-xs font-bold text-gray-400 uppercase">Select Size <span class="text-red-500">*</span></label>
-                  <div class="flex flex-wrap gap-2">
-                    <% if (product.availableSizes && product.availableSizes.length > 0) { %>
-                      <% product.availableSizes.forEach((size, sIdx) => { %>
-                        <label class="cursor-pointer group">
-                          <input type="radio" name="size" value="<%= size %>" form="checkoutForm" required class="peer hidden">
-                          <div class="px-4 py-2 rounded-xl border-2 border-gray-100 text-sm font-bold text-gray-600 
-                                      peer-checked:border-red-600 peer-checked:bg-red-50 peer-checked:text-red-700 
-                                      group-hover:border-red-300 transition-all">
-                            <%= size %>
-                          </div>
-                        </label>
-                      <% }) %>
-                    <% } else { %>
-                      <input type="hidden" name="size" value="Standard" form="checkoutForm">
-                      <span class="text-gray-400 text-sm italic">One Size Fits All</span>
-                    <% } %>
+                <div class="mt-6 flex flex-wrap items-end gap-6">
+
+                  <!-- Quantity -->
+                  <div class="flex flex-col gap-1">
+                    <label class="text-xs font-bold text-gray-400 uppercase">Quantity</label>
+                    <input type="number" name="items[<%= index %>][quantity]" value="1" min="1"
+                      class="qty-input w-20 border-2 border-gray-100 rounded-xl px-3 py-2 text-center font-bold text-red-600 focus:border-red-500 outline-none transition"
+                      data-price="<%= product.price %>" onchange="calculateGrandTotal()">
                   </div>
+
+                  <!-- Size -->
+                  <div class="flex flex-col gap-2 flex-grow">
+                    <label class="text-xs font-bold text-gray-400 uppercase">Select Size <span class="text-red-500">*</span></label>
+                    <div class="flex flex-wrap gap-2">
+                      <% if (product.availableSizes && product.availableSizes.length > 0) { %>
+                        <% product.availableSizes.forEach((size) => { %>
+                          <label class="cursor-pointer group">
+                            <input type="radio" name="items[<%= index %>][size]" value="<%= size %>" required class="peer hidden">
+                            <div class="px-4 py-2 rounded-xl border-2 border-gray-100 text-sm font-bold text-gray-600 
+                                        peer-checked:border-red-600 peer-checked:bg-red-50 peer-checked:text-red-700 
+                                        group-hover:border-red-300 transition-all">
+                              <%= size %>
+                            </div>
+                          </label>
+                        <% }) %>
+                      <% } else { %>
+                        <input type="hidden" name="items[<%= index %>][size]" value="Standard">
+                        <span class="text-gray-400 text-sm italic">One Size Fits All</span>
+                      <% } %>
+                    </div>
+                  </div>
+
+                  <input type="hidden" name="items[<%= index %>][productId]" value="<%= product._id %>">
                 </div>
-              </div>
 
-              <div class="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
-                <div class="flex items-center text-yellow-500 font-bold">
-                  ★ <span class="ml-1 text-gray-700"><%= product.rating || '4.5' %></span>
+                <!-- Remove Item -->
+                <div class="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
+                  <div class="flex items-center text-yellow-500 font-bold">
+                    ★ <span class="ml-1 text-gray-700"><%= product.rating || '4.5' %></span>
+                  </div>
+                  <form action="/cart/delete/<%= product._id %>" method="POST">
+                    <button type="submit" class="text-sm font-semibold text-gray-400 hover:text-red-600 transition">Remove Item</button>
+                  </form>
                 </div>
-                <form action="/cart/delete/<%= product._id %>" method="POST">
-                  <button type="submit" class="text-sm font-semibold text-gray-400 hover:text-red-600 transition">Remove Item</button>
-                </form>
+
               </div>
             </div>
-          </div>
-        <% }) %>
-      </div>
+          <% }) %>
+        </div>
 
-      <div class="lg:col-span-1">
-        <div class="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 sticky top-10">
-          <h3 class="text-2xl font-bold text-gray-800 mb-6">Summary</h3>
+        <!-- Summary -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 sticky top-10">
+            <h3 class="text-2xl font-bold text-gray-800 mb-6">Summary</h3>
 
-          <div class="space-y-4 mb-8">
-            <div class="flex justify-between text-gray-500 font-medium">
-              <span>Subtotal</span>
-              <span id="display-subtotal">₹0</span>
+            <div class="space-y-4 mb-8">
+              <div class="flex justify-between text-gray-500 font-medium">
+                <span>Subtotal</span>
+                <span id="display-subtotal">₹0</span>
+              </div>
+              <div class="flex justify-between text-gray-500 font-medium">
+                <span>Shipping</span>
+                <span class="text-green-600 font-bold">FREE</span>
+              </div>
+              <div class="border-t pt-4 flex justify-between text-3xl font-black text-gray-800">
+                <span>Total</span>
+                <span id="display-total">₹0</span>
+              </div>
             </div>
-            <div class="flex justify-between text-gray-500 font-medium">
-              <span>Shipping</span>
-              <span class="text-green-600 font-bold">FREE</span>
-            </div>
-            <div class="border-t pt-4 flex justify-between text-3xl font-black text-gray-800">
-              <span>Total</span>
-              <span id="display-total">₹0</span>
-            </div>
-          </div>
 
-          <form action="/orders/create" method="POST" id="checkoutForm" class="space-y-6">
-            <div class="space-y-3">
+            <div class="space-y-6">
               <p class="text-xs font-bold text-gray-400 uppercase">Payment Method</p>
               <label class="flex items-center p-4 border-2 border-gray-100 rounded-2xl cursor-pointer hover:bg-red-50 hover:border-red-100 transition group">
                 <input type="radio" name="paymentMethod" value="cod" checked class="w-5 h-5 text-red-600">
@@ -110,28 +118,16 @@
               </label>
             </div>
 
-            <div class="bg-gray-50 p-5 rounded-2xl border-2 border-dashed border-gray-200">
-              <p class="text-center text-sm font-bold text-gray-600 mb-3">Quick Rating</p>
-              <div class="flex justify-center gap-2 mb-3" id="star-rating-ui">
-                <% for (let i = 1; i <= 5; i++) { %>
-                  <label class="cursor-pointer">
-                    <input type="radio" name="ratingStars" value="<%= i %>" class="hidden peer">
-                    <span class="text-3xl text-gray-300 peer-checked:text-yellow-400 transition" data-val="<%= i %>">★</span>
-                  </label>
-                <% } %>
-              </div>
-              <textarea name="ratingComment" placeholder="Optional feedback..." class="w-full text-sm p-3 rounded-xl border-0 focus:ring-2 focus:ring-red-500 transition"></textarea>
-            </div>
-
             <%- include('../partials/order-location-picker') %>
 
             <button type="submit" class="w-full bg-red-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-red-800 transition-all">
               PLACE ORDER NOW
             </button>
-          </form>
+          </div>
         </div>
+
       </div>
-    </div>
+    </form>
 
     <% } else { %>
       <div class="bg-white rounded-3xl p-20 text-center shadow-sm border border-gray-100">
@@ -140,6 +136,7 @@
         <a href="/" class="bg-red-700 text-white px-10 py-4 rounded-2xl font-bold mt-8 inline-block">Back to Store</a>
       </div>
     <% } %>
+
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -157,14 +154,6 @@
       document.getElementById('display-total').innerText = '₹' + grandTotal.toLocaleString();
     }
 
-    document.querySelectorAll('#star-rating-ui span').forEach(star => {
-      star.addEventListener('click', function() {
-        const val = this.dataset.val;
-        document.querySelectorAll('#star-rating-ui span').forEach(s => {
-          s.style.color = s.dataset.val <= val ? '#fbbf24' : '#d1d5db';
-        });
-      });
-    });
     window.onload = calculateGrandTotal;
   </script>
 </body>

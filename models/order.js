@@ -3,37 +3,68 @@ const mongoose = require("mongoose");
 const orderSchema = mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true
   },
-  productId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Product',
-    required: true
-  },
+
   hostId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true
   },
-  size: {
-    type: String,
-    required: true
-  },
-  quantity: {
-    type: Number,
-    required: true,
-    default: 1
-  },
+
+  items: [
+    {
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+        required: true
+      },
+
+      size: {
+        type: String,
+        required: true
+      },
+
+      quantity: {
+        type: Number,
+        required: true,
+        default: 1
+      },
+
+      price: {
+        type: Number,
+        required: true
+      },
+
+      subtotal: {
+        type: Number,
+        required: true
+      }
+    }
+  ],
+
   totalPrice: {
     type: Number,
     required: true
   },
+
   status: {
     type: String,
-    enum: ['pending', 'confirmed', 'ready_to_deliver', 'out_for_delivery', 'shipped', 'delivered', 'return_requested', 'returned', 'cancelled'],
-    default: 'pending'
+    enum: [
+      "pending",
+      "confirmed",
+      "ready_to_deliver",
+      "out_for_delivery",
+      "shipped",
+      "delivered",
+      "return_requested",
+      "returned",
+      "cancelled"
+    ],
+    default: "pending"
   },
+
   userRating: {
     stars: {
       type: Number,
@@ -43,13 +74,16 @@ const orderSchema = mongoose.Schema({
     },
     comment: String
   },
+
   orderDate: {
     type: Date,
     default: Date.now
   },
+
   deliveryDate: Date,
   returnRequestedAt: Date,
   returnedAt: Date,
+
   deliveryLocation: {
     label: String,
     addressDetails: String,
@@ -59,28 +93,35 @@ const orderSchema = mongoose.Schema({
     latitude: Number,
     longitude: Number
   },
+
   deliveryBoyId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: "User"
   },
+
   deliveryAcceptedAt: Date,
   deliveryOtp: String,
   deliveryOtpGeneratedAt: Date,
   deliveryOtpVerifiedAt: Date,
+
   shippingAddress: String,
   notes: String,
+
   paymentMethod: {
     type: String,
-    enum: ['cod', 'upi', 'debit_card'],
-    default: 'cod',
+    enum: ["cod", "upi", "debit_card"],
+    default: "cod",
     required: true
   },
+
   paymentStatus: {
     type: String,
-    enum: ['pending', 'completed', 'failed'],
-    default: 'pending'
+    enum: ["pending", "completed", "failed"],
+    default: "pending"
   },
+
   upiId: String,
+
   cardDetails: {
     cardNumber: String,
     cardHolder: String,

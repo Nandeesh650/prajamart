@@ -8,7 +8,7 @@
     border-color: #ef4444;
     transform: scale(1.05);
   }
-  
+
   /* Smooth transition for the modal */
   #orderModal:not(.hidden) {
     display: flex;
@@ -24,12 +24,14 @@
 
   <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
 
+    <!-- Product Image -->
     <div class="bg-white flex justify-center items-center h-[560px] p-10 border-b border-gray-100">
       <img src="/<%= product.photo %>"
            alt="<%= product.productName %>"
            class="max-h-[470px] object-contain hover:scale-105 transition duration-500">
     </div>
 
+    <!-- Product Info -->
     <div class="p-10">
       <h1 class="text-4xl font-semibold text-gray-900 tracking-wide">
         <%= product.productName %>
@@ -59,6 +61,7 @@
         <p class="text-gray-600 leading-8 text-lg"><%= product.description %></p>
       </div>
 
+      <!-- Add to Cart & Order Buttons -->
       <div class="flex justify-center items-center gap-5 mt-10">
         <form action="/cart" method="POST">
           <input type="hidden" name="productId" value="<%= product._id %>">
@@ -76,6 +79,7 @@
         <% } %>
       </div>
 
+      <!-- Order Modal -->
       <div id="orderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto py-8">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 my-auto max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-6">
@@ -84,39 +88,47 @@
           </div>
 
           <form action="/orders/create" method="POST" class="space-y-6" id="orderFormDetail" onsubmit="return validateAndSubmitOrder(event)">
-            <input type="hidden" name="productId" value="<%= product._id %>">
+            <!-- Single item hidden fields -->
+            <input type="hidden" name="items[0][productId]" value="<%= product._id %>">
+            <input type="hidden" name="items[0][size]" id="itemSize">
+            <input type="hidden" name="items[0][quantity]" id="itemQuantity">
 
+            <!-- Size Selection -->
+            <% if(product.availableSizes && product.availableSizes.length > 0) { %>
             <div>
-              <% if(product.availableSizes && product.availableSizes.length > 0) { %>
-                <label class="block text-sm font-bold text-gray-700 mb-3">Select Size</label>
-                <div class="flex flex-wrap gap-3">
-                  <% product.availableSizes.forEach(size => { %>
-                    <label class="relative cursor-pointer">
-                      <input type="radio" name="size" value="<%= size %>" class="hidden size-chip-radio" <%= size === 'M' ? 'checked' : '' %>>
-                      <span class="size-chip-label flex items-center justify-center w-12 h-12 border-2 border-gray-200 rounded-xl font-bold text-gray-600 transition-all duration-200 hover:border-red-400">
-                        <%= size %>
-                      </span>
-                    </label>
-                  <% }) %>
-                </div>
-              <% } %>
+              <label class="block text-sm font-bold text-gray-700 mb-3">Select Size</label>
+              <div class="flex flex-wrap gap-3">
+                <% product.availableSizes.forEach(size => { %>
+                  <label class="relative cursor-pointer">
+                    <input type="radio" name="size" value="<%= size %>" class="hidden size-chip-radio" <%= size === 'M' ? 'checked' : '' %>>
+                    <span class="size-chip-label flex items-center justify-center w-12 h-12 border-2 border-gray-200 rounded-xl font-bold text-gray-600 transition-all duration-200 hover:border-red-400">
+                      <%= size %>
+                    </span>
+                  </label>
+                <% }) %>
+              </div>
             </div>
+            <% } %>
 
+            <!-- Quantity -->
             <div>
               <label class="block text-sm font-bold text-gray-700 mb-2">Quantity</label>
-              <input type="number" id="quantityInput" name="quantity" min="1" max="10" value="1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+              <input type="number" id="quantityInput" name="quantityDisplay" min="1" max="10" value="1" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
             </div>
 
+            <!-- Location Picker -->
             <%- include('../partials/order-location-picker') %>
 
+            <!-- Notes -->
             <div>
               <label class="block text-sm font-bold text-gray-700 mb-2">Special Instructions</label>
               <textarea name="notes" placeholder="Any notes..." class="w-full px-4 py-2 border border-gray-300 rounded-lg" rows="2"></textarea>
             </div>
 
+            <!-- Payment Method -->
             <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
               <label class="block text-sm font-bold text-gray-700 mb-3">💳 Payment Method</label>
-              
+
               <label class="flex items-center mb-3 cursor-pointer">
                 <input type="radio" name="paymentMethod" value="cod" checked class="w-4 h-4 text-red-600">
                 <span class="ml-3 text-sm font-semibold text-gray-800">Cash on Delivery (COD)</span>
@@ -126,12 +138,13 @@
                 <input type="radio" name="paymentMethod" value="upi" class="w-4 h-4 text-red-600">
                 <span class="ml-3 text-sm font-semibold text-gray-800">Online UPI</span>
               </label>
-              
+
               <div id="upiContainerDetail" class="mt-3 hidden">
                 <input type="text" name="upiId" placeholder="Enter UPI ID" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
               </div>
             </div>
 
+            <!-- Total Amount -->
             <div class="bg-red-600 p-5 rounded-2xl shadow-lg">
               <div class="flex justify-between items-center text-white">
                 <span class="font-bold uppercase text-xs opacity-80">Total Payable</span>
@@ -139,6 +152,7 @@
               </div>
             </div>
 
+            <!-- Buttons -->
             <div class="flex gap-3">
               <button type="button" onclick="toggleOrderModal(false)" class="flex-1 py-3 rounded-xl bg-gray-100 text-gray-800 font-bold">Cancel</button>
               <button type="submit" class="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold shadow-lg">Confirm Order</button>
@@ -162,7 +176,7 @@
     }
   }
 
-  // Live Price Calculation based on Quantity
+  // Update total price dynamically
   const basePrice = <%= product.price %>;
   const quantityInput = document.getElementById('quantityInput');
   const totalAmount = document.getElementById('totalAmount');
@@ -179,19 +193,28 @@
     });
   });
 
-  // Validation before Submit
+  // Validate & submit order
   function validateAndSubmitOrder(event) {
     event.preventDefault();
     const form = document.getElementById('orderFormDetail');
-    const submitBtn = form.querySelector('button[type="submit"]');
 
-    // Location Validation from partial script
+    const size = form.querySelector('input[name="size"]:checked')?.value;
+    const quantity = parseInt(quantityInput.value) || 1;
+
+    if (!size) {
+      alert('Please select a size.');
+      return false;
+    }
+
+    // Set hidden inputs for backend
+    document.getElementById('itemSize').value = size;
+    document.getElementById('itemQuantity').value = quantity;
+
+    // Location validation
     if (window.validateOrderLocation && !window.validateOrderLocation(form)) {
       return false;
     }
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Processing...';
     form.submit();
   }
 </script>

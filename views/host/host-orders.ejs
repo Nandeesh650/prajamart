@@ -7,298 +7,286 @@
     font-family: 'Plus Jakarta Sans', sans-serif; 
     background-color: #f8fafc;
   }
-
-  /* Smooth Card Hover */
   .order-card {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(0,0,0,0.05);
   }
-  
   .order-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
-
-  /* Status Badge Pulse for attention-needed items */
   @keyframes status-blink {
     0% { opacity: 1; }
     50% { opacity: 0.7; }
     100% { opacity: 1; }
   }
-  .pulse-status {
-    animation: status-blink 2s infinite ease-in-out;
-  }
-
-  /* Custom Scrollbar */
+  .pulse-status { animation: status-blink 2s infinite ease-in-out; }
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-track { background: #f1f1f1; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
   ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 </style>
-
 </head>
 <body>
-  <%- include('../partials/nav') %>
+<%- include('../partials/nav') %>
 
-  <main class="px-6 py-10 bg-gradient-to-br from-slate-100 via-white to-slate-200 min-h-screen">
-    
-    <div class="text-center mb-12" data-aos="fade-down">
-      <h1 class="text-5xl font-extrabold text-slate-900 tracking-tight">
-        Incoming <span class="text-green-600">Orders</span>
-      </h1>
-      <p class="text-slate-500 mt-3 text-lg font-medium">
-        Manage and process customer orders in real-time
-      </p>
-    </div>
+<main class="px-6 py-10 bg-gradient-to-br from-slate-100 via-white to-slate-200 min-h-screen">
+  
+  <div class="text-center mb-12" data-aos="fade-down">
+    <h1 class="text-5xl font-extrabold text-slate-900 tracking-tight">
+      Incoming <span class="text-green-600">Orders</span>
+    </h1>
+    <p class="text-slate-500 mt-3 text-lg font-medium">
+      Manage and process customer orders in real-time
+    </p>
+  </div>
 
-    <div class="max-w-6xl mx-auto mb-6">
-      <% if (success) { %>
-        <div class="p-4 rounded-2xl bg-green-100 text-green-800 border border-green-200 shadow-sm flex items-center gap-2" data-aos="slide-in-right">
-          <span class="text-lg">✅</span> <%= success %>
-        </div>
-      <% } %>
-      <% if (error) { %>
-        <div class="p-4 rounded-2xl bg-red-100 text-red-800 border border-red-200 shadow-sm flex items-center gap-2" data-aos="slide-in-right">
-          <span class="text-lg">⚠️</span> <%= error %>
-        </div>
-      <% } %>
-    </div>
+  <div class="max-w-6xl mx-auto mb-6">
+    <% if (success) { %>
+      <div class="p-4 rounded-2xl bg-green-100 text-green-800 border border-green-200 shadow-sm flex items-center gap-2" data-aos="slide-in-right">
+        <span class="text-lg">✅</span> <%= success %>
+      </div>
+    <% } %>
+    <% if (error) { %>
+      <div class="p-4 rounded-2xl bg-red-100 text-red-800 border border-red-200 shadow-sm flex items-center gap-2" data-aos="slide-in-right">
+        <span class="text-lg">⚠️</span> <%= error %>
+      </div>
+    <% } %>
+  </div>
 
-    <div class="max-w-6xl mx-auto">
-      <% if (orders && orders.length > 0) { %>
-        
-        <div class="space-y-8">
-          <% orders.forEach((order, index) => { %>
-            <div class="order-card bg-white rounded-3xl shadow-sm p-8 border-l-[6px] border-green-500" 
-                 data-aos="fade-up" 
-                 data-aos-delay="<%= index * 50 %>">
-              
-              <div class="flex justify-between items-start mb-6">
-                <div>
-                  <h3 class="text-2xl font-black text-slate-800 tracking-tight">
-                    <%= order.productId.productName %>
-                  </h3>
-                  <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">
-                    Reference: #<%= order._id %>
-                  </p>
-                </div>
-                <span class="px-5 py-2 rounded-xl text-xs font-black tracking-widest uppercase pulse-status
-                  <% if (order.status === 'pending') { %>
-                    bg-yellow-100 text-yellow-700 border border-yellow-200
-                  <% } else if (order.status === 'confirmed') { %>
-                    bg-blue-100 text-blue-700 border border-blue-200
-                  <% } else if (order.status === 'ready_to_deliver') { %>
-                    bg-orange-100 text-orange-700 border border-orange-200
-                  <% } else if (order.status === 'delivered') { %>
-                    bg-green-100 text-green-700 border border-green-200
-                  <% } else if (order.status === 'cancelled') { %>
-                    bg-red-100 text-red-700 border border-red-200
-                  <% } else { %>
-                    bg-slate-100 text-slate-600
-                  <% } %>
-                ">
-                  <%= order.status === 'ready_to_deliver' ? 'READY TO DELIVER' : order.status === 'out_for_delivery' ? 'OUT FOR DELIVERY' : order.status === 'shipped' ? 'SHIPPED' : order.status === 'return_requested' ? 'RETURN REQUESTED' : order.status === 'returned' ? 'RETURNED' : order.status.toUpperCase() %>
-                </span>
+  <div class="max-w-6xl mx-auto">
+    <% if (orders && orders.length > 0) { %>
+      <div class="space-y-8">
+        <% orders.forEach((order, index) => { %>
+          <div class="order-card bg-white rounded-3xl shadow-sm p-8 border-l-[6px] border-green-500" 
+               data-aos="fade-up" 
+               data-aos-delay="<%= index * 50 %>">
+            
+            <div class="flex justify-between items-start mb-6">
+              <div>
+                <h3 class="text-2xl font-black text-slate-800 tracking-tight">
+                  <%= order.productId ? order.productId.productName : 'Product not found' %>
+                </h3>
+                <p class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">
+                  Reference: #<%= order._id %>
+                </p>
               </div>
+              <span class="px-5 py-2 rounded-xl text-xs font-black tracking-widest uppercase pulse-status
+                <% if (order.status === 'pending') { %>
+                  bg-yellow-100 text-yellow-700 border border-yellow-200
+                <% } else if (order.status === 'confirmed') { %>
+                  bg-blue-100 text-blue-700 border border-blue-200
+                <% } else if (order.status === 'ready_to_deliver') { %>
+                  bg-orange-100 text-orange-700 border border-orange-200
+                <% } else if (order.status === 'delivered') { %>
+                  bg-green-100 text-green-700 border border-green-200
+                <% } else if (order.status === 'cancelled') { %>
+                  bg-red-100 text-red-700 border border-red-200
+                <% } else { %>
+                  bg-slate-100 text-slate-600
+                <% } %>
+              ">
+                <%= order.status === 'ready_to_deliver' ? 'READY TO DELIVER' : order.status === 'out_for_delivery' ? 'OUT FOR DELIVERY' : order.status === 'shipped' ? 'SHIPPED' : order.status === 'return_requested' ? 'RETURN REQUESTED' : order.status === 'returned' ? 'RETURNED' : order.status.toUpperCase() %>
+              </span>
+            </div>
 
-              <div class="grid grid-cols-2 md:grid-cols-5 gap-6 mb-6 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+            <!-- ORDER DETAILS GRID -->
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-6 mb-6 p-5 bg-slate-50 rounded-2xl border border-slate-100">
+              <div>
+                <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Quantity</p>
+                <p class="text-lg font-bold text-slate-800"><%= order.quantity %></p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Size</p>
+                <p class="text-lg font-bold text-slate-800"><%= order.size || 'N/A' %></p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Total Price</p>
+                <p class="text-lg font-bold text-green-600">₹<%= order.totalPrice %></p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Customer</p>
+                <p class="text-lg font-bold text-slate-800"><%= order.userId.firstName %></p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Order Date</p>
+                <p class="text-lg font-bold text-slate-800">
+                  <%= new Date(order.orderDate).toLocaleDateString() %>
+                </p>
+              </div>
+            </div>
+
+            <!-- CUSTOMER CONTACT & SHIPPING -->
+            <div class="mb-6 pb-6 border-b border-slate-100">
+              <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                 <div>
-                  <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Quantity</p>
-                  <p class="text-lg font-bold text-slate-800"><%= order.quantity %></p>
+                  <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Customer Email</p>
+                  <p class="text-slate-700 font-medium"><%= order.userId.email %></p>
                 </div>
                 <div>
-                  <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Size</p>
-                  <p class="text-lg font-bold text-slate-800"><%= order.size || 'N/A' %></p>
+                  <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Customer Phone</p>
+                  <p class="text-slate-700 font-medium"><%= order.userId.phoneNumber || 'Not available' %></p>
                 </div>
                 <div>
-                  <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Total Price</p>
-                  <p class="text-lg font-bold text-green-600">₹<%= order.totalPrice %></p>
-                </div>
-                <div>
-                  <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Customer</p>
-                  <p class="text-lg font-bold text-slate-800"><%= order.userId.firstName %></p>
-                </div>
-                <div>
-                  <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Order Date</p>
-                  <p class="text-lg font-bold text-slate-800">
-                    <%= new Date(order.orderDate).toLocaleDateString() %>
-                  </p>
+                  <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Shipping Address</p>
+                  <p class="text-slate-700 font-medium"><%= order.shippingAddress %></p>
                 </div>
               </div>
+            </div>
 
-              <div class="mb-6 pb-6 border-b border-slate-100">
+            <!-- DELIVERY INFO -->
+            <% if (order.deliveryLocation || order.deliveryBoyId) { %>
+              <div class="mb-6 pb-6 border-b border-slate-100 bg-emerald-50/50 p-4 rounded-2xl">
                 <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
                   <div>
-                    <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Customer Email</p>
-                    <p class="text-slate-700 font-medium"><%= order.userId.email %></p>
-                  </div>
-                  <div>
-                    <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Customer Phone</p>
-                    <p class="text-slate-700 font-medium"><%= order.userId.phoneNumber || 'Not available' %></p>
-                  </div>
-                  <div>
-                    <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Shipping Address</p>
-                    <p class="text-slate-700 font-medium"><%= order.shippingAddress %></p>
-                  </div>
-                </div>
-              </div>
-
-              <% if (order.deliveryLocation || order.deliveryBoyId) { %>
-                <div class="mb-6 pb-6 border-b border-slate-100 bg-emerald-50/50 p-4 rounded-2xl">
-                  <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-                    <div>
-                      <p class="text-[10px] text-emerald-600 uppercase font-black tracking-widest">Mapped Place</p>
-                      <p class="text-slate-800 font-bold"><%= order.deliveryLocation?.placeName || order.deliveryLocation?.city || 'Not mapped' %></p>
-                      <% if (order.deliveryLocation?.latitude && order.deliveryLocation?.longitude) { %>
-                        <p class="mt-1 text-xs text-slate-500">
-                          Lat <%= Number(order.deliveryLocation.latitude).toFixed(4) %>, Lng <%= Number(order.deliveryLocation.longitude).toFixed(4) %>
-                        </p>
-                      <% } %>
-                    </div>
-                    <div>
-                      <p class="text-[10px] text-emerald-600 uppercase font-black tracking-widest">Assigned Delivery Boy</p>
-                      <p class="text-slate-800 font-bold">
-                        <%= order.deliveryBoyId ? `${order.deliveryBoyId.firstName} ${order.deliveryBoyId.lastName}` : 'Waiting for acceptance' %>
+                    <p class="text-[10px] text-emerald-600 uppercase font-black tracking-widest">Mapped Place</p>
+                    <p class="text-slate-800 font-bold"><%= order.deliveryLocation?.placeName || order.deliveryLocation?.city || 'Not mapped' %></p>
+                    <% if (order.deliveryLocation?.latitude && order.deliveryLocation?.longitude) { %>
+                      <p class="mt-1 text-xs text-slate-500">
+                        Lat <%= Number(order.deliveryLocation.latitude).toFixed(4) %>, Lng <%= Number(order.deliveryLocation.longitude).toFixed(4) %>
                       </p>
-                    </div>
-                    <div>
-                      <p class="text-[10px] text-emerald-600 uppercase font-black tracking-widest">Delivery Boy Phone</p>
-                      <p class="text-slate-800 font-bold"><%= order.deliveryBoyId?.phoneNumber || 'Not assigned yet' %></p>
-                    </div>
+                    <% } %>
                   </div>
-                </div>
-              <% } %>
-
-              <div class="mb-6 pb-6 border-b border-slate-100 bg-blue-50/50 p-4 rounded-2xl">
-                <div class="flex justify-between items-center">
                   <div>
-                    <p class="text-[10px] text-blue-600 uppercase font-black tracking-widest mb-1">💳 Payment Method</p>
-                    <% if (order.paymentMethod === 'cod') { %>
-                      <p class="font-bold text-slate-800">💵 Cash on Delivery (COD)</p>
-                    <% } else if (order.paymentMethod === 'upi') { %>
-                      <p class="font-bold text-slate-800">📱 UPI Transfer</p>
-                    <% } else if (order.paymentMethod === 'debit_card') { %>
-                      <p class="font-bold text-slate-800">🏧 Debit Card</p>
-                    <% } %>
+                    <p class="text-[10px] text-emerald-600 uppercase font-black tracking-widest">Assigned Delivery Boy</p>
+                    <p class="text-slate-800 font-bold">
+                      <%= order.deliveryBoyId ? `${order.deliveryBoyId.firstName} ${order.deliveryBoyId.lastName}` : 'Waiting for acceptance' %>
+                    </p>
                   </div>
-                  <span class="px-4 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest
-                    <% if (order.paymentStatus === 'completed') { %>
-                      bg-green-200 text-green-800
-                    <% } else if (order.paymentStatus === 'failed') { %>
-                      bg-red-200 text-red-800
-                    <% } else { %>
-                      bg-blue-200 text-blue-800
-                    <% } %>
-                  ">
-                    <%= order.paymentStatus.toUpperCase() %>
-                  </span>
+                  <div>
+                    <p class="text-[10px] text-emerald-600 uppercase font-black tracking-widest">Delivery Boy Phone</p>
+                    <p class="text-slate-800 font-bold"><%= order.deliveryBoyId?.phoneNumber || 'Not assigned yet' %></p>
+                  </div>
                 </div>
               </div>
+            <% } %>
 
-              <div class="mb-6">
-                <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-3">Order Controls</p>
-                <% if (order.status === 'return_requested') { %>
-                  <div class="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                    <p class="text-sm text-amber-800 font-medium">
-                      Customer requested a return<% if (order.returnRequestedAt) { %> on <%= new Date(order.returnRequestedAt).toLocaleString() %><% } %>
-                    </p>
-                    <form action="/host/orders/<%= order._id %>/status" method="POST">
-                      <input type="hidden" name="status" value="returned">
-                      <button type="submit" class="px-6 py-2 rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition-all font-bold text-xs uppercase tracking-widest shadow-md"
-                        onclick="return confirm('Mark this order as returned?')">
-                        Confirm Return
-                      </button>
-                    </form>
-                  </div>
-                <% } else if (order.status === 'shipped' || order.status === 'out_for_delivery' || order.status === 'delivered' || order.status === 'returned') { %>
-                  <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-emerald-700 font-medium italic">
-                    <%= order.status === 'shipped' ? '🚀 Dispatched to delivery partner.' : order.status === 'out_for_delivery' ? '🛵 Near customer location.' : order.status === 'delivered' ? '✨ Order completed successfully.' : '📦 Return processed.' %>
-                  </div>
-                <% } else { %>
-                  <form action="/host/orders/<%= order._id %>/status" method="POST" class="flex gap-3">
-                    <select name="status" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-4 focus:ring-green-500/10 transition-all font-semibold text-slate-700">
-                      <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending Approval</option>
-                      <option value="confirmed" <%= order.status === 'confirmed' ? 'selected' : '' %>>Confirm Order</option>
-                      <option value="ready_to_deliver" <%= order.status === 'ready_to_deliver' ? 'selected' : '' %>>Ready for Pickup</option>
-                      <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancel Order</option>
-                    </select>
-                    <button type="submit" class="px-8 py-3 rounded-xl bg-slate-900 text-white hover:bg-green-600 transition-all font-bold text-xs uppercase tracking-widest shadow-lg">
-                      Update
+            <!-- PAYMENT INFO -->
+            <div class="mb-6 pb-6 border-b border-slate-100 bg-blue-50/50 p-4 rounded-2xl">
+              <div class="flex justify-between items-center">
+                <div>
+                  <p class="text-[10px] text-blue-600 uppercase font-black tracking-widest mb-1">💳 Payment Method</p>
+                  <% if (order.paymentMethod === 'cod') { %>
+                    <p class="font-bold text-slate-800">💵 Cash on Delivery (COD)</p>
+                  <% } else if (order.paymentMethod === 'upi') { %>
+                    <p class="font-bold text-slate-800">📱 UPI Transfer</p>
+                  <% } else if (order.paymentMethod === 'debit_card') { %>
+                    <p class="font-bold text-slate-800">🏧 Debit Card</p>
+                  <% } %>
+                </div>
+                <span class="px-4 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest
+                  <% if (order.paymentStatus === 'completed') { %>
+                    bg-green-200 text-green-800
+                  <% } else if (order.paymentStatus === 'failed') { %>
+                    bg-red-200 text-red-800
+                  <% } else { %>
+                    bg-blue-200 text-blue-800
+                  <% } %>
+                ">
+                  <%= order.paymentStatus.toUpperCase() %>
+                </span>
+              </div>
+            </div>
+
+            <!-- STATUS UPDATE FORM -->
+            <div class="mb-6">
+              <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-3">Order Controls</p>
+              <% if (order.status === 'return_requested') { %>
+                <div class="space-y-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                  <p class="text-sm text-amber-800 font-medium">
+                    Customer requested a return<% if (order.returnRequestedAt) { %> on <%= new Date(order.returnRequestedAt).toLocaleString() %><% } %>
+                  </p>
+                  <form action="/host/orders/<%= order._id %>/status" method="POST">
+                    <input type="hidden" name="status" value="returned">
+                    <button type="submit" class="px-6 py-2 rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition-all font-bold text-xs uppercase tracking-widest shadow-md"
+                      onclick="return confirm('Mark this order as returned?')">
+                      Confirm Return
                     </button>
                   </form>
-                <% } %>
-              </div>
-
-              <% if ((order.status === 'shipped' || order.status === 'out_for_delivery') && order.deliveryOtp) { %>
-                <div class="mb-6 rounded-2xl bg-slate-900 p-5 text-center shadow-xl">
-                  <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-2">Delivery Verification OTP</p>
-                  <span class="text-3xl font-black text-white tracking-[0.4em] ml-[0.4em]"><%= order.deliveryOtp %></span>
                 </div>
-              <% } %>
-
-              <% if (order.status === 'delivered' && order.userRating && order.userRating.stars > 0) { %>
-                <div class="mb-6 bg-yellow-50/50 p-5 rounded-2xl border border-yellow-100">
-                  <p class="text-[10px] text-yellow-700 uppercase font-black tracking-widest mb-2">Customer Feedback</p>
-                  <div class="flex items-center gap-3">
-                    <div class="text-xl">
-                      <% for (let i = 0; i < 5; i++) { %>
-                        <span class="<%= i < order.userRating.stars ? 'text-yellow-400' : 'text-slate-300' %>">★</span>
-                      <% } %>
-                    </div>
-                    <% if (order.userRating.comment) { %>
-                      <p class="text-sm text-slate-600 italic">"<%= order.userRating.comment %>"</p>
-                    <% } %>
-                  </div>
+              <% } else if (['shipped','out_for_delivery','delivered','returned'].includes(order.status)) { %>
+                <div class="rounded-2xl border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm text-emerald-700 font-medium italic">
+                  <%= order.status === 'shipped' ? '🚀 Dispatched to delivery partner.' : order.status === 'out_for_delivery' ? '🛵 Near customer location.' : order.status === 'delivered' ? '✨ Order completed successfully.' : '📦 Return processed.' %>
                 </div>
-              <% } %>
-
-              <div class="flex flex-wrap gap-4 pt-4 border-t border-slate-100">
-                <a href="/orders/<%= order._id %>" class="px-6 py-3 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all font-bold text-xs uppercase tracking-widest">
-                  Order Details
-                </a>
-                <% if (order.deliveryBoyId || order.status === 'shipped' || order.status === 'out_for_delivery' || order.status === 'delivered') { %>
-                  <a href="/orders/<%= order._id %>/tracking" class="px-6 py-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all font-bold text-xs uppercase tracking-widest">
-                    Track Shipment
-                  </a>
-                <% } %>
-                <div class="flex-grow"></div>
-                <form action="/host/orders/<%= order._id %>/delete" method="POST">
-                  <button type="submit" class="px-6 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all font-bold text-xs uppercase tracking-widest" onclick="return confirm('Permanently remove this order?');">
-                    Delete
+              <% } else { %>
+                <form action="/host/orders/<%= order._id %>/status" method="POST" class="flex gap-3">
+                  <select name="status" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-4 focus:ring-green-500/10 transition-all font-semibold text-slate-700">
+                    <option value="pending" <%= order.status === 'pending' ? 'selected' : '' %>>Pending Approval</option>
+                    <option value="confirmed" <%= order.status === 'confirmed' ? 'selected' : '' %>>Confirm Order</option>
+                    <option value="ready_to_deliver" <%= order.status === 'ready_to_deliver' ? 'selected' : '' %>>Ready for Pickup</option>
+                    <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancel Order</option>
+                  </select>
+                  <button type="submit" class="px-8 py-3 rounded-xl bg-slate-900 text-white hover:bg-green-600 transition-all font-bold text-xs uppercase tracking-widest shadow-lg">
+                    Update
                   </button>
                 </form>
-              </div>
-
+              <% } %>
             </div>
-          <% }) %>
-        </div>
 
-      <% } else { %>
-        <div class="text-center py-32" data-aos="zoom-in">
-          <div class="bg-white w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-slate-100">
-            <span class="text-4xl text-slate-300">📦</span>
+            <!-- EXTRA INFO & LINKS -->
+            <% if ((order.status === 'shipped' || order.status === 'out_for_delivery') && order.deliveryOtp) { %>
+              <div class="mb-6 rounded-2xl bg-slate-900 p-5 text-center shadow-xl">
+                <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-2">Delivery Verification OTP</p>
+                <span class="text-3xl font-black text-white tracking-[0.4em] ml-[0.4em]"><%= order.deliveryOtp %></span>
+              </div>
+            <% } %>
+
+            <% if (order.status === 'delivered' && order.userRating && order.userRating.stars > 0) { %>
+              <div class="mb-6 bg-yellow-50/50 p-5 rounded-2xl border border-yellow-100">
+                <p class="text-[10px] text-yellow-700 uppercase font-black tracking-widest mb-2">Customer Feedback</p>
+                <div class="flex items-center gap-3">
+                  <div class="text-xl">
+                    <% for (let i = 0; i < 5; i++) { %>
+                      <span class="<%= i < order.userRating.stars ? 'text-yellow-400' : 'text-slate-300' %>">★</span>
+                    <% } %>
+                  </div>
+                  <% if (order.userRating.comment) { %>
+                    <p class="text-sm text-slate-600 italic">"<%= order.userRating.comment %>"</p>
+                  <% } %>
+                </div>
+              </div>
+            <% } %>
+
+            <div class="flex flex-wrap gap-4 pt-4 border-t border-slate-100">
+              <a href="/orders/<%= order._id %>" class="px-6 py-3 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all font-bold text-xs uppercase tracking-widest">
+                Order Details
+              </a>
+              <% if (order.deliveryBoyId || ['shipped','out_for_delivery','delivered'].includes(order.status)) { %>
+                <a href="/orders/<%= order._id %>/tracking" class="px-6 py-3 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all font-bold text-xs uppercase tracking-widest">
+                  Track Shipment
+                </a>
+              <% } %>
+              <div class="flex-grow"></div>
+              <form action="/host/orders/<%= order._id %>/delete" method="POST">
+                <button type="submit" class="px-6 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all font-bold text-xs uppercase tracking-widest" onclick="return confirm('Permanently remove this order?');">
+                  Delete
+                </button>
+              </form>
+            </div>
+
           </div>
-          <p class="text-slate-400 text-2xl font-bold">No orders found</p>
-          <a href="/host/host-product-list" class="mt-6 inline-block px-8 py-3 rounded-full bg-slate-900 text-white hover:bg-green-600 transition-all font-bold text-xs uppercase tracking-widest shadow-lg">
-            View Inventory
-          </a>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="text-center py-32" data-aos="zoom-in">
+        <div class="bg-white w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl border border-slate-100">
+          <span class="text-4xl text-slate-300">📦</span>
         </div>
-      <% } %>
-    </div>
-  </main>
+        <p class="text-slate-400 text-2xl font-bold">No orders found</p>
+        <a href="/host/host-product-list" class="mt-6 inline-block px-8 py-3 rounded-full bg-slate-900 text-white hover:bg-green-600 transition-all font-bold text-xs uppercase tracking-widest shadow-lg">
+          View Inventory
+        </a>
+      </div>
+    <% } %>
+  </div>
+</main>
 
-  <%- include('../partials/footer') %>
+<%- include('../partials/footer') %>
 
-  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-  <script>
-    AOS.init({
-      duration: 800,
-      offset: 100,
-      once: true,
-      easing: 'ease-in-out'
-    });
-  </script>
-</body>
-</html>pt>
-</body>
-</html>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script>
+  AOS.init({
+    duration: 800,
+    offset: 100,
+  });
+</script>
