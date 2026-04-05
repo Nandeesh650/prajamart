@@ -131,15 +131,22 @@ app.use(authRouter)
 app.use(storeRouter);
 
 app.use("/orders", (req, res, next) => {
-  if (req.isLoggedIn) {
-    if (req.session.user?.userType === "deliveryboy") {
-      return res.redirect("/delivery/orders");
-    }
-    next();
-  } else {
-    res.redirect("/login");
+  if (!req.isLoggedIn) {
+    return res.redirect("/login");
   }
+
+  // Allow tracking page for delivery boys
+  if (
+    req.session.user?.userType === "deliveryboy" &&
+    !req.path.includes("/tracking")
+  ) {
+    return res.redirect("/delivery/orders");
+  }
+
+  next();
 });
+
+
 app.use("/orders", orderRouter);
 
 app.use("/delivery", (req, res, next) => {

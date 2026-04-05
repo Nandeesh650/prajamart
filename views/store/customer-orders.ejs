@@ -59,12 +59,12 @@
                 <span>Pending</span>
                 <span>Confirmed</span>
                 <span>Shipped</span>
+                <span>Ready To Deliver</span>
                 <span>Delivered</span>
               </div>
               <div class="progress-bar">
                 <div class="progress-bar-fill"
-                  style="width: <%= order.status === 'pending' ? 25 : order.status === 'confirmed' ? 50 : order.status === 'shipped' ? 75 : 100 %>%;">
-                </div>
+                  style="width: <%= order.status === 'pending' ? 25 : order.status === 'confirmed' ? 50 : order.status === 'shipped' ? 75 : order.status === 'ready_to_deliver' ? 85 : 100 %>%;"></div>
               </div>
             </div>
 
@@ -119,24 +119,22 @@
                     onclick="return confirm('Cancel this order?')">Cancel Order</button>
                 </form>
               <% } %>
-
               <a href="/orders/<%= order._id %>" class="px-6 py-3 rounded-xl bg-gray-900 text-white font-bold btn-hover">View Details</a>
-              <a href="/orders/<%= order._id %>/tracking" class="px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold btn-hover">Track Order</a>
+              <% if (order.status === 'ready_to_deliver') { %>
+                <a href="/orders/<%= order._id %>/tracking" class="px-6 py-3 rounded-xl bg-indigo-600 text-white font-bold btn-hover">Track Order</a>
+              <% } %>
             </div>
 
           </div>
         <% }) %>
       </div>
-
     <% } else { %>
-
       <div class="text-center py-32">
         <h2 class="text-4xl font-black text-gray-300">No Orders Yet</h2>
         <a href="/products" class="inline-block mt-6 px-8 py-4 bg-red-600 text-white rounded-2xl font-bold btn-hover">
           Start Shopping
         </a>
       </div>
-
     <% } %>
 
   </main>

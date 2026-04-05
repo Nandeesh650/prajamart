@@ -2,64 +2,141 @@ const Order = require("../models/order");
 const Product = require("../models/product");
 const { calculateDistanceKm } = require("../utils/locationData");
 
+// ================= POPULATE =================
 const populateDeliveryOrders = (query) =>
   query
-    .populate("productId")
+    .populate("items.productId")
     .populate("userId", "firstName lastName email phoneNumber")
     .populate("hostId", "firstName lastName email phoneNumber")
     .populate("deliveryBoyId", "firstName lastName email phoneNumber");
 
+// ================= HELPERS =================
 const createDeliveryOtp = () =>
-  String(Math.floor(100000 + (Math.random() * 900000)));
+  String(Math.floor(100000 + Math.random() * 900000));
 
+// ================= UPDATE PRODUCT RATING =================
 const recalculateDeliveredProductRating = async (productId) => {
   const deliveredOrders = await Order.find({
-    productId,
-    status: "delivered"
-  }).select("userRating");
+    "items.productId": productId,
+    status: "delivered",
+  });
 
-  const ratedDeliveredOrders = deliveredOrders.filter((item) => (item.userRating?.stars || 0) > 0);
-  const totalStars = ratedDeliveredOrders.reduce((sum, item) => sum + (item.userRating?.stars || 0), 0);
-  const ratingCount = ratedDeliveredOrders.length;
-  const averageRating = ratingCount > 0 ? Number((totalStars / ratingCount).toFixed(1)) : 0;
+  const ratings = [];
+
+  deliveredOrders.forEach((order) => {
+    order.items.forEach((item) => {
+      if (
+        String(item.productId) === String(productId) &&
+        item.userRating?.stars > 0
+      ) {
+        ratings.push(item.userRating.stars);
+      }
+    });
+  });
+
+  const count = ratings.length;
+
+  const avg =
+    count > 0
+      ? Number(
+          (
+            ratings.reduce((sum, star) => sum + star, 0) / count
+          ).toFixed(1)
+        )
+      : 0;
 
   await Product.findByIdAndUpdate(productId, {
     rating: {
-      stars: averageRating,
-      count: ratingCount
-    }
+      stars: avg,
+      count,
+    },
   });
 };
 
+// ================= DELIVERY DASHBOARD =================
 exports.getDeliveryOrders = async (req, res, next) => {
-  const deliveryBoyId = req.session.user._id;
-  const success = req.session.success;
-  const error = req.session.error;
-
-  delete req.session.success;
-  delete req.session.error;
-
   try {
-    const [availableOrders, activeOrders, completedOrders] = await Promise.all([
+    const deliveryBoyId = req.session.user._id;
+
+    const success = req.session.success;
+    const error = req.session.error;
+
+    delete req.session.success;
+    delete req.session.error;
+
+    const userLat = Number(req.query.latitude);
+    const userLng = Number(req.query.longitude);
+
+    const [
+      allAvailableOrders,
+      activeOrders,
+      completedOrders,
+    ] = await Promise.all([
       populateDeliveryOrders(
         Order.find({
           status: "ready_to_deliver",
-          $or: [{ deliveryBoyId: { $exists: false } }, { deliveryBoyId: null }]
-        }).sort({ orderDate: 1 })
+          $or: [
+            { deliveryBoyId: { $exists: false } },
+            { deliveryBoyId: null },
+          ],
+        })
+          .sort({ orderDate: 1 })
+          .limit(30)
       ),
+
       populateDeliveryOrders(
         Order.find({
           deliveryBoyId,
-          status: { $in: ["shipped", "out_for_delivery"] }
-        }).sort({ deliveryAcceptedAt: -1, orderDate: -1 })
+          status: {
+            $in: ["shipped", "out_for_delivery"],
+          },
+        })
+          .sort({
+            deliveryAcceptedAt: -1,
+            orderDate: -1,
+          })
+          .limit(30)
       ),
+
       populateDeliveryOrders(
         Order.find({
           deliveryBoyId,
-          status: "delivered"
-        }).sort({ deliveryDate: -1, orderDate: -1 }).limit(10)
-      )
+          status: "delivered",
+        })
+          .sort({
+            deliveryDate: -1,
+          })
+          .limit(30)
+      ),
     ]);
+
+    let availableOrders = [];
+
+    if (Number.isFinite(userLat) && Number.isFinite(userLng)) {
+      availableOrders = allAvailableOrders.filter((order) => {
+        if (
+          !order.deliveryLocation?.latitude ||
+          !order.deliveryLocation?.longitude
+        ) {
+          return false;
+        }
+
+        const distance = calculateDistanceKm(
+          {
+            latitude: userLat,
+            longitude: userLng,
+          },
+          {
+            latitude: order.deliveryLocation.latitude,
+            longitude: order.deliveryLocation.longitude,
+          }
+        );
+
+        return distance <= 20;
+      });
+    } else {
+      availableOrders = allAvailableOrders;
+    }
 
     res.render("delivery/orders", {
       availableOrders,
@@ -70,41 +147,37 @@ exports.getDeliveryOrders = async (req, res, next) => {
       isLoggedIn: req.isLoggedIn,
       user: req.session.user,
       success,
-      error
+      error,
     });
   } catch (err) {
-    console.log("Error loading delivery dashboard:", err);
+    console.error("Dashboard error:", err);
     next(err);
   }
 };
 
+// ================= ACCEPT DELIVERY =================
 exports.postAcceptDelivery = async (req, res) => {
-  const deliveryBoyId = req.session.user._id.toString();
-  const orderId = req.params.orderId;
-  const latitude = Number(req.body.latitude);
-  const longitude = Number(req.body.longitude);
-
   try {
+    const deliveryBoyId = req.session.user._id.toString();
+    const orderId = req.params.orderId;
+
+    const latitude = Number(req.body.latitude);
+    const longitude = Number(req.body.longitude);
+
     const order = await Order.findById(orderId);
 
-    if (!order) {
-      req.session.error = "Order not found";
-      return res.redirect("/delivery/orders");
-    }
+    if (!order) throw new Error("Order not found");
 
     if (order.status !== "ready_to_deliver") {
-      req.session.error = "Only ready to deliver orders can be accepted";
-      return res.redirect("/delivery/orders");
+      throw new Error("Order not ready");
     }
 
     if (order.deliveryBoyId) {
-      req.session.error = "This order has already been accepted by another delivery boy";
-      return res.redirect("/delivery/orders");
+      throw new Error("Already accepted");
     }
 
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-      req.session.error = "Please allow your current location before accepting an order";
-      return res.redirect("/delivery/orders");
+      throw new Error("Live location required");
     }
 
     const distanceKm = calculateDistanceKm(
@@ -112,89 +185,77 @@ exports.postAcceptDelivery = async (req, res) => {
       order.deliveryLocation
     );
 
-    if (!Number.isFinite(distanceKm) || distanceKm > 20) {
-      req.session.error = "You can accept only orders within 20 km of your current location";
-      return res.redirect("/delivery/orders");
+    if (distanceKm > 20) {
+      throw new Error("Only 20 KM orders allowed");
     }
 
-    order.deliveryBoyId = req.session.user._id;
+    order.deliveryBoyId = deliveryBoyId;
     order.deliveryAcceptedAt = new Date();
     order.deliveryOtp = createDeliveryOtp();
     order.deliveryOtpGeneratedAt = new Date();
-    order.deliveryOtpVerifiedAt = undefined;
     order.status = "shipped";
 
     await order.save();
 
-    req.session.success = "Order accepted successfully and marked as shipped.";
-    return res.redirect("/delivery/orders");
+    req.session.success = "Order accepted successfully";
+    res.redirect("/delivery/orders");
   } catch (err) {
-    console.log("Error accepting delivery order:", err);
-    req.session.error = "Could not accept this delivery order";
-    return res.redirect("/delivery/orders");
+    req.session.error = err.message;
+    res.redirect("/delivery/orders");
   }
 };
 
+// ================= START DELIVERY =================
 exports.postStartOutForDelivery = async (req, res) => {
-  const deliveryBoyId = req.session.user._id.toString();
-  const orderId = req.params.orderId;
-
   try {
+    const deliveryBoyId = req.session.user._id.toString();
+    const orderId = req.params.orderId;
+
     const order = await Order.findById(orderId);
 
-    if (!order) {
-      req.session.error = "Order not found";
-      return res.redirect("/delivery/orders");
-    }
+    if (!order) throw new Error("Order not found");
 
-    if (String(order.deliveryBoyId || "") !== deliveryBoyId) {
-      req.session.error = "You are not assigned to this order";
-      return res.redirect("/delivery/orders");
+    if (String(order.deliveryBoyId) !== deliveryBoyId) {
+      throw new Error("Unauthorized");
     }
 
     if (order.status !== "shipped") {
-      req.session.error = "Only shipped orders can move to out for delivery";
-      return res.redirect("/delivery/orders");
+      throw new Error("Invalid status");
     }
 
     order.status = "out_for_delivery";
+
     await order.save();
 
-    req.session.success = "Order is now out for delivery.";
-    return res.redirect("/delivery/orders");
+    req.session.success = "Order out for delivery";
+    res.redirect("/delivery/orders");
   } catch (err) {
-    console.log("Error starting out for delivery:", err);
-    req.session.error = "Could not update this delivery order";
-    return res.redirect("/delivery/orders");
+    req.session.error = err.message;
+    res.redirect("/delivery/orders");
   }
 };
 
+// ================= COMPLETE DELIVERY =================
 exports.postCompleteDelivery = async (req, res) => {
-  const deliveryBoyId = req.session.user._id.toString();
-  const orderId = req.params.orderId;
-  const otp = String(req.body.otp || "").trim();
-
   try {
+    const deliveryBoyId = req.session.user._id.toString();
+    const orderId = req.params.orderId;
+    const otp = String(req.body.otp || "").trim();
+
     const order = await Order.findById(orderId);
 
-    if (!order) {
-      req.session.error = "Order not found";
-      return res.redirect("/delivery/orders");
-    }
+    if (!order) throw new Error("Order not found");
 
-    if (String(order.deliveryBoyId || "") !== deliveryBoyId) {
-      req.session.error = "You are not assigned to this order";
-      return res.redirect("/delivery/orders");
+    if (String(order.deliveryBoyId) !== deliveryBoyId) {
+      throw new Error("Unauthorized");
     }
 
     if (order.status !== "out_for_delivery") {
-      req.session.error = "Only out for delivery orders can be completed with OTP";
-      return res.redirect("/delivery/orders");
+      throw new Error("Order not active");
     }
 
     if (!otp || otp !== order.deliveryOtp) {
-      req.session.error = "Invalid OTP. Please check the OTP with the customer.";
-      return res.redirect("/delivery/orders");
+      throw new Error("Invalid OTP");
     }
 
     order.status = "delivered";
@@ -207,13 +268,15 @@ exports.postCompleteDelivery = async (req, res) => {
     }
 
     await order.save();
-    await recalculateDeliveredProductRating(order.productId);
 
-    req.session.success = "Delivery completed successfully";
-    return res.redirect("/delivery/orders");
+    for (const item of order.items) {
+      await recalculateDeliveredProductRating(item.productId);
+    }
+
+    req.session.success = "Delivery completed";
+    res.redirect("/delivery/orders");
   } catch (err) {
-    console.log("Error completing delivery order:", err);
-    req.session.error = "Could not complete the delivery";
-    return res.redirect("/delivery/orders");
+    req.session.error = err.message;
+    res.redirect("/delivery/orders");
   }
 };
