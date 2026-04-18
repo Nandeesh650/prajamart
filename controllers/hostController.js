@@ -2,19 +2,13 @@ const Product = require("../models/product");
 const fs = require("fs").promises;
 
 const LOCATION_OPTIONS = [
-  "Bangalore",
-  "Shivamogga",
-  "Sagar",
-  "Hosanagara",
-  "Soraba",
-  "Shikaripur",
-  "Bhadravathi",
-  "Tarikere"
+  "Bangalore", "Shivamogga", "Sagar", "Hosanagara", 
+  "Soraba", "Shikaripur", "Bhadravathi", "Tarikere"
 ];
 
-const ALLOWED_SIZES = ["S","M","L","XL","XXL","1","2","3","4","5","6","7","8","9","10"];
+const ALLOWED_SIZES = ["S", "M", "L", "XL", "XXL", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
 
-// Render Add Product Form
+// GET: Render Add Product Form
 exports.getAddProduct = (req, res, next) => {
   res.render("host/edit-product", {
     pageTitle: "Add Product",
@@ -27,7 +21,7 @@ exports.getAddProduct = (req, res, next) => {
   });
 };
 
-// Render Edit Product Form
+// GET: Render Edit Product Form
 exports.getEditProduct = async (req, res, next) => {
   try {
     const productId = req.params.productId;
@@ -51,7 +45,7 @@ exports.getEditProduct = async (req, res, next) => {
   }
 };
 
-// List All Host Products
+// GET: List All Host Products
 exports.getHostProducts = async (req, res, next) => {
   try {
     const products = await Product.find({ hostId: req.session.user._id });
@@ -68,49 +62,30 @@ exports.getHostProducts = async (req, res, next) => {
   }
 };
 
-// Add Product
+// POST: Add Product (Handles Multiple Images)
 exports.postAddProduct = async (req, res, next) => {
   try {
-    const {
-      productName,
-      key,
-      price,
-      description = "",
-      location = "",
-      stock = 0
-    } = req.body;
+    const { productName, key, price, description = "", location = "", stock = 0 } = req.body;
 
-    if (!req.file) return res.status(422).send("No image provided");
-    if (!productName || !key || !price) return res.status(422).send("Product name, key, and price are required");
+    if (!req.files || req.files.length === 0) return res.status(422).send("At least one image is required");
 
+    const imagePaths = req.files.map(file => file.path.replace(/\\/g, "/"));
     const keys = key.split(",").map(k => k.trim()).filter(Boolean);
-    if (keys.length === 0) return res.status(422).send("At least one key is required");
-
-    // Parse numbers
-    const parsedPrice = parseFloat(price);
-    const parsedStock = parseInt(stock, 10);
-
-    if (isNaN(parsedPrice) || parsedPrice < 0) return res.status(422).send("Invalid price");
-    if (isNaN(parsedStock) || parsedStock < 0) return res.status(422).send("Invalid stock");
-
-    // Handle sizes
-    const sizes = Array.isArray(req.body.availableSizes)
-      ? req.body.availableSizes
-      : req.body.availableSizes
-        ? [req.body.availableSizes]
-        : [];
-    const filteredSizes = sizes.filter(size => ALLOWED_SIZES.includes(size));
+    
+    // Handle Size Checkboxes
+    const rawSizes = req.body.availableSizes || [];
+    const sizesArray = Array.isArray(rawSizes) ? rawSizes : [rawSizes];
+    const filteredSizes = sizesArray.filter(size => ALLOWED_SIZES.includes(size));
 
     const product = new Product({
       productName,
       key: keys,
-      price: parsedPrice,
-      stock: parsedStock,
+      price: parseFloat(price),
+      stock: parseInt(stock, 10),
       availableSizes: filteredSizes,
       location: location.trim(),
       hostId: req.session.user._id,
-      rating: { stars: 0, count: 0 },
-      photo: req.file.path.replace(/\\/g, "/"),
+      photos: imagePaths,
       description: description.trim(),
     });
 
@@ -122,76 +97,53 @@ exports.postAddProduct = async (req, res, next) => {
   }
 };
 
-// Edit Product
+// POST: Edit Product (Updates Photos and Sizes)
 exports.postEditProduct = async (req, res, next) => {
   try {
-    const {
-      id,
-      productName,
-      key,
-      price,
-      description = "",
-      location = "",
-      stock = 0
-    } = req.body;
-
-    if (!id || !productName || !key || !price) return res.status(422).send("ID, product name, key, and price are required");
-
+    const { id, productName, key, price, description = "", location = "", stock = 0 } = req.body;
     const product = await Product.findById(id);
     if (!product) return res.status(404).send("Product not found");
 
-    const keys = key.split(",").map(k => k.trim()).filter(Boolean);
-    if (keys.length === 0) return res.status(422).send("At least one key is required");
+    // Update Photo Logic
+    if (req.files && req.files.length > 0) {
+      if (product.photos && product.photos.length > 0) {
+        for (const oldPath of product.photos) {
+          try { await fs.unlink(oldPath); } catch (err) { console.log("Old file not found, skipping delete."); }
+        }
+      }
+      product.photos = req.files.map(file => file.path.replace(/\\/g, "/"));
+    }
 
-    // Parse numbers
-    const parsedPrice = parseFloat(price);
-    const parsedStock = parseInt(stock, 10);
+    // Update Size Logic
+    const rawSizes = req.body.availableSizes || [];
+    const sizesArray = Array.isArray(rawSizes) ? rawSizes : [rawSizes];
+    product.availableSizes = sizesArray.filter(size => ALLOWED_SIZES.includes(size));
 
-    if (isNaN(parsedPrice) || parsedPrice < 0) return res.status(422).send("Invalid price");
-    if (isNaN(parsedStock) || parsedStock < 0) return res.status(422).send("Invalid stock");
-
-    // Handle sizes
-    const sizes = Array.isArray(req.body.availableSizes)
-      ? req.body.availableSizes
-      : req.body.availableSizes
-        ? [req.body.availableSizes]
-        : [];
-    const filteredSizes = sizes.filter(size => ALLOWED_SIZES.includes(size));
-
-    // Update product
     product.productName = productName;
-    product.key = keys;
-    product.price = parsedPrice;
-    product.stock = parsedStock;
-    product.availableSizes = filteredSizes;
+    product.key = key.split(",").map(k => k.trim()).filter(Boolean);
+    product.price = parseFloat(price);
+    product.stock = parseInt(stock, 10);
     product.location = location.trim();
     product.description = description.trim();
-    if (!product.hostId) product.hostId = req.session.user._id;
-
-    // Handle photo replacement
-    if (req.file) {
-      try {
-        if (product.photo) await fs.unlink(product.photo);
-      } catch (err) {
-        console.log("Error deleting old photo:", err);
-      }
-      product.photo = req.file.path.replace(/\\/g, "/");
-    }
 
     await product.save();
     res.redirect("/host/host-product-list");
-
   } catch (err) {
     console.error(err);
     res.status(500).send("Error editing product");
   }
 };
 
-// Delete Product
+// POST: Delete Product
 exports.postDeleteProduct = async (req, res, next) => {
   try {
-    const productId = req.params.productId;
-    await Product.findByIdAndDelete(productId);
+    const product = await Product.findById(req.params.productId);
+    if (product && product.photos) {
+      for (const path of product.photos) {
+        try { await fs.unlink(path); } catch (err) {}
+      }
+    }
+    await Product.findByIdAndDelete(req.params.productId);
     res.redirect("/host/host-product-list");
   } catch (err) {
     console.error(err);

@@ -4,100 +4,50 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
-  :root {
-    --brand-indigo: #4f46e5;
-    --brand-slate: #0f172a;
-    --glass-bg: rgba(255, 255, 255, 0.85);
+  :root { --brand-indigo: #4f46e5; --brand-slate: #0f172a; --glass-bg: rgba(255, 255, 255, 0.85); }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: var(--brand-slate); overflow-x: hidden; }
+  
+  .form-glass { background: var(--glass-bg); backdrop-filter: blur(40px); border: 1px solid rgba(255, 255, 255, 1); box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.05); }
+  
+  .input-premium { @apply w-full px-8 py-6 rounded-[2rem] border-2 border-slate-100 bg-white transition-all duration-500 text-sm font-bold outline-none; }
+  .input-premium:focus { @apply ring-[18px] ring-indigo-500/5 border-indigo-500; transform: translateY(-2px); }
+
+  /* Premium Size Button Animation */
+  .size-btn-anim { transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
+  .size-chip input:checked + .size-btn-anim {
+    @apply border-indigo-500 bg-indigo-600 text-white scale-110;
+    box-shadow: 0 20px 40px -10px rgba(79, 70, 229, 0.5);
+    animation: pulse-glow 2s infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(79, 70, 229, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
   }
 
-  body { 
-    font-family: 'Plus Jakarta Sans', sans-serif; 
-    background-color: #f8fafc; 
-    color: var(--brand-slate);
-    overflow-x: hidden;
-  }
+  /* Interactive Select */
+  #customSelectContainer { @apply relative transition-all duration-300; z-index: 30; }
+  .select-trigger-premium { @apply w-full px-8 py-6 rounded-[2rem] border-2 border-slate-100 bg-white transition-all duration-500 text-sm font-bold cursor-pointer flex items-center justify-between relative outline-none; }
+  #selectMenu { display: none; opacity: 0; transform: translateY(15px) scale(0.95); transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1); @apply absolute top-full left-0 w-full mt-4 bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden; z-index: 1001; }
+  #customSelectContainer.active #selectMenu { display: block; opacity: 1; transform: translateY(0) scale(1); }
 
-  .form-glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(40px);
-    border: 1px solid rgba(255, 255, 255, 1);
-    box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.05);
+  /* Premium Deploy Button */
+  .btn-deploy-premium {
+    @apply relative overflow-hidden w-full py-10 rounded-[3rem] bg-slate-950 text-white font-black text-xs uppercase tracking-[0.6em] transition-all duration-500 cursor-pointer border border-slate-800;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   }
-
-  .input-premium {
-    @apply w-full px-8 py-6 rounded-[2rem] border-2 border-slate-100 bg-white transition-all duration-500 text-sm font-bold outline-none;
+  .btn-deploy-premium:hover {
+    @apply -translate-y-2 bg-indigo-600 border-indigo-400;
+    box-shadow: 0 35px 60px -15px rgba(79, 70, 229, 0.4);
   }
-
-  .input-premium:focus {
-    @apply ring-[18px] ring-indigo-500/5 border-indigo-500;
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
+  .btn-deploy-premium::after {
+    content: '';
+    @apply absolute top-0 -left-[100%] w-full h-full;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.5s;
   }
-
-  /* Custom Select Component Styling */
-  #customSelectContainer {
-    @apply relative transition-all duration-300;
-    z-index: 30; /* Default stack level */
-  }
-
-  /* Boost Z-Index when dropdown is open to float over everything */
-  #customSelectContainer.active {
-    z-index: 1000;
-  }
-
-  .select-trigger-premium {
-    @apply w-full px-8 py-6 rounded-[2rem] border-2 border-slate-100 bg-white transition-all duration-500 text-sm font-bold cursor-pointer flex items-center justify-between relative outline-none;
-  }
-
-  .active .select-trigger-premium {
-    @apply ring-[18px] ring-indigo-500/5 border-indigo-500;
-    transform: translateY(-2px);
-  }
-
-  #selectMenu {
-    display: none;
-    opacity: 0;
-    transform: translateY(15px) scale(0.95);
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    @apply absolute top-full left-0 w-full mt-4 bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_30px_100px_-20px_rgba(0,0,0,0.15)] overflow-hidden;
-    z-index: 1001;
-  }
-
-  .active #selectMenu {
-    display: block;
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-
-  .option-item {
-    @apply px-8 py-5 transition-all duration-300 cursor-pointer text-sm font-bold border-b border-slate-50 last:border-0 flex items-center gap-3 text-slate-700;
-  }
-
-  .option-item:hover {
-    @apply bg-indigo-50 text-indigo-600 pl-10;
-  }
-
-  .option-item:hover .dot-indicator {
-    @apply opacity-100 scale-100;
-  }
-
-  .dot-indicator {
-    @apply w-1.5 h-1.5 rounded-full bg-indigo-500 opacity-0 scale-0 transition-all duration-300;
-  }
-
-  /* White Deploy Button Styling */
-  .btn-deploy-white {
-    @apply relative overflow-hidden w-full py-10 rounded-[3rem] bg-white text-slate-900 font-black text-xs uppercase tracking-[0.6em] transition-all duration-500 cursor-pointer border border-slate-200;
-    box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.1);
-  }
-
-  .btn-deploy-white:hover {
-    @apply scale-[1.01] -translate-y-2 bg-slate-50;
-    box-shadow: 0 45px 90px -20px rgba(0, 0, 0, 0.15);
-  }
-
-  .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-  .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+  .btn-deploy-premium:hover::after { left: 100%; }
 </style>
 
 <body class="antialiased">
@@ -120,90 +70,80 @@
         <div class="space-y-12">
           <div data-aos="fade-right">
             <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">Product Name</label>
-            <input type="text" name="productName" value="<%= editing ? product.productName : '' %>" class="input-premium" placeholder="Enter identifier..." required />
+            <input type="text" name="productName" value="<%= editing ? product.productName : '' %>" class="input-premium" required />
           </div>
 
           <div class="grid grid-cols-2 gap-8">
-            <div data-aos="fade-right" data-aos-delay="100">
+            <div>
               <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">Price (INR)</label>
               <input type="number" name="price" value="<%= editing ? product.price : '' %>" class="input-premium" required />
             </div>
-            <div data-aos="fade-right" data-aos-delay="200">
-              <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">Stock Units</label>
+            <div>
+              <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">Stock</label>
               <input type="number" name="stock" value="<%= editing ? product.stock : 0 %>" class="input-premium" />
             </div>
           </div>
 
-          <div data-aos="fade-right" data-aos-delay="250">
+          <div>
             <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">Deployment Hub</label>
             <div id="customSelectContainer">
-              <input type="hidden" name="location" id="locationInput" value="<%= editing && product ? product.location : '' %>" required>
-              
+              <input type="hidden" name="location" id="locationInput" value="<%= editing ? product.location : '' %>" required>
               <div id="selectTrigger" class="select-trigger-premium group">
-                <div class="flex items-center gap-4 truncate">
-                  <div class="text-indigo-500 transition-transform duration-300 group-hover:scale-110">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    </svg>
-                  </div>
-                  <span id="triggerText" class="truncate text-slate-900">
-                    <%= editing && product && product.location ? product.location : 'Select operating hub' %>
-                  </span>
-                </div>
-                <svg id="triggerArrow" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-300 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
-                </svg>
+                <span id="triggerText"><%= editing ? product.location : 'Select operating hub' %></span>
+                <svg id="triggerArrow" class="h-4 w-4 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 9l-7 7-7-7" stroke-width="3"/></svg>
               </div>
-
               <div id="selectMenu" class="backdrop-blur-xl bg-white/95">
-                <div class="max-h-64 overflow-y-auto custom-scrollbar">
+                <div class="max-h-64 overflow-y-auto">
                   <% locationOptions.forEach(function(opt) { %>
-                    <div class="option-item" onclick="handleSelect('<%= opt %>')">
-                      <div class="dot-indicator"></div>
-                      <span><%= opt %></span>
-                    </div>
+                    <div class="option-item" onclick="handleSelect('<%= opt %>')"><span><%= opt %></span></div>
                   <% }) %>
                 </div>
               </div>
             </div>
           </div>
 
-          <div data-aos="fade-right" data-aos-delay="300">
+          <div>
             <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">Indexing Metadata</label>
-            <input type="text" name="key" value="<%= editing && product.key ? product.key.join(', ') : '' %>" placeholder="e.g. tech, mobile, 2026" class="input-premium" />
+            <input type="text" name="key" value="<%= editing && product.key ? product.key.join(', ') : '' %>" placeholder="tech, mobile" class="input-premium" />
           </div>
         </div>
 
         <div class="space-y-12">
           <div data-aos="fade-left">
-            <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">Media Asset</label>
-            <div class="relative group h-[450px] rounded-[3.5rem] border-2 border-dashed border-slate-100 bg-white flex items-center justify-center cursor-pointer overflow-hidden shadow-inner">
-              <input type="file" name="photo" id="photoInput" class="absolute inset-0 opacity-0 z-30 cursor-pointer" />
-              <div id="previewContainer" class="hidden absolute inset-0 z-20 bg-white p-6">
-                <img id="imagePreview" src="#" class="w-full h-full object-contain rounded-[2.5rem]" />
+            <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">Media Assets (Max 4)</label>
+            <div class="relative group h-[280px] rounded-[3.5rem] border-2 border-dashed border-slate-100 bg-white flex items-center justify-center cursor-pointer overflow-hidden shadow-inner">
+              <input type="file" name="photos" id="photoInput" class="absolute inset-0 opacity-0 z-30 cursor-pointer" multiple accept="image/*" />
+              <div id="previewContainer" class="<%= editing && product.photos && product.photos.length > 0 ? '' : 'hidden' %> absolute inset-0 z-20 bg-white p-4 overflow-y-auto">
+                <div id="imagePreviewGrid" class="grid grid-cols-2 gap-3">
+                    <% if (editing && product.photos) { %>
+                        <% product.photos.forEach(img => { %>
+                          <img src="/<%= img %>" class="w-full h-24 object-cover rounded-2xl border border-slate-100">
+                        <% }) %>
+                    <% } %>
+                </div>
               </div>
-              <div class="text-center group-hover:scale-110 transition-transform pointer-events-none">
-                <div class="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl text-indigo-600">📸</div>
-                <p class="text-[10px] font-black text-slate-800 tracking-widest">UPLOAD IMAGE</p>
+              <div id="placeholderUI" class="<%= editing && product.photos && product.photos.length > 0 ? 'hidden' : '' %> text-center group-hover:scale-110 transition-transform duration-500">
+                <div class="h-16 w-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">📸</div>
+                <p class="text-[10px] font-black text-slate-800 tracking-widest uppercase">Visual Asset Deployment</p>
               </div>
             </div>
           </div>
 
-          <div data-aos="fade-left" data-aos-delay="100">
+          <div>
             <label class="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">Story Narrative</label>
-            <textarea name="description" rows="4" class="input-premium resize-none h-[115px]" placeholder="Brief narrative..."><%= editing ? product.description : '' %></textarea>
+            <textarea name="description" rows="4" class="input-premium resize-none h-[115px]"><%= editing ? product.description : '' %></textarea>
           </div>
         </div>
 
-        <div class="md:col-span-2" data-aos="fade-up">
-          <label class="block text-[11px] font-black text-indigo-500 uppercase tracking-[0.8em] mb-10 text-center">Global Matrix Configuration</label>
-          <div class="flex flex-wrap justify-center gap-6 p-14 bg-slate-900 rounded-[5rem] shadow-inner relative z-10">
-            <% ["S","M","L","XL","XXL","1","2","3","4","5","6","7","8","9","10"].forEach((size) => { %>
-              <label class="block cursor-pointer">
-                <input type="checkbox" name="availableSizes" value="<%= size %>" class="hidden peer" <%= editing && product.availableSizes && product.availableSizes.includes(size) ? "checked" : "" %>>
-                <div class="relative overflow-hidden h-16 w-16 flex items-center justify-center rounded-2xl border-2 border-slate-700 bg-slate-800 text-slate-400 font-extrabold transition-all duration-500 z-10 peer-checked:text-white peer-checked:border-indigo-400 peer-checked:scale-110">
-                  <div class="absolute inset-0 bg-indigo-600 translate-x-[-100%] peer-checked:translate-x-0 transition-transform duration-500 z-[-1]"></div>
-                  <span class="relative z-10 pointer-events-none text-xs"><%= size %></span>
+        <div class="md:col-span-2 mt-10" data-aos="fade-up">
+          <label class="block text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10 text-center">Global Matrix Configuration</label>
+          <div class="flex flex-wrap justify-center gap-5 p-12 bg-white/50 rounded-[4rem] border-2 border-slate-100/50 shadow-inner backdrop-blur-sm">
+            <% ["S","M","L","XL","XXL","1","2","3","4","5","6","7","8","9","10"].forEach(size => { %>
+              <label class="size-chip cursor-pointer group">
+                <input type="checkbox" name="availableSizes" value="<%= size %>" class="peer absolute opacity-0 w-0 h-0"
+                  <%= (editing && product.availableSizes && product.availableSizes.includes(size)) ? "checked" : "" %>>
+                <div class="size-btn-anim flex items-center justify-center w-16 h-16 rounded-[1.5rem] border-2 border-white bg-white shadow-sm text-slate-400 font-black text-xs group-hover:text-indigo-500 group-hover:-translate-y-2">
+                  <%= size %>
                 </div>
               </label>
             <% }) %>
@@ -211,8 +151,8 @@
         </div>
 
         <div class="md:col-span-2 pt-10">
-          <button type="submit" class="btn-deploy-white">
-            Initialize Asset Deployment
+          <button type="submit" class="btn-deploy-premium">
+            <%= editing ? 'Sync Protocol Updates' : 'Initialize Asset Deployment' %>
           </button>
         </div>
       </form>
@@ -224,7 +164,7 @@
 <script>
   AOS.init({ duration: 1200 });
 
-  /* Custom Select Component Logic */
+  /* Custom Select Logic */
   const selectContainer = document.getElementById('customSelectContainer');
   const trigger = document.getElementById('selectTrigger');
   const triggerText = document.getElementById('triggerText');
@@ -242,16 +182,8 @@
     triggerText.innerText = val;
     selectContainer.classList.remove('active');
     arrow.style.transform = 'rotate(0deg)';
-    
-    // Tactile Feedback
-    trigger.animate([
-      { transform: 'scale(1)' },
-      { transform: 'scale(0.98)' },
-      { transform: 'scale(1)' }
-    ], { duration: 150 });
   }
 
-  // Global click-away listener
   window.addEventListener('click', (e) => {
     if (!selectContainer.contains(e.target)) {
       selectContainer.classList.remove('active');
@@ -259,27 +191,45 @@
     }
   });
 
-  /* Image Asset Logic */
+  /* Image Preview */
   const photoInput = document.getElementById('photoInput');
   const previewContainer = document.getElementById('previewContainer');
-  const imagePreview = document.getElementById('imagePreview');
+  const previewGrid = document.getElementById('imagePreviewGrid');
+  const placeholderUI = document.getElementById('placeholderUI');
 
   photoInput.onchange = evt => {
-    const [file] = photoInput.files;
-    if (file) {
-      imagePreview.src = URL.createObjectURL(file);
-      previewContainer.classList.remove('hidden');
+    const files = Array.from(photoInput.files);
+    if (files.length > 4) {
+      Swal.fire('Limit Exceeded', 'Maximum 4 images allowed', 'error');
+      photoInput.value = "";
+      return;
     }
-  }
+    if (files.length > 0) {
+      previewGrid.innerHTML = '';
+      previewContainer.classList.remove('hidden');
+      placeholderUI.classList.add('hidden');
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.className = "w-full h-24 object-cover rounded-2xl border border-slate-100 shadow-sm";
+          previewGrid.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  };
 
-  /* Submission Feedback */
+  /* Form Submit Animation */
   document.getElementById('productForm').onsubmit = () => {
-    Swal.fire({
-      title: 'SYNCHRONIZING...',
-      background: '#ffffff',
-      color: '#000000',
-      showConfirmButton: false,
-      didOpen: () => { Swal.showLoading(); }
+    Swal.fire({ 
+        title: 'SYNCHRONIZING...', 
+        text: 'Uploading assets to operational hub',
+        background: '#0f172a',
+        color: '#fff',
+        showConfirmButton: false, 
+        didOpen: () => { Swal.showLoading(); } 
     });
   };
 </script>

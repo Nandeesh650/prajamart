@@ -1,127 +1,196 @@
 <%- include('../partials/head') %>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-  ::-webkit-scrollbar { width: 8px; }
-  ::-webkit-scrollbar-track { background: #f1f1f1; }
-  ::-webkit-scrollbar-thumb { background: #dc2626; border-radius: 10px; }
+  :root { --brand-indigo: #4f46e5; --brand-glow: rgba(79, 70, 229, 0.3); }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fcfcfd; }
+  
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+  }
+
+  /* --- ULTIMATE PREMIUM SIZE SELECTOR --- */
+  .size-pill {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+    border: 2px solid #f1f5f9; /* slate-100 */
+    background: #ffffff;
+    min-width: 75px;
+    text-align: center;
+    z-index: 1;
+  }
+
+  .size-pill:hover {
+    border-color: var(--brand-indigo);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px var(--brand-glow);
+  }
+
+  /* Checked State: Deep Slate/Black Luxury Look */
+  input[type="radio"]:checked + .size-pill {
+    background: #0f172a; /* Deep Slate 950 */
+    border-color: #0f172a;
+    color: white !important;
+    transform: scale(1.1) translateY(-2px);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+    z-index: 10;
+  }
+
+  /* The Animated Indigo Indicator */
+  input[type="radio"]:checked + .size-pill::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    background: #6366f1;
+    border-radius: 50%;
+    animation: pulseDot 2s infinite;
+  }
+
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+    50% { opacity: 0.4; transform: translateX(-50%) scale(1.8); }
+  }
 </style>
 </head>
 
-<body class="bg-gradient-to-br from-gray-100 via-white to-gray-200 min-h-screen font-sans">
+<body class="antialiased text-slate-900">
   <%- include('../partials/nav') %>
 
-  <main class="max-w-7xl mx-auto px-4 py-10">
+  <main class="max-w-[1440px] mx-auto px-6 py-16 lg:px-12">
 
-    <div class="text-center mb-12">
-      <h2 class="text-4xl font-extrabold text-red-700 tracking-tight">🛒 Your Shopping Cart</h2>
-      <p class="text-gray-500 mt-2 text-lg italic">Ready to bring these home?</p>
+    <div class="mb-20">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="h-[2px] w-12 bg-indigo-600"></span>
+        <p class="text-indigo-600 font-black uppercase tracking-[0.4em] text-[10px]">Secure Logistics</p>
+      </div>
+      <h2 class="text-6xl md:text-7xl font-[900] text-slate-950 tracking-tighter leading-none">
+        Shopping <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-500">Bag.</span>
+      </h2>
     </div>
 
     <% if (cartProducts && cartProducts.length > 0) { %>
 
     <form action="/orders/create" method="POST" id="checkoutForm">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-        <!-- Cart Items -->
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-2 space-y-10">
           <% cartProducts.forEach((product, index) => { %>
-            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-8 transition-transform hover:shadow-lg">
+            <div class="group relative bg-white rounded-[4rem] p-10 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-slate-50 flex flex-col md:flex-row items-center gap-12 transition-all duration-700 hover:shadow-[0_40px_80px_rgba(0,0,0,0.08)] hover:-translate-y-3">
 
-              <!-- Product Image -->
-              <div class="w-40 h-40 bg-gray-50 rounded-2xl overflow-hidden flex-shrink-0 border">
-                <img src="<%= product.photo %>" alt="<%= product.productName %>" class="w-full h-full object-contain p-2">
+              <div class="w-56 h-72 bg-slate-50 rounded-[3rem] overflow-hidden flex-shrink-0 border border-slate-100 relative">
+                <img src="/<%= (product.photos && product.photos.length > 0) ? product.photos[0] : (product.photo || 'images/placeholder.jpg') %>" 
+                     alt="<%= product.productName %>" 
+                     class="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-110">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/10 to-transparent"></div>
               </div>
 
-              <!-- Product Info -->
               <div class="flex-grow w-full">
-                <div class="flex justify-between items-start">
-                  <h3 class="text-2xl font-bold text-gray-800"><%= product.productName %></h3>
-                  <p class="text-2xl font-black text-red-600">₹<%= product.price %></p>
+                <div class="flex justify-between items-start mb-10">
+                  <div>
+                    <h3 class="text-4xl font-[800] text-slate-950 tracking-tighter leading-tight mb-2"><%= product.productName %></h3>
+                    <div class="flex items-center gap-3">
+                      <span class="px-3 py-1 bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest rounded-full">Archive No. <%= index + 1 %></span>
+                    </div>
+                  </div>
+                  <p class="text-4xl font-[900] text-slate-950 tracking-tighter">₹<%= product.price.toLocaleString('en-IN') %></p>
                 </div>
 
-                <div class="mt-6 flex flex-wrap items-end gap-6">
-
-                  <!-- Quantity -->
-                  <div class="flex flex-col gap-1">
-                    <label class="text-xs font-bold text-gray-400 uppercase">Quantity</label>
-                    <input type="number" name="items[<%= index %>][quantity]" value="1" min="1"
-                      class="qty-input w-20 border-2 border-gray-100 rounded-xl px-3 py-2 text-center font-bold text-red-600 focus:border-red-500 outline-none transition"
-                      data-price="<%= product.price %>" onchange="calculateGrandTotal()">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-12">
+                  <div class="flex flex-col gap-4">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Units</label>
+                    <div class="relative w-36">
+                      <input type="number" name="items[<%= index %>][quantity]" value="1" min="1"
+                             class="qty-input w-full bg-slate-50 border-2 border-slate-100 rounded-[1.5rem] px-6 py-4 font-black text-slate-950 focus:border-indigo-600 focus:bg-white outline-none transition-all shadow-inner"
+                             data-price="<%= product.price %>" onchange="calculateGrandTotal()">
+                    </div>
                   </div>
 
-                  <!-- Size -->
-                  <div class="flex flex-col gap-2 flex-grow">
-                    <label class="text-xs font-bold text-gray-400 uppercase">Select Size <span class="text-red-500">*</span></label>
-                    <div class="flex flex-wrap gap-2">
+                  <div class="flex flex-col gap-4">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Select Fit</label>
+                    <div class="flex flex-wrap gap-3">
                       <% if (product.availableSizes && product.availableSizes.length > 0) { %>
                         <% product.availableSizes.forEach((size) => { %>
-                          <label class="cursor-pointer group">
+                          <label class="relative">
                             <input type="radio" name="items[<%= index %>][size]" value="<%= size %>" required class="peer hidden">
-                            <div class="px-4 py-2 rounded-xl border-2 border-gray-100 text-sm font-bold text-gray-600 
-                                        peer-checked:border-red-600 peer-checked:bg-red-50 peer-checked:text-red-700 
-                                        group-hover:border-red-300 transition-all">
+                            <div class="size-pill px-6 py-4 rounded-[1.5rem] text-[11px] font-[900] text-slate-600 uppercase tracking-widest">
                               <%= size %>
                             </div>
                           </label>
                         <% }) %>
                       <% } else { %>
                         <input type="hidden" name="items[<%= index %>][size]" value="Standard">
-                        <span class="text-gray-400 text-sm italic">One Size Fits All</span>
+                        <span class="text-slate-300 text-[10px] font-black uppercase tracking-widest italic">One Size Archive</span>
                       <% } %>
                     </div>
                   </div>
-
-                  <input type="hidden" name="items[<%= index %>][productId]" value="<%= product._id %>">
                 </div>
 
-                <!-- Remove Item -->
-                <div class="mt-6 pt-4 border-t border-gray-50 flex justify-between items-center">
-                  <div class="flex items-center text-yellow-500 font-bold">
-                    ★ <span class="ml-1 text-gray-700"><%= product.rating || '4.5' %></span>
-                  </div>
+                <input type="hidden" name="items[<%= index %>][productId]" value="<%= product._id %>">
+
+                <div class="mt-12 pt-8 border-t border-slate-50 flex justify-between items-center">
+                   <div class="flex items-center gap-1">
+                     <span class="text-yellow-500">★</span>
+                     <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><%= product.rating || '4.9' %> Curator Rating</span>
+                   </div>
                   <form action="/cart/delete/<%= product._id %>" method="POST">
-                    <button type="submit" class="text-sm font-semibold text-gray-400 hover:text-red-600 transition">Remove Item</button>
+                    <button type="submit" class="text-[10px] font-black text-rose-400 hover:text-rose-600 uppercase tracking-[0.3em] transition-colors">
+                      Drop from Bag
+                    </button>
                   </form>
                 </div>
-
               </div>
             </div>
           <% }) %>
         </div>
 
-        <!-- Summary -->
         <div class="lg:col-span-1">
-          <div class="bg-white rounded-3xl p-8 shadow-xl border border-gray-100 sticky top-10">
-            <h3 class="text-2xl font-bold text-gray-800 mb-6">Summary</h3>
+          <div class="glass-card rounded-[4rem] p-12 shadow-2xl sticky top-10 border border-white/60">
+            <h3 class="text-4xl font-[900] text-slate-950 tracking-tighter mb-10">Manifest.</h3>
 
-            <div class="space-y-4 mb-8">
-              <div class="flex justify-between text-gray-500 font-medium">
+            <div class="space-y-6 mb-12">
+              <div class="flex justify-between items-center text-slate-500 font-bold text-xs uppercase tracking-widest">
                 <span>Subtotal</span>
-                <span id="display-subtotal">₹0</span>
+                <span id="display-subtotal" class="text-slate-950 font-black">₹0</span>
               </div>
-              <div class="flex justify-between text-gray-500 font-medium">
-                <span>Shipping</span>
-                <span class="text-green-600 font-bold">FREE</span>
+              <div class="flex justify-between items-center text-slate-500 font-bold text-xs uppercase tracking-widest">
+                <span>Logistics</span>
+                <span class="text-indigo-600 font-black">Free</span>
               </div>
-              <div class="border-t pt-4 flex justify-between text-3xl font-black text-gray-800">
-                <span>Total</span>
-                <span id="display-total">₹0</span>
+              <div class="h-[1px] bg-slate-100 my-8"></div>
+              <div class="flex justify-between items-end">
+                <span class="text-slate-950 font-black text-[10px] uppercase tracking-[0.3em]">Total Amount</span>
+                <span id="display-total" class="text-5xl font-[900] text-slate-950 tracking-tighter leading-none">₹0</span>
               </div>
             </div>
 
-            <div class="space-y-6">
-              <p class="text-xs font-bold text-gray-400 uppercase">Payment Method</p>
-              <label class="flex items-center p-4 border-2 border-gray-100 rounded-2xl cursor-pointer hover:bg-red-50 hover:border-red-100 transition group">
-                <input type="radio" name="paymentMethod" value="cod" checked class="w-5 h-5 text-red-600">
-                <span class="ml-3 font-bold text-gray-700 group-hover:text-red-700">Cash on Delivery</span>
+            <div class="mb-12">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6">Payment Strategy</p>
+              <label class="flex items-center p-6 bg-slate-50 border-2 border-slate-100 rounded-[2.2rem] cursor-pointer hover:border-indigo-600 transition-all group">
+                <input type="radio" name="paymentMethod" value="cod" checked class="w-5 h-5 accent-indigo-600">
+                <div class="ml-5">
+                  <span class="block font-black text-slate-900 text-xs uppercase tracking-widest">Cash on Delivery</span>
+                  <span class="block text-[9px] text-slate-400 font-bold uppercase mt-1">Verification on arrival</span>
+                </div>
               </label>
             </div>
 
-            <%- include('../partials/order-location-picker') %>
+            <div class="mb-12">
+               <%- include('../partials/order-location-picker') %>
+            </div>
 
-            <button type="submit" class="w-full bg-red-700 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-red-800 transition-all">
-              PLACE ORDER NOW
+            <button type="submit" class="w-full bg-slate-950 text-white py-7 rounded-[2.5rem] font-black text-[11px] uppercase tracking-[0.4em] shadow-2xl shadow-slate-200 hover:bg-indigo-600 hover:scale-[1.02] active:scale-95 transition-all">
+              Finalize Order
             </button>
           </div>
         </div>
@@ -130,10 +199,13 @@
     </form>
 
     <% } else { %>
-      <div class="bg-white rounded-3xl p-20 text-center shadow-sm border border-gray-100">
-        <div class="text-6xl mb-6">💨</div>
-        <h3 class="text-3xl font-bold text-gray-800">Your cart is feeling light!</h3>
-        <a href="/" class="bg-red-700 text-white px-10 py-4 rounded-2xl font-bold mt-8 inline-block">Back to Store</a>
+      <div class="bg-white rounded-[5rem] p-32 text-center shadow-sm border border-slate-50">
+        <div class="text-8xl mb-10">🕊️</div>
+        <h3 class="text-5xl font-[900] text-slate-950 tracking-tighter mb-6">The archive is empty.</h3>
+        <p class="text-slate-400 font-bold uppercase tracking-widest text-xs mb-12 leading-relaxed">Your curated collection will appear here once selected.</p>
+        <a href="/products" class="bg-slate-950 text-white px-14 py-6 rounded-full font-black text-[10px] uppercase tracking-[0.3em] hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-100">
+          Discover Products
+        </a>
       </div>
     <% } %>
 
@@ -150,8 +222,9 @@
         const qty = parseInt(input.value) || 1;
         grandTotal += (price * qty);
       });
-      document.getElementById('display-subtotal').innerText = '₹' + grandTotal.toLocaleString();
-      document.getElementById('display-total').innerText = '₹' + grandTotal.toLocaleString();
+      const formattedTotal = '₹' + grandTotal.toLocaleString('en-IN');
+      document.getElementById('display-subtotal').innerText = formattedTotal;
+      document.getElementById('display-total').innerText = formattedTotal;
     }
 
     window.onload = calculateGrandTotal;

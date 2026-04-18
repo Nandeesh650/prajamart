@@ -1,0 +1,117 @@
+<%- include('../partials/head') %>
+<body class="bg-slate-100 font-sans antialiased">
+  <div class="min-h-screen flex">
+    
+    <aside class="w-64 bg-slate-900 text-white hidden md:flex flex-col">
+      <div class="p-6">
+        <h1 class="text-2xl font-black tracking-tighter text-indigo-400">ADMIN PANEL</h1>
+        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Full System Access</p>
+      </div>
+      <nav class="mt-6 flex-1 px-4 space-y-2">
+        <a href="/admin/dashboard" class="flex items-center gap-3 bg-indigo-600 px-4 py-3 rounded-xl text-sm font-bold">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+          Dashboard
+        </a>
+        </nav>
+      <div class="p-6 border-t border-slate-800">
+        <a href="/logout" class="text-xs font-bold text-slate-400 hover:text-white transition-colors">Sign Out</a>
+      </div>
+    </aside>
+
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      
+      <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8">
+        <div class="flex items-center gap-4">
+          <span class="text-xs font-black text-slate-400 uppercase tracking-widest">Global Order Management</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <% if (success) { %> <span class="text-xs font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full"><%= success %></span> <% } %>
+          <% if (error) { %> <span class="text-xs font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full"><%= error %></span> <% } %>
+        </div>
+      </header>
+
+      <div class="flex-1 overflow-y-auto p-8">
+        
+        <div class="mb-8">
+          <h2 class="text-3xl font-black text-slate-900 uppercase">Live Orders</h2>
+          <p class="text-slate-500 text-sm">Update product posters, change status, or delete records permanently.</p>
+        </div>
+
+        <section class="max-w-6xl">
+          <% if (orders && orders.length > 0) { %>
+            <% orders.forEach(order => { %>
+              
+              <div class="admin-card bg-white border-l-8 border-slate-900 shadow-xl p-6 mb-8 rounded-r-2xl">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <div class="space-y-4">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Product Graphics</h4>
+                        <div class="relative group">
+                            <img src="/<%= order.items[0].productId.photo %>" class="w-full h-40 object-contain rounded-lg bg-slate-50">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
+                                <p class="text-white text-[10px] font-bold">Replace Image</p>
+                            </div>
+                        </div>
+                        
+                        <form action="/admin/update-product-poster" method="POST" enctype="multipart/form-data" class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <input type="hidden" name="productId" value="<%= order.items[0].productId._id %>">
+                            <input type="file" name="poster" class="w-full text-[10px] mb-2 file:bg-slate-900 file:text-white file:border-0 file:rounded-md file:px-2 file:py-1 cursor-pointer">
+                            <button type="submit" class="w-full py-2 bg-green-600 text-white rounded-lg text-[10px] font-black uppercase hover:bg-green-700 shadow-md transition-all active:scale-95">
+                                Update Poster
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="flex flex-col justify-between">
+                        <div>
+                            <h2 class="font-black text-slate-900 tracking-tight">ORDER #<%= order._id %></h2>
+                            <p class="text-sm text-slate-500 font-medium">Customer: <%= order.userId.firstName %> <%= order.userId.lastName %></p>
+                            <div class="mt-2 space-y-1">
+                              <p class="text-xs text-slate-400 font-bold">Total: <span class="text-slate-900">₹<%= order.totalPrice %></span></p>
+                              <p class="text-xs text-slate-400 font-bold">Method: <span class="text-slate-900 uppercase"><%= order.paymentMethod %></span></p>
+                            </div>
+                        </div>
+                        
+                        <form action="/admin/update-status/<%= order._id %>" method="POST" class="mt-4 flex gap-2">
+                            <select name="status" class="flex-1 text-xs font-bold rounded-lg border-slate-200 bg-white focus:ring-2 focus:ring-indigo-500">
+                                <option value="pending" <%= order.status == 'pending' ? 'selected' : '' %>>Pending</option>
+                                <option value="confirmed" <%= order.status == 'confirmed' ? 'selected' : '' %>>Confirmed</option>
+                                <option value="shipped" <%= order.status == 'shipped' ? 'selected' : '' %>>Shipped</option>
+                                <option value="delivered" <%= order.status == 'delivered' ? 'selected' : '' %>>Delivered</option>
+                                <option value="cancelled" <%= order.status == 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                            </select>
+                            <button type="submit" class="p-2 bg-slate-900 text-white rounded-lg hover:bg-indigo-600 transition-colors">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="flex flex-col items-end justify-between">
+                        <span class="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-black uppercase border border-slate-200 tracking-widest">
+                          <%= order.status %>
+                        </span>
+                        
+                        <form action="/admin/delete-order/<%= order._id %>" method="POST" onsubmit="return confirm('ADMIN WARNING: This action is permanent. Delete order?')">
+                            <button class="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all rounded-xl font-black text-xs uppercase tracking-widest border border-red-100 shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                Delete Order
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+              </div>
+
+            <% }) %>
+          <% } else { %>
+            <div class="bg-white rounded-3xl p-20 text-center border-4 border-dashed border-slate-200">
+              <p class="text-slate-400 font-black uppercase tracking-widest">No orders found in database</p>
+            </div>
+          <% } %>
+        </section>
+      </div>
+
+    </main>
+  </div>
+</body>
+</html>
