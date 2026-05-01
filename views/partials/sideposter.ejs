@@ -1,76 +1,129 @@
+<%
+const slidesToRender = (locals.posts && posts.length > 0) ? posts : [
+  {
+    imageUrl: "/images/products/coffeemaker-with-glass-carafe-black.jpg",
+    title: "THE ART OF\nBREWING",
+    description: "Precision-engineered glass for the ultimate morning ritual.",
+    productLink: "/products"
+  },
+  {
+    imageUrl: "/images/products/knit-athletic-sneakers-pink.webp",
+    title: "MOVEMENT\nDEFINED",
+    description: "Ultra-lightweight knit technology designed for peak performance.",
+    productLink: "/products"
+  }
+];
+%>
 
-<!-- SLIDER SECTION -->
+<section class="relative z-0 mt-8 px-4 md:px-10">
+  <div class="group relative h-[600px] w-full overflow-hidden rounded-[2.5rem] bg-black shadow-2xl">
+    
+    <!-- Slider Track -->
+    <div id="slides" class="flex h-full transition-transform duration-[1000ms] cubic-bezier(0.23, 1, 0.32, 1)">
+      
+      <% slidesToRender.forEach((slide, i) => { %>
+        <div class="slide-item relative min-w-full h-full overflow-hidden">
 
-<section class="relative z-0 mt-6 px-6">
+          <!-- ✅ HD IMAGE OPTIMIZATION -->
+          <img
+            src="<%= slide.imageUrl %>"
+            alt="<%= slide.title %>"
+            class="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-[10s] ease-out scale-110 active-zoom"
+            style="image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;"
+          >
 
-<div class="relative z-0 w-full h-[450px] bg-gray-200 overflow-hidden rounded-xl shadow-xl">
+          <!-- ✅ POSTER OVERLAY (Vignette for depth) -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
 
-<!-- SLIDES -->
+          <!-- ✅ CONTENT LAYER -->
+          <div class="absolute inset-0 flex flex-col justify-end z-20 p-12 md:p-20">
+            <div class="overflow-hidden">
+               <p class="poster-badge mb-4 inline-block px-3 py-1 border border-white/30 rounded-full text-[10px] tracking-[0.4em] uppercase text-white/90 backdrop-blur-md">
+                 Premium Edition 2026
+               </p>
+            </div>
+            
+            <h2 class="poster-title text-5xl font-black md:text-8xl lg:text-9xl text-white leading-[0.85] tracking-tighter whitespace-pre-line">
+              <%= slide.title %>
+            </h2>
+            
+            <div class="mt-8 flex flex-col md:flex-row md:items-center gap-8">
+               <p class="poster-desc max-w-sm text-lg font-light text-neutral-300 border-l border-white/20 pl-6">
+                 <%= slide.description %>
+               </p>
+               <a href="<%= slide.productLink || '/products' %>" class="poster-btn inline-flex w-fit px-8 py-4 bg-white text-black font-bold uppercase text-xs tracking-widest hover:bg-neutral-200 transition-colors rounded-sm">
+                 Discover
+               </a>
+            </div>
+          </div>
 
-<div id="slides" class="flex h-full transition-transform duration-700">
+        </div>
+      <% }) %>
+    </div>
 
-<div class="min-w-full flex items-center justify-center">
-<img src="/images/products/coffeemaker-with-glass-carafe-black.jpg"
-class="max-h-full object-contain">
-</div>
+    <!-- Navigation -->
+    <div class="absolute bottom-12 right-12 z-30 flex items-center gap-6">
+       <div class="flex gap-2" id="pagination">
+         <% slidesToRender.forEach((_, i) => { %>
+           <div class="dot h-1 w-12 bg-white/20 overflow-hidden rounded-full">
+             <div class="progress h-full bg-white w-0"></div>
+           </div>
+         <% }) %>
+       </div>
+    </div>
 
-<div class="min-w-full flex items-center justify-center">
-<img src="/images/products/knit-athletic-sneakers-pink.webp"
-class="max-h-full object-contain">
-</div>
-
-<div class="min-w-full flex items-center justify-center">
-<img src="/images/products/cotton-bath-towels-teal.webp"
-class="max-h-full object-contain">
-</div>
-
-</div>
-
-<!-- LEFT BUTTON -->
-
-<button id="prev"
-class="absolute left-5 top-1/2 z-10 -translate-y-1/2 bg-black/60 text-white px-4 py-2 rounded-full hover:bg-black">
-❮
-</button>
-
-<!-- RIGHT BUTTON -->
-
-<button id="next"
-class="absolute right-5 top-1/2 z-10 -translate-y-1/2 bg-black/60 text-white px-4 py-2 rounded-full hover:bg-black">
-❯
-</button>
-
-<!-- INDICATORS -->
-
-<div class="absolute bottom-5 left-1/2 z-10 -translate-x-1/2 flex gap-3">
-
-<span class="line w-10 h-1 bg-white opacity-50 rounded cursor-pointer"></span>
-<span class="line w-10 h-1 bg-white opacity-50 rounded cursor-pointer"></span>
-<span class="line w-10 h-1 bg-white opacity-50 rounded cursor-pointer"></span>
-
-</div>
-
-</div>
-
+  </div>
 </section>
 
-<!-- SLIDER SCRIPT -->
+<style>
+  /* HD Sharpness and Animation Logic */
+  .slide-item.active img {
+    transform: scale(1.0); /* Zooms out slowly for a cinematic feel */
+  }
+
+  .poster-title, .poster-desc, .poster-btn, .poster-badge {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .slide-item.active .poster-title { opacity: 1; transform: translateY(0); transition-delay: 0.2s; }
+  .slide-item.active .poster-desc { opacity: 1; transform: translateY(0); transition-delay: 0.4s; }
+  .slide-item.active .poster-btn { opacity: 1; transform: translateY(0); transition-delay: 0.5s; }
+  .slide-item.active .poster-badge { opacity: 1; transform: translateY(0); transition-delay: 0.1s; }
+
+  /* Progress Bar Animation */
+  @keyframes progress {
+    from { width: 0%; }
+    to { width: 100%; }
+  }
+  .dot.active .progress {
+    animation: progress 5000ms linear forwards;
+  }
+</style>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const slides = document.getElementById("slides");
+  const slideItems = document.querySelectorAll(".slide-item");
+  const dots = document.querySelectorAll(".dot");
+  let index = 0;
 
-const slides = document.getElementById("slides");
-const totalSlides = slides.children.length;
+  const update = () => {
+    slides.style.transform = `translateX(-${index * 100}%)`;
+    slideItems.forEach((s, i) => {
+      s.classList.toggle('active', i === index);
+      dots[i].classList.toggle('active', i === index);
+    });
+  };
 
-let index = 0;
+  const next = () => {
+    index = (index + 1) % slideItems.length;
+    update();
+  };
 
-document.getElementById("next").onclick = () => {
-index = (index + 1) % totalSlides;
-slides.style.transform = `translateX(-${index * 100}%)`;
-};
-
-document.getElementById("prev").onclick = () => {
-index = (index - 1 + totalSlides) % totalSlides;
-slides.style.transform = `translateX(-${index * 100}%)`;
-};
-
+  // Initial Auto-play
+  update();
+  setInterval(next, 5000);
+});
 </script>

@@ -143,11 +143,15 @@
                      <span class="text-yellow-500">★</span>
                      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest"><%= product.rating || '4.9' %> Curator Rating</span>
                    </div>
-                  <form action="/cart/delete/<%= product._id %>" method="POST">
-                    <button type="submit" class="text-[10px] font-black text-rose-400 hover:text-rose-600 uppercase tracking-[0.3em] transition-colors">
-                      Drop from Bag
-                    </button>
-                  </form>
+                  <button
+                    type="submit"
+                    formaction="/cart/delete/<%= product._id %>"
+                    formmethod="POST"
+                    formnovalidate
+                    class="text-[10px] font-black text-rose-400 hover:text-rose-600 uppercase tracking-[0.3em] transition-colors"
+                  >
+                    Drop from Bag
+                  </button>
                 </div>
               </div>
             </div>

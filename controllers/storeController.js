@@ -1,14 +1,10 @@
 const Product = require("../models/product");
+const Post = require("../models/post");
 const User = require("../models/user");
 
 const LOCATION_OPTIONS = [
-  "Bangalore",
-  "Chennai",
-  "Delhi",
-  "Hyderabad",
-  "Kolkata",
-  "Mumbai",
-  "Pune",
+  "Bangalore", "Shivamogga", "Sagar", "Hosanagara", 
+  "Soraba", "Shikaripur", "Bhadravathi", "Tarikere"
 ];
 
 const requireSessionUser = (req, res) => {
@@ -41,28 +37,35 @@ const buildProductFilter = (query, location) => {
   return { filter, trimmedQuery, trimmedLocation };
 };
 
-exports.getIndex = (req, res, next) => {
-  Product.find()
-    .populate('hostId', 'firstName lastName')
-    .then((registeredProducts) => {
-      res.render("store/index", {
-        registeredProducts: registeredProducts,
-        pageTitle: "prajamart Product",
-        currentPage: "index",
-        isLoggedIn: req.isLoggedIn, 
-        user: req.session.user,
-      });
-    })
-    .catch((err) => {
-      console.log("Error fetching products for index:", err);
-      res.render("store/index", {
-        registeredProducts: [],
-        pageTitle: "prajamart Product",
-        currentPage: "index",
-        isLoggedIn: req.isLoggedIn, 
-        user: req.session.user,
-      });
+exports.getIndex = async (req, res, next) => {
+  try {
+    const [registeredProducts, posts] = await Promise.all([
+      Product.find().populate("hostId", "firstName lastName"),
+      Post.find()
+        .sort({ createdAt: -1 })
+        .populate("createdBy", "firstName lastName")
+        .limit(6)
+    ]);
+
+    res.render("store/index", {
+      registeredProducts,
+      posts,
+      pageTitle: "prajamart Product",
+      currentPage: "index",
+      isLoggedIn: req.isLoggedIn,
+      user: req.session.user,
     });
+  } catch (err) {
+    console.log("Error fetching products for index:", err);
+    res.render("store/index", {
+      registeredProducts: [],
+      posts: [],
+      pageTitle: "prajamart Product",
+      currentPage: "index",
+      isLoggedIn: req.isLoggedIn,
+      user: req.session.user,
+    });
+  }
 };
 
 exports.getProducts = (req, res, next) => {
@@ -235,7 +238,7 @@ exports.getSearch = async (req, res, next) => {
       currentPage: "search",
       isLoggedIn: req.isLoggedIn,
       user: req.session.user,
-      message: "Please enter a search term or choose a location"
+      message: "Please enter a search term or choose a store"
     });
   }
 

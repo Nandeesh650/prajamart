@@ -24,7 +24,7 @@ const userSchema = mongoose.Schema({
   resetPasswordExpires: Date,
   userType: {
     type: String,
-    enum: ['guest', 'host', 'deliveryboy'],
+    enum: ['guest', 'host', 'deliveryboy', 'admin'],
     default: 'guest'
   },
   cart: [{

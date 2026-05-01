@@ -289,6 +289,14 @@ exports.postLogin = async (req, res) => {
       });
     }
 
+    // Prevent admin from logging in through regular login
+    if (user.userType === "admin") {
+      return renderLogin(res, {
+        errors: ["Admin users must use the admin login page."],
+        oldInput: { email }
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {

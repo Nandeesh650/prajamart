@@ -56,13 +56,13 @@
           
           <div class="relative group" id="location-dropdown-wrapper">
             <div class="relative flex items-center h-full bg-slate-100/60 rounded-full cursor-pointer px-8" id="dropdown-trigger">
-              <span class="flex-grow text-slate-700 text-sm font-bold truncate" id="selected-display"><%= selectedLocation || 'All locations' %></span>
+              <span class="flex-grow text-slate-700 text-sm font-bold truncate" id="selected-display"><%= selectedLocation || 'All stores' %></span>
               <svg class="h-4 w-4 text-slate-400 group-[.open]:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="3" d="M19 9l-7 7-7-7" /></svg>
             </div>
             <input type="hidden" name="location" id="hidden-location-input" value="<%= selectedLocation || '' %>">
             <div class="dropdown-menu absolute top-[calc(100%+12px)] left-0 w-full z-[110]">
               <div class="glass-card rounded-[2.5rem] p-2 max-h-60 overflow-y-auto shadow-2xl">
-                <div class="dropdown-item px-6 py-4 rounded-2xl text-sm font-bold text-slate-600 hover:bg-indigo-600 hover:text-white cursor-pointer" data-value="">All locations</div>
+                <div class="dropdown-item px-6 py-4 rounded-2xl text-sm font-bold text-slate-600 hover:bg-indigo-600 hover:text-white cursor-pointer" data-value="">All stores</div>
                 <% locationOptions.forEach(function(opt) { %>
                   <div class="dropdown-item px-6 py-4 rounded-2xl text-sm font-bold text-slate-600 hover:bg-indigo-600 hover:text-white cursor-pointer" data-value="<%= opt %>"><%= opt %></div>
                 <% }) %>
@@ -135,7 +135,7 @@
       <% } else { %>
         <div class="col-span-full py-32 text-center" data-aos="fade-up">
             <h3 class="text-2xl font-black text-slate-300 uppercase tracking-[0.2em]">No Results Found</h3>
-            <p class="text-slate-400 mt-2">Try adjusting your filters or location.</p>
+            <p class="text-slate-400 mt-2">Try adjusting your filters or store.</p>
         </div>
       <% } %>
     </div>

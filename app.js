@@ -14,34 +14,8 @@ const multer = require('multer');
 
 const DB_PATH = "mongodb+srv://root:root@nandeesh.3tbg3gi.mongodb.net/?appName=Nandeesh";
 
-// --- MULTER CONFIGURATION (Fixed & Ordered) ---
-const randomString = (length) => {
-  const characters = 'abcdefghijklmnopqrstuvwxyz';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-};
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); 
-  },
-  filename: (req, file, cb) => {
-    cb(null, randomString(10) + '-' + file.originalname);
-  }
-});
-
-const fileFilter = (req, file, cb) => {
-  if (['image/png', 'image/jpg', 'image/jpeg'].includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
-};
-
-const upload = multer({ storage, fileFilter });
+// Multer Configuration
+const upload = require("./middleware/multer");
 
 // Local Modules
 const rootDir = require("./utils/pathUtil");
@@ -114,6 +88,7 @@ app.use(async (req, res, next) => {
 
 // Routes
 const authRouter = require("./routes/authRouter");
+const adminRouter = require("./routes/adminRouter");
 const storeRouter = require("./routes/storeRouter");
 const hostRouter = require("./routes/hostRouter");
 const orderRouter = require("./routes/orderRouter");
@@ -121,6 +96,7 @@ const deliveryRouter = require("./routes/deliveryboy");
 const errorsController = require("./controllers/errors");
 
 app.use(authRouter);
+app.use("/admin", adminRouter);
 app.use(storeRouter);
 app.use("/orders", orderRouter);
 app.use("/delivery", deliveryRouter);
@@ -129,7 +105,7 @@ app.use("/host", hostRouter);
 app.use(errorsController.pageNotFound);
 
 // Database Connection
-const PORT = 5001;
+const PORT = 5002;
 mongoose.connect(DB_PATH).then(() => {
   console.log('Connected to Mongo');
   server.listen(PORT, () => {
