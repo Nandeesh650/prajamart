@@ -1,5 +1,7 @@
+const path = require("path");
 const Product = require("../models/product");
 const fs = require("fs").promises;
+const rootDir = require("../utils/pathUtil");
 
 const LOCATION_OPTIONS = [
   "Bangalore", "Shivamogga", "Sagar", "Hosanagara", 
@@ -7,6 +9,34 @@ const LOCATION_OPTIONS = [
 ];
 
 const ALLOWED_SIZES = ["S", "M", "L", "XL", "XXL", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+
+const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const resolveProductPhotoPath = (photoPath) => {
+  if (!photoPath) return null;
+
+  const normalizedPath = photoPath.replace(/\\/g, "/").replace(/^\/+/, "");
+  const relativePath = normalizedPath.startsWith("public/")
+    ? normalizedPath.slice("public/".length)
+    : normalizedPath;
+
+  return path.join(rootDir, relativePath);
+};
+
+const deleteProductPhotos = async (photos = []) => {
+  for (const photoPath of photos) {
+    const absolutePath = resolveProductPhotoPath(photoPath);
+    if (!absolutePath) continue;
+
+    try {
+      await fs.unlink(absolutePath);
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        console.error(`Failed to delete product photo: ${absolutePath}`, err);
+      }
+    }
+  }
+};
 
 // GET: Render Add Product Form
 exports.getAddProduct = (req, res, next) => {
@@ -48,9 +78,23 @@ exports.getEditProduct = async (req, res, next) => {
 // GET: List All Host Products
 exports.getHostProducts = async (req, res, next) => {
   try {
-    const products = await Product.find({ hostId: req.session.user._id });
+    const searchQuery = (req.query.query || "").trim();
+    const safeSearchQuery = escapeRegex(searchQuery);
+    const productFilter = { hostId: req.session.user._id };
+
+    if (safeSearchQuery) {
+      productFilter.$or = [
+        { productName: { $regex: safeSearchQuery, $options: "i" } },
+        { key: { $regex: safeSearchQuery, $options: "i" } },
+        { location: { $regex: safeSearchQuery, $options: "i" } },
+        { description: { $regex: safeSearchQuery, $options: "i" } }
+      ];
+    }
+
+    const products = await Product.find(productFilter).sort({ _id: -1 });
     res.render("host/host-product-list", {
       registeredProducts: products,
+      searchQuery,
       pageTitle: "Host Products",
       currentPage: "host-products",
       isLoggedIn: req.isLoggedIn,
@@ -106,11 +150,7 @@ exports.postEditProduct = async (req, res, next) => {
 
     // Update Photo Logic
     if (req.files && req.files.length > 0) {
-      if (product.photos && product.photos.length > 0) {
-        for (const oldPath of product.photos) {
-          try { await fs.unlink(oldPath); } catch (err) { console.log("Old file not found, skipping delete."); }
-        }
-      }
+      await deleteProductPhotos(product.photos);
       product.photos = req.files.map(file => file.path.replace(/\\/g, "/"));
     }
 
@@ -138,11 +178,10 @@ exports.postEditProduct = async (req, res, next) => {
 exports.postDeleteProduct = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.productId);
-    if (product && product.photos) {
-      for (const path of product.photos) {
-        try { await fs.unlink(path); } catch (err) {}
-      }
+    if (product) {
+      await deleteProductPhotos(product.photos);
     }
+
     await Product.findByIdAndDelete(req.params.productId);
     res.redirect("/host/host-product-list");
   } catch (err) {

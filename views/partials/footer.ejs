@@ -1,8 +1,75 @@
-<footer class="bg-black text-white text-center py-4 mt-10">
+<%
+  const footerUser = typeof user !== "undefined" ? user : null;
+  const footerLoggedIn = typeof isLoggedIn !== "undefined" ? isLoggedIn : false;
+  const footerIsHost = footerLoggedIn && footerUser && footerUser.userType === "host";
+  const footerIsDelivery = footerLoggedIn && footerUser && footerUser.userType === "deliveryboy";
+  const footerHomeHref = footerIsHost ? "/host/host-product-list" : footerIsDelivery ? "/delivery/orders" : "/";
+%>
 
-© Prajamart.com
+<footer class="mt-20 border-t border-slate-200 bg-slate-950 text-white">
+  <div class="mx-auto max-w-[1536px] px-6 py-16 lg:px-12">
+    <div class="grid grid-cols-1 gap-12 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
+      <div>
+        <div class="flex items-center gap-4">
+          <div class="flex h-14 w-14 items-center justify-center rounded-[1.4rem] bg-white/10 shadow-lg">
+            <span class="text-2xl font-black tracking-tight">P</span>
+          </div>
+          <div>
+            <h3 class="text-2xl font-[900] tracking-tighter">PrajaMart.</h3>
+            <p class="mt-1 text-[10px] font-black uppercase tracking-[0.35em] text-slate-400">Premium Essentials</p>
+          </div>
+        </div>
+        <p class="mt-6 max-w-md text-sm leading-7 text-slate-300">
+          Curated products, trusted sellers, and a cleaner shopping flow for customers, hosts, and delivery partners.
+        </p>
+      </div>
 
+      <div>
+        <p class="text-[11px] font-black uppercase tracking-[0.35em] text-slate-400">Contact</p>
+        <div class="mt-5 space-y-3 text-sm text-slate-300">
+          <p>Email: <span class="font-semibold text-white">Prajamart@gmail.com</span></p>
+          <p>Phone: <span class="font-semibold text-white">1088992934</span></p>
+          <p>Address: <span class="font-semibold text-white">UB City, Level 11, Canberra Block, #24 Vittal Mallya Road, Bengaluru, Karnataka 560001</span></p>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-[11px] font-black uppercase tracking-[0.35em] text-slate-400">Quick Links</p>
+        <div class="mt-5 flex flex-col gap-3 text-sm">
+          <a href="<%= footerHomeHref %>" class="text-slate-300 transition-colors hover:text-white">Home</a>
+          <a href="/products" class="text-slate-300 transition-colors hover:text-white">Products</a>
+          <a href="/terms/customer" class="text-slate-300 transition-colors hover:text-white">Customer Terms</a>
+          <a href="/terms/vendor" class="text-slate-300 transition-colors hover:text-white">Vendor Terms</a>
+          <a href="/terms/delivery-partner" class="text-slate-300 transition-colors hover:text-white">Delivery Terms</a>
+        </div>
+      </div>
+
+      <div>
+        <p class="text-[11px] font-black uppercase tracking-[0.35em] text-slate-400">Social Media</p>
+        <div class="mt-5 flex flex-col gap-3 text-sm">
+          <a href="#" class="flex items-center gap-3 text-slate-300 transition-colors hover:text-white">
+            <i class="fa-brands fa-instagram w-4"></i>
+            <span>Instagram</span>
+          </a>
+          <a href="#" class="flex items-center gap-3 text-slate-300 transition-colors hover:text-white">
+            <i class="fa-brands fa-facebook-f w-4"></i>
+            <span>Facebook</span>
+          </a>
+          <a href="#" class="flex items-center gap-3 text-slate-300 transition-colors hover:text-white">
+            <i class="fa-brands fa-x-twitter w-4"></i>
+            <span>X / Twitter</span>
+          </a>
+          <a href="#" class="flex items-center gap-3 text-slate-300 transition-colors hover:text-white">
+            <i class="fa-brands fa-linkedin-in w-4"></i>
+            <span>LinkedIn</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-slate-400 md:flex-row md:items-center md:justify-between">
+      <p>&copy; <%= new Date().getFullYear() %> PrajaMart. All rights reserved.</p>
+      <p>Update the footer contact and social links with your real business details before launch.</p>
+    </div>
+  </div>
 </footer>
-
-</body>
-</html>

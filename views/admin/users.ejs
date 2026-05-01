@@ -13,6 +13,10 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
           Dashboard
         </a>
+        <a href="/admin/products" class="flex items-center gap-3 hover:bg-indigo-700 px-4 py-3 rounded-xl text-sm font-bold transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V7a2 2 0 00-2-2h-3V3H9v2H6a2 2 0 00-2 2v6m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-4m-8 0H4m8 0v-2m0 2v2" /></svg>
+          Products
+        </a>
         <a href="/admin/posts" class="flex items-center gap-3 hover:bg-indigo-700 px-4 py-3 rounded-xl text-sm font-bold transition-colors">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
           Posts
@@ -48,8 +52,41 @@
           <p class="text-slate-500 text-sm">Edit or delete user accounts.</p>
         </div>
 
+        <section class="max-w-6xl mb-6">
+          <form action="/admin/users" method="GET" class="bg-white rounded-3xl border border-slate-200 p-4 shadow-sm">
+            <div class="flex flex-col gap-3 md:flex-row md:items-center">
+              <div class="flex-1">
+                <input
+                  type="text"
+                  name="query"
+                  value="<%= searchQuery || '' %>"
+                  placeholder="Search by name, email, phone, or type"
+                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-medium text-slate-800 outline-none transition focus:border-indigo-500 focus:bg-white"
+                >
+              </div>
+              <div class="flex gap-2">
+                <button type="submit" class="px-5 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-600 transition-colors">
+                  Search
+                </button>
+                <% if (searchQuery) { %>
+                  <a href="/admin/users" class="px-5 py-3 bg-slate-100 text-slate-700 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-colors">
+                    Clear
+                  </a>
+                <% } %>
+              </div>
+            </div>
+          </form>
+        </section>
+
         <section class="max-w-6xl">
           <% if (users && users.length > 0) { %>
+            <% if (searchQuery) { %>
+              <div class="mb-4">
+                <p class="text-xs font-bold uppercase tracking-widest text-slate-500">
+                  Search results for "<%= searchQuery %>"
+                </p>
+              </div>
+            <% } %>
             <div class="overflow-x-auto">
               <table class="w-full">
                 <thead>
@@ -91,7 +128,9 @@
             </div>
           <% } else { %>
             <div class="bg-white rounded-3xl p-20 text-center border-4 border-dashed border-slate-200">
-              <p class="text-slate-400 font-black uppercase tracking-widest">No users found</p>
+              <p class="text-slate-400 font-black uppercase tracking-widest">
+                <%= searchQuery ? 'No matching users found' : 'No users found' %>
+              </p>
             </div>
           <% } %>
         </section>

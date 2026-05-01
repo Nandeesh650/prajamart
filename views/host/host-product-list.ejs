@@ -39,8 +39,41 @@
       </p>
     </div>
 
+    <section class="max-w-5xl mx-auto mb-10" data-aos="fade-up">
+      <form action="/host/host-product-list" method="GET" class="glass-card rounded-[2.5rem] border border-white/50 p-4 shadow-xl">
+        <div class="flex flex-col gap-3 md:flex-row md:items-center">
+          <div class="flex-1">
+            <input
+              type="text"
+              name="query"
+              value="<%= searchQuery || '' %>"
+              placeholder="Search your products by name, tag, location, or description"
+              class="w-full rounded-2xl bg-white px-6 py-4 text-sm font-bold text-slate-800 outline-none"
+            >
+          </div>
+          <div class="flex gap-2">
+            <button type="submit" class="rounded-2xl bg-slate-950 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-white transition-colors hover:bg-indigo-600">
+              Search
+            </button>
+            <% if (searchQuery) { %>
+              <a href="/host/host-product-list" class="rounded-2xl bg-slate-100 px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-700 transition-colors hover:bg-slate-200">
+                Clear
+              </a>
+            <% } %>
+          </div>
+        </div>
+      </form>
+    </section>
+
     <div class="grid grid-cols-1 gap-14 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       <% if (registeredProducts && registeredProducts.length > 0) { %>
+        <% if (searchQuery) { %>
+          <div class="col-span-full mb-2">
+            <p class="text-center text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Search results for "<%= searchQuery %>"
+            </p>
+          </div>
+        <% } %>
         <% registeredProducts.forEach(function(product, index) { %>
           
           <div data-aos="fade-up" data-aos-delay="<%= 300 + (index * 75) %>">
@@ -103,8 +136,12 @@
         <% }) %>
       <% } else { %>
         <div class="col-span-full py-32 text-center" data-aos="fade-up">
-            <h3 class="text-2xl font-black text-slate-300 uppercase tracking-widest">Inventory Manifest Empty</h3>
-            <p class="text-slate-400 mt-2">Begin deployment to see items here.</p>
+            <h3 class="text-2xl font-black text-slate-300 uppercase tracking-widest">
+              <%= searchQuery ? 'No Matching Products' : 'Inventory Manifest Empty' %>
+            </h3>
+            <p class="text-slate-400 mt-2">
+              <%= searchQuery ? 'Try another search for your products.' : 'Begin deployment to see items here.' %>
+            </p>
         </div>
       <% } %>
     </div>
@@ -119,5 +156,6 @@
       easing: 'ease-out-quint' 
     });
   </script>
+  <%- include('../partials/footer') %>
 </body>
 </html>

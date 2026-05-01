@@ -46,21 +46,21 @@
       </h1>
     </div>
 
-    <div class="animate-reveal max-w-6xl mx-auto mb-24 space-y-4" style="animation-delay: 200ms;">
-      <form id="search-form" action="/products" method="GET" class="glass-card rounded-[3rem] p-3 shadow-2xl">
+    <div class="animate-reveal relative z-[220] max-w-6xl mx-auto mb-24 space-y-4" style="animation-delay: 200ms;">
+      <form id="search-form" action="/products" method="GET" class="glass-card relative z-[220] rounded-[3rem] p-3 shadow-2xl">
         <div class="grid grid-cols-1 gap-3 md:grid-cols-[2fr_1.2fr_auto_auto]">
           
           <div class="relative flex items-center bg-slate-100/60 rounded-full px-8">
             <input type="text" name="query" value="<%= searchQuery || '' %>" placeholder="Search collection..." class="w-full bg-transparent py-5 outline-none font-bold text-slate-800">
           </div>
           
-          <div class="relative group" id="location-dropdown-wrapper">
+          <div class="relative z-[230] group" id="location-dropdown-wrapper">
             <div class="relative flex items-center h-full bg-slate-100/60 rounded-full cursor-pointer px-8" id="dropdown-trigger">
               <span class="flex-grow text-slate-700 text-sm font-bold truncate" id="selected-display"><%= selectedLocation || 'All stores' %></span>
               <svg class="h-4 w-4 text-slate-400 group-[.open]:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="3" d="M19 9l-7 7-7-7" /></svg>
             </div>
             <input type="hidden" name="location" id="hidden-location-input" value="<%= selectedLocation || '' %>">
-            <div class="dropdown-menu absolute top-[calc(100%+12px)] left-0 w-full z-[110]">
+            <div class="dropdown-menu absolute top-[calc(100%+12px)] left-0 w-full z-[240]">
               <div class="glass-card rounded-[2.5rem] p-2 max-h-60 overflow-y-auto shadow-2xl">
                 <div class="dropdown-item px-6 py-4 rounded-2xl text-sm font-bold text-slate-600 hover:bg-indigo-600 hover:text-white cursor-pointer" data-value="">All stores</div>
                 <% locationOptions.forEach(function(opt) { %>
@@ -85,7 +85,7 @@
       <% } %>
     </div>
 
-    <div class="grid grid-cols-1 gap-14 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div class="relative z-0 grid grid-cols-1 gap-14 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       <% if (registeredProducts && registeredProducts.length > 0) { %>
         <% registeredProducts.forEach((product, index) => { %>
           <div class="animate-reveal" style="animation-delay: <%= 300 + (index * 75) %>ms;">
@@ -189,5 +189,6 @@
 
     window.addEventListener('click', () => dropdownWrapper.classList.remove('open'));
   </script>
+  <%- include('../partials/footer') %>
 </body>
 </html>

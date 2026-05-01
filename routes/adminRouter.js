@@ -15,6 +15,14 @@ adminRouter.post("/update-product-poster", upload.single("poster"), adminControl
 adminRouter.post("/delete-order/:orderId", adminController.postAdminDeleteOrder);
 adminRouter.post("/update-status/:orderId", adminController.postAdminUpdateStatus);
 
+// Product Management
+adminRouter.get("/products", adminController.getAllProducts);
+adminRouter.get("/products/add", adminController.getAddProduct);
+adminRouter.post("/products/add", upload.array("photos", 4), adminController.postAddProduct);
+adminRouter.get("/products/:productId/edit", adminController.getEditProduct);
+adminRouter.post("/products/:productId/edit", upload.array("photos", 4), adminController.postEditProduct);
+adminRouter.post("/products/:productId/delete", adminController.postDeleteProduct);
+
 // Post Management
 adminRouter.get("/posts", adminController.getAllPosts);
 adminRouter.get("/posts/add", adminController.getAddPost);

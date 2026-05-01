@@ -1,7 +1,42 @@
 const Order = require("../models/order");
 const Product = require("../models/product");
 const fs = require('fs');
+const fsPromises = fs.promises;
 const path = require('path');
+const rootDir = require("../utils/pathUtil");
+
+const LOCATION_OPTIONS = [
+  "Bangalore", "Shivamogga", "Sagar", "Hosanagara",
+  "Soraba", "Shikaripur", "Bhadravathi", "Tarikere"
+];
+
+const ALLOWED_SIZES = ["S", "M", "L", "XL", "XXL", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
+
+const resolveProductPhotoPath = (photoPath) => {
+  if (!photoPath) return null;
+
+  const normalizedPath = photoPath.replace(/\\/g, "/").replace(/^\/+/, "");
+  const relativePath = normalizedPath.startsWith("public/")
+    ? normalizedPath.slice("public/".length)
+    : normalizedPath;
+
+  return path.join(rootDir, relativePath);
+};
+
+const deleteProductPhotos = async (photos = []) => {
+  for (const photoPath of photos) {
+    const absolutePath = resolveProductPhotoPath(photoPath);
+    if (!absolutePath) continue;
+
+    try {
+      await fsPromises.unlink(absolutePath);
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        console.error(`Failed to delete product photo: ${absolutePath}`, err);
+      }
+    }
+  }
+};
 
 // ---------------- ADMIN: UPDATE PRODUCT POSTER ----------------
 // This replaces the actual product image file on the server
@@ -150,6 +185,50 @@ const renderAdminDashboard = (res, options = {}) => {
     orders_count: options.orders?.length || 0,
     users_count: options.users?.length || 0,
     posts_count: options.posts?.length || 0
+  });
+};
+
+const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const renderAdminProductForm = (res, options = {}) => {
+  const editing = Boolean(options.editing);
+  const product = options.product || null;
+  const oldInput = options.oldInput || {};
+  const selectedSizes = Array.isArray(oldInput.availableSizes)
+    ? oldInput.availableSizes
+    : oldInput.availableSizes
+      ? [oldInput.availableSizes]
+      : Array.isArray(product?.availableSizes)
+        ? product.availableSizes
+        : [];
+
+  const productHostId = product?.hostId?._id
+    ? product.hostId._id.toString()
+    : product?.hostId
+      ? product.hostId.toString()
+      : "";
+
+  res.render("admin/edit-product", {
+    pageTitle: editing ? "Edit Product" : "Add Product",
+    currentPage: "products",
+    isLoggedIn: true,
+    user: options.user || {},
+    editing,
+    product,
+    errors: options.errors || [],
+    hostOptions: options.hostOptions || [],
+    locationOptions: LOCATION_OPTIONS,
+    sizeOptions: ALLOWED_SIZES,
+    formData: {
+      productName: oldInput.productName ?? product?.productName ?? "",
+      price: oldInput.price ?? product?.price ?? "",
+      stock: oldInput.stock ?? product?.stock ?? 0,
+      location: oldInput.location ?? product?.location ?? "",
+      key: oldInput.key ?? (Array.isArray(product?.key) ? product.key.join(", ") : ""),
+      description: oldInput.description ?? product?.description ?? "",
+      hostId: oldInput.hostId ?? productHostId,
+      availableSizes: selectedSizes
+    }
   });
 };
 
@@ -358,6 +437,289 @@ exports.getAdminDashboard = async (req, res) => {
       orders: [],
       error: "Unable to load dashboard"
     });
+  }
+};
+
+// ===== PRODUCT MANAGEMENT =====
+
+exports.getAllProducts = async (req, res) => {
+  if (req.session.user?.userType !== 'admin') {
+    return res.redirect('/admin/login');
+  }
+
+  try {
+    const searchQuery = (req.query.query || "").trim();
+    const safeSearchQuery = escapeRegex(searchQuery);
+    const productFilter = {};
+
+    if (safeSearchQuery) {
+      const matchingHosts = await User.find({
+        userType: 'host',
+        $or: [
+          { firstName: { $regex: safeSearchQuery, $options: 'i' } },
+          { lastName: { $regex: safeSearchQuery, $options: 'i' } },
+          { email: { $regex: safeSearchQuery, $options: 'i' } }
+        ]
+      }).select('_id');
+
+      const matchingHostIds = matchingHosts.map((host) => host._id);
+
+      productFilter.$or = [
+        { productName: { $regex: safeSearchQuery, $options: 'i' } },
+        { key: { $regex: safeSearchQuery, $options: 'i' } },
+        { location: { $regex: safeSearchQuery, $options: 'i' } },
+        { description: { $regex: safeSearchQuery, $options: 'i' } }
+      ];
+
+      if (matchingHostIds.length > 0) {
+        productFilter.$or.push({ hostId: { $in: matchingHostIds } });
+      }
+    }
+
+    const products = await Product.find(productFilter)
+      .populate('hostId', 'firstName lastName email')
+      .sort({ _id: -1 });
+
+    res.render("admin/products", {
+      pageTitle: "Manage Products",
+      currentPage: "products",
+      isLoggedIn: true,
+      user: req.session.user,
+      products,
+      searchQuery,
+      success: req.session.adminSuccess || "",
+      error: req.session.adminError || ""
+    });
+
+    delete req.session.adminSuccess;
+    delete req.session.adminError;
+  } catch (err) {
+    res.render("admin/products", {
+      pageTitle: "Manage Products",
+      currentPage: "products",
+      isLoggedIn: true,
+      user: req.session.user,
+      products: [],
+      searchQuery: (req.query.query || "").trim(),
+      error: "Unable to load products"
+    });
+  }
+};
+
+exports.getAddProduct = async (req, res) => {
+  if (req.session.user?.userType !== 'admin') {
+    return res.redirect('/admin/login');
+  }
+
+  try {
+    const hostOptions = await User.find({ userType: 'host' })
+      .select('firstName lastName email')
+      .sort({ firstName: 1, lastName: 1 });
+
+    renderAdminProductForm(res, {
+      user: req.session.user,
+      editing: false,
+      product: null,
+      hostOptions,
+      errors: [],
+      oldInput: {}
+    });
+  } catch (err) {
+    req.session.adminError = "Unable to open product form";
+    return res.redirect('/admin/products');
+  }
+};
+
+exports.postAddProduct = async (req, res) => {
+  if (req.session.user?.userType !== 'admin') {
+    return res.redirect('/admin/login');
+  }
+
+  const oldInput = { ...req.body };
+
+  try {
+    const hostOptions = await User.find({ userType: 'host' })
+      .select('firstName lastName email')
+      .sort({ firstName: 1, lastName: 1 });
+
+    const { productName, key = "", price, description = "", location = "", stock = 0, hostId = "" } = req.body;
+    const errors = [];
+
+    if (!productName || !productName.trim()) errors.push("Product name is required.");
+    if (!price || Number.isNaN(Number(price))) errors.push("Valid price is required.");
+    if (!req.files || req.files.length === 0) errors.push("At least one product image is required.");
+
+    if (errors.length > 0) {
+      return renderAdminProductForm(res, {
+        user: req.session.user,
+        editing: false,
+        product: null,
+        hostOptions,
+        errors,
+        oldInput
+      });
+    }
+
+    const imagePaths = req.files.map(file => file.path.replace(/\\/g, "/"));
+    const keys = key.split(",").map(item => item.trim()).filter(Boolean);
+    const rawSizes = req.body.availableSizes || [];
+    const sizesArray = Array.isArray(rawSizes) ? rawSizes : [rawSizes];
+    const filteredSizes = sizesArray.filter(size => ALLOWED_SIZES.includes(size));
+
+    const product = new Product({
+      productName: productName.trim(),
+      key: keys,
+      price: parseFloat(price),
+      stock: parseInt(stock, 10) || 0,
+      availableSizes: filteredSizes,
+      location: location.trim(),
+      hostId: hostId || undefined,
+      photos: imagePaths,
+      description: description.trim()
+    });
+
+    await product.save();
+    req.session.adminSuccess = "Product added successfully!";
+    return res.redirect('/admin/products');
+  } catch (err) {
+    const hostOptions = await User.find({ userType: 'host' })
+      .select('firstName lastName email')
+      .sort({ firstName: 1, lastName: 1 });
+
+    return renderAdminProductForm(res, {
+      user: req.session.user,
+      editing: false,
+      product: null,
+      hostOptions,
+      errors: ["Unable to add product."],
+      oldInput
+    });
+  }
+};
+
+exports.getEditProduct = async (req, res) => {
+  if (req.session.user?.userType !== 'admin') {
+    return res.redirect('/admin/login');
+  }
+
+  try {
+    const [product, hostOptions] = await Promise.all([
+      Product.findById(req.params.productId).populate('hostId', 'firstName lastName email'),
+      User.find({ userType: 'host' }).select('firstName lastName email').sort({ firstName: 1, lastName: 1 })
+    ]);
+
+    if (!product) {
+      req.session.adminError = "Product not found.";
+      return res.redirect('/admin/products');
+    }
+
+    renderAdminProductForm(res, {
+      user: req.session.user,
+      editing: true,
+      product,
+      hostOptions,
+      errors: [],
+      oldInput: {}
+    });
+  } catch (err) {
+    req.session.adminError = "Unable to open product editor";
+    return res.redirect('/admin/products');
+  }
+};
+
+exports.postEditProduct = async (req, res) => {
+  if (req.session.user?.userType !== 'admin') {
+    return res.redirect('/admin/login');
+  }
+
+  const oldInput = { ...req.body };
+
+  try {
+    const [product, hostOptions] = await Promise.all([
+      Product.findById(req.params.productId).populate('hostId', 'firstName lastName email'),
+      User.find({ userType: 'host' }).select('firstName lastName email').sort({ firstName: 1, lastName: 1 })
+    ]);
+
+    if (!product) {
+      req.session.adminError = "Product not found.";
+      return res.redirect('/admin/products');
+    }
+
+    const { productName, key = "", price, description = "", location = "", stock = 0, hostId = "" } = req.body;
+    const errors = [];
+
+    if (!productName || !productName.trim()) errors.push("Product name is required.");
+    if (!price || Number.isNaN(Number(price))) errors.push("Valid price is required.");
+
+    if (errors.length > 0) {
+      return renderAdminProductForm(res, {
+        user: req.session.user,
+        editing: true,
+        product,
+        hostOptions,
+        errors,
+        oldInput
+      });
+    }
+
+    if (req.files && req.files.length > 0) {
+      await deleteProductPhotos(product.photos);
+      product.photos = req.files.map(file => file.path.replace(/\\/g, "/"));
+    }
+
+    const rawSizes = req.body.availableSizes || [];
+    const sizesArray = Array.isArray(rawSizes) ? rawSizes : [rawSizes];
+
+    product.productName = productName.trim();
+    product.key = key.split(",").map(item => item.trim()).filter(Boolean);
+    product.price = parseFloat(price);
+    product.stock = parseInt(stock, 10) || 0;
+    product.availableSizes = sizesArray.filter(size => ALLOWED_SIZES.includes(size));
+    product.location = location.trim();
+    product.hostId = hostId || undefined;
+    product.description = description.trim();
+
+    await product.save();
+    req.session.adminSuccess = "Product updated successfully!";
+    return res.redirect('/admin/products');
+  } catch (err) {
+    const [product, hostOptions] = await Promise.all([
+      Product.findById(req.params.productId).populate('hostId', 'firstName lastName email'),
+      User.find({ userType: 'host' }).select('firstName lastName email').sort({ firstName: 1, lastName: 1 })
+    ]);
+
+    return renderAdminProductForm(res, {
+      user: req.session.user,
+      editing: true,
+      product,
+      hostOptions,
+      errors: ["Unable to update product."],
+      oldInput
+    });
+  }
+};
+
+exports.postDeleteProduct = async (req, res) => {
+  if (req.session.user?.userType !== 'admin') {
+    return res.redirect('/admin/login');
+  }
+
+  try {
+    const product = await Product.findById(req.params.productId);
+
+    if (!product) {
+      req.session.adminError = "Product not found.";
+      return res.redirect('/admin/products');
+    }
+
+    await deleteProductPhotos(product.photos);
+    await Product.findByIdAndDelete(req.params.productId);
+
+    req.session.adminSuccess = "Product deleted successfully!";
+    return res.redirect('/admin/products');
+  } catch (err) {
+    req.session.adminError = "Unable to delete product.";
+    return res.redirect('/admin/products');
   }
 };
 
@@ -592,7 +954,23 @@ exports.getAllUsers = async (req, res) => {
   }
 
   try {
-    const users = await User.find({ userType: { $ne: 'admin' } }).select('firstName lastName email phoneNumber userType');
+    const searchQuery = (req.query.query || "").trim();
+    const safeSearchQuery = escapeRegex(searchQuery);
+    const userFilter = { userType: { $ne: 'admin' } };
+
+    if (safeSearchQuery) {
+      userFilter.$or = [
+        { firstName: { $regex: safeSearchQuery, $options: 'i' } },
+        { lastName: { $regex: safeSearchQuery, $options: 'i' } },
+        { email: { $regex: safeSearchQuery, $options: 'i' } },
+        { phoneNumber: { $regex: safeSearchQuery, $options: 'i' } },
+        { userType: { $regex: safeSearchQuery, $options: 'i' } }
+      ];
+    }
+
+    const users = await User.find(userFilter)
+      .select('firstName lastName email phoneNumber userType')
+      .sort({ firstName: 1, lastName: 1 });
 
     res.render("admin/users", {
       pageTitle: "Manage Users",
@@ -600,6 +978,7 @@ exports.getAllUsers = async (req, res) => {
       isLoggedIn: true,
       user: req.session.user,
       users,
+      searchQuery,
       success: req.session.adminSuccess || "",
       error: req.session.adminError || ""
     });
@@ -613,6 +992,7 @@ exports.getAllUsers = async (req, res) => {
       isLoggedIn: true,
       user: req.session.user,
       users: [],
+      searchQuery: (req.query.query || "").trim(),
       error: "Unable to load users"
     });
   }
