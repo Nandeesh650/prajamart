@@ -89,6 +89,7 @@ app.use(async (req, res, next) => {
 // Routes
 const authRouter = require("./routes/authRouter");
 const adminRouter = require("./routes/adminRouter");
+const legalRouter = require("./routes/legalRouter");
 const storeRouter = require("./routes/storeRouter");
 const hostRouter = require("./routes/hostRouter");
 const orderRouter = require("./routes/orderRouter");
@@ -97,6 +98,7 @@ const errorsController = require("./controllers/errors");
 
 app.use(authRouter);
 app.use("/admin", adminRouter);
+app.use(legalRouter);
 app.use(storeRouter);
 app.use("/orders", orderRouter);
 app.use("/delivery", deliveryRouter);
@@ -105,7 +107,7 @@ app.use("/host", hostRouter);
 app.use(errorsController.pageNotFound);
 
 // Database Connection
-const PORT = 5002;
+const PORT = 5001;
 mongoose.connect(DB_PATH).then(() => {
   console.log('Connected to Mongo');
   server.listen(PORT, () => {

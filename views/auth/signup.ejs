@@ -188,7 +188,19 @@
 
                     <div class="flex items-center px-1">
                         <input type="checkbox" name="terms" required class="rounded text-indigo-600">
-                        <span class="ml-3 text-xs text-gray-500">I agree to the <a href="#" class="text-indigo-600 underline">Terms of Service</a></span>
+                        <span class="ml-3 text-xs text-gray-500">
+                          I agree to the
+                          <a
+                            href="<%= locals.oldInput && oldInput.userType === 'host' ? '/terms/vendor' : locals.oldInput && oldInput.userType === 'deliveryboy' ? '/terms/delivery-partner' : '/terms/customer' %>"
+                            id="terms-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-indigo-600 underline"
+                          >
+                            Terms of Service
+                          </a>
+                          for my selected account type.
+                        </span>
                     </div>
 
                     <button type="submit" class="btn-execute w-full py-4 font-bold text-white uppercase tracking-wider">
@@ -218,6 +230,25 @@
                 phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 10);
             });
         }
+
+        const termsLink = document.getElementById('terms-link');
+        const roleInputs = document.querySelectorAll('input[name="userType"]');
+        const termsHrefByRole = {
+            guest: '/terms/customer',
+            host: '/terms/vendor',
+            deliveryboy: '/terms/delivery-partner'
+        };
+
+        const syncTermsLink = () => {
+            const selectedRole = document.querySelector('input[name="userType"]:checked')?.value || 'guest';
+            termsLink.setAttribute('href', termsHrefByRole[selectedRole] || termsHrefByRole.guest);
+        };
+
+        roleInputs.forEach((input) => {
+            input.addEventListener('change', syncTermsLink);
+        });
+
+        syncTermsLink();
     </script>
 </body>
 </html>
